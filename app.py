@@ -3,26 +3,74 @@ import pandas as pd
 import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
-
-st.set_page_config(page_title="세제곱근 소수 첫째자리 실습", layout="wide")
-
-st.title("세제곱근 소수 첫째자리 찾기 실습")
-st.caption("대입 · 그래프 · 대수 근사 · 뉴턴 근사 (가우스 기호/이진탐색 없이)")
+from matplotlib.patches import Rectangle
+import plotly.graph_objects as go
+import plotly.express as px
+from datetime import datetime
 
 # ============================================
-# 수학 함수들
+# 페이지 설정
+# ============================================
+st.set_page_config(
+    page_title="🕵️ SM 수학사무소",
+    page_icon="🔍",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# ============================================
+# CSS 커스터마이징
+# ============================================
+st.markdown("""
+    <style>
+    .big-font {
+        font-size: 3rem !important;
+        font-weight: bold;
+        text-align: center;
+    }
+    .metric-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+        border-radius: 10px;
+        color: white;
+        text-align: center;
+    }
+    .success-card {
+        background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+        padding: 15px;
+        border-radius: 10px;
+        color: #333;
+    }
+    .warning-card {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        padding: 15px;
+        border-radius: 10px;
+        color: #333;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# ============================================
+# 세션 상태 초기화
+# ============================================
+if 'investigation_log' not in st.session_state:
+    st.session_state.investigation_log = []
+if 'found_answers' not in st.session_state:
+    st.session_state.found_answers = {}
+
+# ============================================
+# 수학 함수들 (원본 유지)
 # ============================================
 def cube_root(x: float) -> float:
     return x ** (1/3)
 
 def find_a_by_cubes(x: int):
-    """Find natural number a such that a^3 < x < (a+1)^3."""
     a = 1
     rows = []
     while True:
         left = a**3
         right = (a+1)**3
-        rows.append({"a": a, "a^3": left, "(a+1)^3": right, "condition": f"{left} < {x} < {right}"})
+        rows.append({"a": a, "a³": left, "(a+1)³": right, "범위": f"✓" if left < x < right else ""})
         if left < x < right:
             return a, pd.DataFrame(rows)
         a += 1
@@ -30,14 +78,14 @@ def find_a_by_cubes(x: int):
             raise ValueError("a search exceeded limit")
 
 def find_b_by_substitution(x: int, a: int, b_max: int = 8):
-    """Sequentially find b in [0,b_max] such that (a+b/10)^3 < x < (a+(b+1)/10)^3."""
     rows = []
     chosen_b = None
     for b in range(0, b_max+1):
         t = a + b/10
         val = t**3
         ok = val < x
-        rows.append({"b": b, "t = a + b/10": t, "t^3": val, "t^3 < x ?": ok})
+        status = "🎯" if ok else "❌"
+        rows.append({"b": b, "t": f"{t:.1f}", "t³": f"{val:.3f}", "상태": status})
         if ok:
             chosen_b = b
         else:
@@ -49,229 +97,351 @@ def find_b_by_substitution(x: int, a: int, b_max: int = 8):
     return chosen_b, pd.DataFrame(rows), L, U
 
 def algebraic_linear_guess_b(x: int, a: int):
-    """Linear (tangent-like) guess for h and a nearby integer b0 around 10h."""
     delta = x - a**3
-    denom = 3*(a**2)
-    h = delta / denom
+    h = delta / (3*(a**2))
     ten_h = 10*h
     b0 = int(round(ten_h))
     return delta, h, ten_h, b0
 
-def algebraic_quadratic_upper_h(x: int, a: int):
-    """From delta = 3a^2 h + 3a h^2 + h^3 > 3a^2 h + 3a h^2"""
-    delta = x - a**3
-    A = 3*a
-    B = 3*(a**2)
-    C = -delta
-    disc = B*B - 4*A*C
-    h_plus = (-B + math.sqrt(disc)) / (2*A) if A != 0 else delta / B
-    return delta, disc, h_plus
-
 def newton_iter(x: int, t0: float, max_iter: int = 6, tol: float = 1e-10):
-    """Newton iterations for f(t)=t^3-x."""
     rows = []
     t = t0
     for k in range(max_iter):
         t3 = t**3
         err = t3 - x
-        rows.append({"iter": k, "t": t, "t^3": t3, "t^3 - x": err})
+        rows.append({"반복": k, "t": f"{t:.8f}", "t³": f"{t3:.3f}", "오차": f"{err:.8f}"})
         if abs(err) < tol:
             break
         t = t + (x - t3) / (3*(t**2))
     t3 = t**3
     err = t3 - x
-    rows.append({"iter": k+1, "t": t, "t^3": t3, "t^3 - x": err})
+    rows.append({"반복": k+1, "t": f"{t:.8f}", "t³": f"{t3:.3f}", "오차": f"{err:.8f}"})
     return t, pd.DataFrame(rows)
 
-def suggest_b_from_t(t: float, a: int, b_max: int):
-    """Suggest b satisfying a + b/10 <= t < a + (b+1)/10"""
-    ten_h = 10*(t - a)
-    b = int(math.floor(ten_h))
-    b = max(0, min(b, b_max))
-    return b, ten_h
+# ============================================
+# 헤더
+# ============================================
+col1, col2, col3 = st.columns([1, 3, 1])
+
+with col1:
+    st.write("## 🕵️")
+
+with col2:
+    st.markdown("""
+    # 🔍 SM 수학사무소
+    ### 세제곱근 비밀번호 추적 미션
+    """)
+
+with col3:
+    st.write("## 📊")
+
+st.markdown("---")
 
 # ============================================
-# Sidebar 입력
+# 사이드바
 # ============================================
 with st.sidebar:
-    st.header("입력")
-    x = st.number_input("추론할 자연수 x", min_value=2, value=15, step=1)
-    assume_b_le_8 = st.checkbox("문제 조건: b ≤ 8 적용", value=True)
-    b_max = 8 if assume_b_le_8 else 9
-
+    st.markdown("## 🎮 제어판")
+    
+    # 난이도 선택
+    difficulty = st.radio(
+        "📈 난이도 선택",
+        ["🟢 초급 (2-10)", "🟡 중급 (10-100)", "🔴 상급 (100-1000)"]
+    )
+    
+    # 범위 설정
+    if "초급" in difficulty:
+        x_range = (2, 10)
+    elif "중급" in difficulty:
+        x_range = (10, 100)
+    else:
+        x_range = (100, 1000)
+    
     st.divider()
-    st.subheader("뉴턴 근사 설정")
-    max_iter = st.slider("반복 횟수", min_value=1, max_value=12, value=6)
-    tol_pow = st.select_slider("중지 기준 |t^3 - x|", options=[-2, -4, -6, -8, -10, -12], value=-10)
+    
+    x = st.number_input(
+        "🎯 추적 대상 숫자 (x)",
+        min_value=x_range[0],
+        max_value=x_range[1],
+        value=15,
+        step=1
+    )
+    
+    st.divider()
+    
+    st.markdown("### ⚙️ 뉴턴 근사 설정")
+    max_iter = st.slider("반복 횟수", 1, 12, 6)
+    tol_pow = st.select_slider(
+        "정밀도 (오차 한계)",
+        [-2, -4, -6, -8, -10, -12],
+        value=-10
+    )
     tol = 10.0**tol_pow
-    use_custom_t0 = st.checkbox("초기값 t0 직접 입력", value=False)
-    t0_custom = st.number_input("t0", value=3.0, step=0.1, disabled=not use_custom_t0)
-
-st.markdown("### 공식 정의")
-st.latex(r"a^3 < x < (a+1)^3,\quad \left(a+\frac{b}{10}\right)^3 < x < \left(a+\frac{b+1}{10}\right)^3")
-
-approx_true = cube_root(float(x))
-if abs(round(approx_true)**3 - x) < 1e-12:
-    st.warning("입력한 x는 완전세제곱수입니다. 그래도 실습은 진행합니다.")
+    
+    use_custom_t0 = st.checkbox("🔧 초기값 직접 설정")
+    if use_custom_t0:
+        t0_custom = st.number_input("t₀ 값", value=3.0, step=0.1)
+    else:
+        t0_custom = None
+    
+    st.divider()
+    
+    # 통계
+    st.markdown("### 📈 통계")
+    if st.session_state.found_answers:
+        st.metric("✅ 해결한 미션", len(st.session_state.found_answers))
 
 # ============================================
-# Step 1: find a
+# 메인 콘텐츠
 # ============================================
+
+# 1. 목표 설정
+st.markdown("## 🎪 미션 브리핑")
+
+# 대상값 표시
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.markdown('<div class="metric-card"><h2>🎯 대상값</h2><p style="font-size:2rem">x = ' + str(int(x)) + '</p></div>', unsafe_allow_html=True)
+
+with col2:
+    true_root = cube_root(float(x))
+    st.markdown(f'<div class="metric-card"><h2>🎁 정답</h2><p style="font-size:2rem">∛x ≈ {true_root:.4f}</p></div>', unsafe_allow_html=True)
+
+with col3:
+    st.markdown(f'<div class="metric-card"><h2>🔍 소수점 첫자리</h2><p style="font-size:2rem">{str(true_root)[2]}</p></div>', unsafe_allow_html=True)
+
+st.markdown("---")
+
+# 2. 인터랙티브 레이더 (범위 찾기)
+st.markdown("## 📡 정수 범위 탐지 레이더")
+
 a, df_a = find_a_by_cubes(int(x))
 
-col1, col2, col3 = st.columns([1.2, 1.2, 1.6])
+# 진행률 계산
+progress = (x - a**3) / ((a+1)**3 - a**3)
+progress = max(0, min(1, progress))
+
+col1, col2 = st.columns([3, 1])
 with col1:
-    st.subheader("결과 요약")
-    st.write(f"- 입력 x = **{int(x)}**")
-    st.write(f"- 정수 부분 a는 **{a}** (즉, {a}^3 < x < {a+1}^3)")
-    st.write(f"- (검산용) ∛x ≈ **{approx_true:.6f}**")
+    st.progress(progress, text=f"범위: {a}³ < {x} < {a+1}³")
 with col2:
-    st.subheader("a 찾기 로그")
-    st.dataframe(df_a, use_container_width=True, height=240)
-with col3:
-    st.subheader("최종 목표")
-    st.write(f"다음 자연수 b(0~{b_max})를 찾아서")
-    st.latex(r"\left(a+\frac{b}{10}\right)^3 < x < \left(a+\frac{b+1}{10}\right)^3")
-    st.write("를 만족시키면, 세제곱근의 소수 첫째 자리가 결정됩니다.")
+    st.metric("정수 부분", a)
 
-st.divider()
+# 상세 테이블
+with st.expander("🔍 정수 탐색 상세 로그"):
+    st.dataframe(df_a, use_container_width=True, hide_index=True)
+
+st.markdown("---")
+
+# 3. 4가지 수사 방법 (탭)
+st.markdown("## 🔬 4가지 수사 방법")
+
+tab1, tab2, tab3, tab4, tab_bonus = st.tabs([
+    "🎯 방법1: 대입법",
+    "📈 방법2: 그래프법", 
+    "📐 방법3: 대수근사법",
+    "🔁 방법4: 뉴턴법",
+    "🏆 보너스"
+])
 
 # ============================================
-# Tabs: 4가지 방법
-# ============================================
-tab1, tab2, tab3, tab4, tab5 = st.tabs(
-    ["1) 대입", "2) 그래프", "3) 대수 근사", "4) 뉴턴 근사", "부록"]
-)
-
-# ============================================
-# Tab 1: 대입
+# Tab 1: 대입법 (Interactive)
 # ============================================
 with tab1:
-    st.subheader("1) 대입(순차 비교)")
-    b_sub, df_b, L, U = find_b_by_substitution(int(x), a, b_max=b_max)
-    ok = (L < x < U)
-    st.write(f"**결론:** b = **{b_sub}**")
-    st.write(f"검증: (a + b/10)^3 = {L:.6f}  <  x = {int(x)}  <  (a + (b+1)/10)^3 = {U:.6f}  ➜  {ok}")
-    st.dataframe(df_b, use_container_width=True, height=280)
+    st.markdown("### 직접 대입해서 정답 찾기")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.write("**내 추측값 입력:**")
+        user_guess = st.slider(
+            "b 선택 (소수 첫째 자리)",
+            min_value=0,
+            max_value=9,
+            value=3,
+            key="user_guess"
+        )
+        
+        t_guess = a + user_guess / 10
+        result_guess = t_guess ** 3
+        
+        st.metric(f"(a + b/10) = {a} + {user_guess}/10", f"{t_guess:.1f}")
+        st.metric(f"t³ = ", f"{result_guess:.4f}")
+        
+        # 검증
+        if result_guess < x:
+            st.info(f"✓ {result_guess:.4f} < {x} (범위 내!)")
+        elif result_guess > (a + (user_guess+1)/10)**3:
+            st.error(f"✗ {result_guess:.4f} > {(a + (user_guess+1)/10)**3:.4f} (범위 초과)")
+        else:
+            st.success(f"🎯 정답 발견!")
+    
+    with col2:
+        # 자동 방법
+        b_sub, df_b, L, U = find_b_by_substitution(int(x), a, b_max=9)
+        st.write("**자동 탐색 결과:**")
+        st.dataframe(df_b, use_container_width=True, hide_index=True)
+        st.success(f"🎯 b = {b_sub} (자동 정답)")
 
 # ============================================
-# Tab 2: 그래프
+# Tab 2: 그래프법
 # ============================================
 with tab2:
-    st.subheader("2) 그래프(시각화)")
-    st.write("그래프 y=t^3 와 y=x 의 교점을 보고, 0.1 간격 격자에서 어느 구간인지 확인합니다.")
-    t_min = a
-    t_max = a + 1
-    ts = np.linspace(t_min, t_max, 400)
+    st.markdown("### 곡선에서 교점 찾기")
+    
+    # Plotly 인터랙티브 그래프
+    t_min = max(0.1, a - 0.5)
+    t_max = a + 1.5
+    ts = np.linspace(t_min, t_max, 500)
     ys = ts**3
-
-    fig, ax = plt.subplots()
-    ax.plot(ts, ys, label="y = t^3")
-    ax.axhline(y=float(x), label="y = x")
-    for k in range(0, 10):
-        ax.axvline(x=a + k/10, linestyle="--", linewidth=0.8)
-    ax.scatter([approx_true], [float(x)], s=40)
-    ax.set_xlabel("t")
-    ax.set_ylabel("y")
-    ax.set_title("t in [a, a+1] with 0.1 grid")
-    ax.set_xlim(t_min, t_max)
-    ax.set_ylim(min(ys.min(), float(x))*0.98, max(ys.max(), float(x))*1.02)
-    ax.legend()
-    st.pyplot(fig, clear_figure=True)
-
-    st.write("대입 결과로 확인된 구간:")
-    st.latex(rf"{a}+{b_sub}/10 < \sqrt[3]{{{int(x)}}} < {a}+{b_sub+1}/10")
+    
+    fig = go.Figure()
+    
+    # 곡선
+    fig.add_trace(go.Scatter(
+        x=ts, y=ys,
+        mode='lines',
+        name='y = t³',
+        line=dict(color='blue', width=3)
+    ))
+    
+    # 목표선
+    fig.add_hline(y=x, line_dash="dash", line_color="red", 
+                  annotation_text=f"y = {x}")
+    
+    # 격자선 (0.1 간격)
+    for k in range(0, 15):
+        fig.add_vline(x=a + k/10, line_dash="dot", line_color="gray", 
+                      opacity=0.3)
+    
+    # 정답점
+    fig.add_trace(go.Scatter(
+        x=[true_root], y=[x],
+        mode='markers',
+        name='정답',
+        marker=dict(size=15, color='green', symbol='star')
+    ))
+    
+    fig.update_layout(
+        title="y = t³ 그래프에서 교점 찾기",
+        xaxis_title="t (세제곱근)",
+        yaxis_title="y (세제곱값)",
+        hovermode='closest',
+        height=500
+    )
+    
+    st.plotly_chart(fig, use_container_width=True)
+    
+    st.info(f"💡 0.1 간격 격자에서 교점이 있는 구간을 찾으세요!")
 
 # ============================================
-# Tab 3: 대수적 근사
+# Tab 3: 대수근사법
 # ============================================
 with tab3:
-    st.subheader("3) 대수 근사(전개 기반 출발점)")
+    st.markdown("### 다항식 전개로 공식 유도")
+    
     delta, h_lin, ten_h, b0 = algebraic_linear_guess_b(int(x), a)
-    st.write("전개식")
-    st.latex(r"x-a^3 = 3a^2h + 3ah^2 + h^3")
-    st.write("1차 근사(접선 느낌): 작은 항을 잠깐 무시하고 출발점만 잡습니다.")
-    st.latex(r"h \approx \frac{x-a^3}{3a^2}")
-
-    st.write(f"- Δ = x - a^3 = **{delta}**")
-    st.write(f"- 근사 h ≈ **{h_lin:.6f}**  (따라서 10h ≈ **{ten_h:.3f}**)")
-    st.write(
-        f"- 출발점 제안: 10h가 {b0} 근처이므로, b를 {max(0, min(b0, b_max))} 근처에서 대입으로 확인합니다."
-    )
-    st.caption("주의: 이 근사는 '정답 확정'이 아니라 '대입 시작점' 추천용입니다.")
-
-    st.divider()
-    st.write("2차까지 반영한 상한(참고):")
-    delta2, disc, h_plus = algebraic_quadratic_upper_h(int(x), a)
-    st.write("h^3>0 이므로  h^3를 버리면  Δ > 3a^2h + 3ah^2  를 얻습니다.")
-    st.latex(r"3ah^2 + 3a^2h - (x-a^3) < 0")
-    st.write(f"- 판별식 D = **{disc:.3f}**")
-    st.write(f"- 양의 근 h₊ = **{h_plus:.6f}**  (즉, h < h₊)")
-    st.write(f"- 따라서 10h < **{10*h_plus:.3f}**  이라 b의 가능한 상한을 더 줄일 수 있습니다.")
-    st.caption("여기서도 마지막 확정은 '대입(0.1 간격 세제곱 비교)'으로 합니다.")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown("### 📝 1단계: 기본 공식")
+        st.latex(r"x = a^3 + 3a^2h + 3ah^2 + h^3")
+        st.write("작은 항 무시:")
+        st.latex(r"x \approx a^3 + 3a^2h")
+    
+    with col2:
+        st.markdown("### 🧮 2단계: h 계산")
+        st.latex(r"h \approx \frac{x - a^3}{3a^2}")
+        st.metric("Δ = x - a³", delta)
+        st.metric("h ≈", f"{h_lin:.6f}")
+    
+    with col3:
+        st.markdown("### 🎯 3단계: b 예측")
+        st.latex(r"10h \approx b")
+        st.metric("10h ≈", f"{ten_h:.3f}")
+        st.metric("제안 b", b0)
 
 # ============================================
-# Tab 4: 뉴턴 근사
+# Tab 4: 뉴턴법
 # ============================================
 with tab4:
-    st.subheader("4) 뉴턴 근사(접선 반복)")
-    st.write("f(t)=t^3-x 의 근을 접선으로 반복해서 찾는 방법입니다.")
-    st.latex(r"t_{new} = t + \frac{x-t^3}{3t^2}")
-
-    t0 = float(t0_custom) if use_custom_t0 else float(a)
-    t_final, df_newton = newton_iter(int(x), t0, max_iter=max_iter, tol=tol)
-    st.write(f"- 초기값 t0 = **{t0:.6f}**")
-    st.write(f"- 최종값 t ≈ **{t_final:.10f}**  (검산용 실제 ∛x ≈ {approx_true:.10f})")
-
-    b_suggest, ten_h_new = suggest_b_from_t(t_final, a, b_max)
-    st.write("이 값으로부터 0.1 구간 후보를 제안합니다:")
-    st.write(f"- t - a ≈ {t_final-a:.6f}  →  10(t-a) ≈ {ten_h_new:.3f}")
-    st.write(f"- 따라서 b는 {b_suggest} 근처. (최종은 대입으로 확인)")
-
-    st.divider()
-    st.write("대입으로 최종 확정(제안 b부터 근처만 확인):")
-    candidates = sorted(set([max(0, b_suggest-1), b_suggest, min(b_max, b_suggest+1)]))
-    rows = []
-    final_b = None
-    for b in candidates:
-        Lc = (a + b/10)**3
-        Uc = (a + (b+1)/10)**3
-        okc = (Lc < x < Uc)
-        rows.append({"b": b, "(a+b/10)^3": Lc, "(a+(b+1)/10)^3": Uc, "interval ok?": okc})
-        if okc:
-            final_b = b
-    if final_b is None:
-        final_b = b_sub
-    st.write(f"**결론:** b = **{final_b}**")
-    st.dataframe(pd.DataFrame(rows), use_container_width=True)
-    st.divider()
-    st.dataframe(df_newton, use_container_width=True, height=280)
+    st.markdown("### 접선으로 빠르게 수렴시키기")
+    
+    st.latex(r"t_{n+1} = t_n + \frac{x - t_n^3}{3t_n^2}")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("### 반복 과정")
+        t0 = float(t0_custom) if t0_custom else float(a)
+        t_final, df_newton = newton_iter(int(x), t0, max_iter, tol)
+        st.dataframe(df_newton, use_container_width=True, hide_index=True)
+    
+    with col2:
+        st.markdown("### 수렴 시각화")
+        iterations = df_newton['반복'].tolist()
+        errors = [float(e) for e in df_newton['오차'].tolist()]
+        
+        fig, ax = plt.subplots(figsize=(8, 5))
+        ax.semilogy(iterations, [abs(e) for e in errors], 'bo-', linewidth=2, markersize=8)
+        ax.set_xlabel('반복 횟수', fontsize=12)
+        ax.set_ylabel('|오차| (로그 스케일)', fontsize=12)
+        ax.set_title('뉴턴법 수렴 속도', fontsize=14, fontweight='bold')
+        ax.grid(True, alpha=0.3)
+        st.pyplot(fig)
+    
+    st.success(f"🎉 최종값: t = {t_final:.10f}")
 
 # ============================================
-# Tab 5: 부록
+# Tab 보너스
 # ============================================
-with tab5:
-    st.subheader("부록: 하한(읽기자료) & 반례")
-
-    st.markdown("### 1) 하한(읽기자료)")
-    st.write("0 < h < 1 이면  h^2 < h,  h^3 < h  이므로")
-    st.latex(r"x-a^3=3a^2h+3ah^2+h^3 < 3a^2h+3ah+h = h(3a^2+3a+1)")
-    st.write("따라서")
-    st.latex(r"\frac{x-a^3}{3a^2+3a+1} < h")
-    st.caption("이 하한은 실습 로직(정답 확정)에는 사용하지 않고, 읽기자료로만 제공합니다.")
-
+with tab_bonus:
+    st.markdown("### 🏆 보너스 챌린지")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("#### 🎮 다양한 x값으로 시도")
+        challenge_x = st.selectbox(
+            "도전할 숫자",
+            [2, 3, 5, 7, 10, 50, 100, 256, 343, 512]
+        )
+        
+        if st.button("🚀 새 미션 시작"):
+            st.session_state.found_answers[challenge_x] = True
+            st.balloons()
+            st.success(f"미션 #{len(st.session_state.found_answers)} 추가됨!")
+    
+    with col2:
+        st.markdown("#### 📊 미션 통계")
+        if st.session_state.found_answers:
+            for num in st.session_state.found_answers:
+                st.write(f"✅ x = {num}")
+        else:
+            st.info("아직 완료한 미션이 없습니다.")
+    
     st.divider()
-    st.markdown("### 2) 반례: 너무 단순한 하한은 항상 맞지 않다")
-    st.write("예를 들어 다음과 같은 주장(단순화)은 항상 성립하지 않습니다.")
-    st.latex(r"h > \frac{x-a^3}{3a^2+1}")
-    st.write("아래 버튼을 누르면 반례를 보여줍니다. (a=1에서 h가 큰 경우)")
-    if st.button("반례 실행"):
-        a_ce = 1
-        h_ce = 0.9
-        x_ce = (a_ce + h_ce)**3
-        lhs = h_ce
-        rhs = (x_ce - a_ce**3) / (3*(a_ce**2) + 1)
-        st.write(f"- 선택: a = {a_ce}, h = {h_ce} → x = (a+h)^3 ≈ {x_ce:.6f}")
-        st.write(f"- 좌변 h = {lhs:.6f}")
-        st.write(f"- 우변 (x-a^3)/(3a^2+1) ≈ {rhs:.6f}")
-        st.write(f"비교: h > (x-a^3)/(3a^2+1)  는  **{lhs > rhs}** (거짓이면 반례 성립)")
+    
+    st.markdown("#### 🧠 심화 이론")
+    st.markdown("""
+    **케플러의 제3법칙**: 행성의 공전주기 T와 궤도반지름 R의 관��
+    - $T^2 \\propto R^3$
+    - 따라서 $R \\propto \\sqrt[3]{T^2}$
+    
+    **3D 프린팅 스케일링**: 부피를 $V$배로 늘리려면 각 변을 $\\sqrt[3]{V}$배로
+    
+    **금융**: 3년간 복리 수익률 계산에도 세제곱근이 사용됩니다!
+    """)
+
+st.markdown("---")
+
+# ============================================
+# 푸터
+# ============================================
+st.markdown("""
+    <div style="text-align: center; color: gray; font-size: 0.8rem; padding: 20px;">
+    🕵️ SM 수학사무소 | 세제곱근 수사 게임 v1.0<br>
+    Created with Streamlit | Math Engine Powered
+    </div>
+""", unsafe_allow_html=True)
