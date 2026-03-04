@@ -4,5 +4,3 @@ numpy
 matplotlib
 plotly
 EOF
-
-pip install -r requirements.txt
