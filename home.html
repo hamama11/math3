@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <style>
   html,body{margin:0;padding:0}
   .hero{
@@ -39,18 +40,6 @@
     animation:twinkle 3s ease-in-out infinite alternate;
   }
   @keyframes twinkle{from{opacity:.45}to{opacity:.95}}
-  .swim{
-  position:absolute; left:-20%; bottom:12vh;
-  font-size:46px; opacity:.9;
-  animation: swim 18s linear infinite, bob 2.6s ease-in-out infinite;
-  filter: drop-shadow(0 10px 30px rgba(0,0,0,.45));
-  user-select:none;
-}
-.swim.w1{bottom:18vh;font-size:58px;animation-duration:24s}
-.swim.t1{bottom:11vh;font-size:46px;animation-duration:20s}
-.swim.w2{bottom:7vh;font-size:50px;animation-duration:28s;opacity:.75}
-@keyframes swim{0%{transform:translateX(0vw)}100%{transform:translateX(145vw)}}
-@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 
   /* 바다(파도) */
   .ocean{
@@ -74,9 +63,20 @@
     50%{transform:translateX(6%) scaleY(1.16)}
     100%{transform:translateX(0) scaleY(1)}
   }
-<div class="swim t1">🐢</div>
-<div class="swim w1">🐋</div>
-<div class="swim w2">🐋</div>
+
+  /* 유영 생물(도트/이모지) */
+  .swim{
+    position:absolute; left:-20%; bottom:12vh;
+    font-size:46px; opacity:.9;
+    animation: swim 18s linear infinite, bob 2.6s ease-in-out infinite;
+    filter: drop-shadow(0 10px 30px rgba(0,0,0,.45));
+    user-select:none;
+  }
+  .swim.w1{bottom:18vh;font-size:58px;animation-duration:24s}
+  .swim.t1{bottom:11vh;font-size:46px;animation-duration:20s}
+  .swim.w2{bottom:7vh;font-size:50px;animation-duration:28s;opacity:.75}
+  @keyframes swim{0%{transform:translateX(0vw)}100%{transform:translateX(145vw)}}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 
   /* 중앙 텍스트 */
   .center{position:relative; z-index:2; text-align:center; padding:24px}
@@ -91,7 +91,9 @@
   .chip{
     margin-top:10px; display:inline-block; padding:8px 12px;
     border-radius:999px; border:1px solid rgba(255,255,255,.14);
-    background:rgba(2,6,23,.30); color:rgba(255,255,255,.78); font-weight:800; font-size:13px;
+    background:rgba(2,6,23,.30);
+    color:rgba(255,255,255,.78);
+    font-weight:800; font-size:13px;
   }
 </style>
 </head>
@@ -102,12 +104,15 @@
 
     <div class="ocean">
       <div class="wave"></div><div class="wave w2"></div><div class="wave w3"></div>
+      <div class="swim t1">🐢</div>
+      <div class="swim w1">🐋</div>
+      <div class="swim w2">🐋</div>
     </div>
 
     <div class="center">
       <div class="title">Deepdive</div>
       <div class="dday">{{DDAY}}</div>
-      <div id="go"></div>
+      <div class="chip">우주 × 바다 · 아래 버튼으로 이동</div>
     </div>
   </div>
 </body>
