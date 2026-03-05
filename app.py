@@ -11,9 +11,6 @@ target = date(2026, 11, 19)
 dday = (target - today).days
 dday_label = f"D-{dday}" if dday > 0 else ("D-DAY" if dday == 0 else f"D+{abs(dday)}")
 
-# pages (현재 1개)
-PAGE_URL = "?page=pages/1.%EC%A7%80%EC%88%98log"  # Streamlit multipage 내부 라우팅(환경마다 다를 수 있어 fallback도 같이 둠)
-
 html = f"""
 <!doctype html>
 <html>
@@ -148,7 +145,6 @@ html = f"""
     color: rgba(255,255,255,0.80);
   }}
 
-  /* 유영 생물 */
   .swim {{
     position:absolute;
     left:-22%;
@@ -175,37 +171,6 @@ html = f"""
 
   @keyframes swim {{ 0%{{ transform: translateX(0vw); }} 100%{{ transform: translateX(145vw); }} }}
   @keyframes bob  {{ 0%,100%{{ transform: translateY(0px); }} 50%{{ transform: translateY(-10px); }} }}
-
-  /* 하단 이동 버튼(HTML 버튼) */
-  .nav {{
-    position: fixed;
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 18px;
-    z-index: 9999;
-    display:flex;
-    gap: 10px;
-    padding: 10px 12px;
-    border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.14);
-    background: rgba(2,6,23,0.45);
-    backdrop-filter: blur(12px);
-    box-shadow: 0 18px 60px rgba(0,0,0,0.35);
-    pointer-events: auto;
-  }}
-  .nav a {{
-    text-decoration:none;
-    padding: 10px 14px;
-    border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.14);
-    background: rgba(255,255,255,0.06);
-    color: rgba(255,255,255,0.92);
-    font-weight: 900;
-    font-size: 14px;
-  }}
-  .nav a:hover {{
-    background: rgba(255,255,255,0.10);
-  }}
 
   .hint {{
     position:absolute;
@@ -261,21 +226,15 @@ html = f"""
       </div>
     </div>
 
-    <div class="hint">은하수 아래, 바다 생물들과 함께 · 아래 버튼으로 페이지 이동</div>
-
-    <div class="nav">
-      <a href="{PAGE_URL}">📘 지수·로그로 이동</a>
-    </div>
+    <div class="hint">은하수 아래, 바다 생물들과 함께 · 사이드바에서 페이지 이동</div>
   </div>
 </body>
 </html>
 """
 
-# ✅ 이게 핵심: markdown이 아니라 components.html로 통째로 렌더
 components.html(html, height=900, scrolling=False)
 
-# 사이드바에도 링크(보험)
+# ✅ 홈 -> 페이지 (사이드바 버튼)
 with st.sidebar:
     st.markdown("### 📄 Pages")
-    st.page_link("pages/1.지수log.py", label="📘 지수·로그", use_container_width=True)
-    st.page_link("pages/01.log.py", label="🚀 Deep dive: 지수·log")
+    st.page_link("pages/01.지수log.py", label="📘 지수·로그", use_container_width=True)
