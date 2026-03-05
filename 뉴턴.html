@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SM 수학사무소: 세제곱근 수사 전략 (상호작용 강화)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { font-size: 18px; }
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #F8FAFC; color: #1F2937; user-select: none; word-break: keep-all; scroll-behavior: smooth; }
+        .max-w-tv { max-width: 1600px; }
+        .strategy-container { perspective: 1000px; }
+        .strategy-card-inner { position: relative; width: 100%; height: 160px; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; cursor: pointer; }
+        .strategy-card-inner.is-flipped { transform: rotateY(180deg); }
+        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 1.5rem; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 1rem; border: 2px solid #E2E8F0; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .card-back { background-color: #F1F5F9; transform: rotateY(180deg); }
+        .method-card { background: white; border-radius: 2rem; padding: 3rem; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .chart-container-box { position: relative; height: 500px; width: 100%; background: #fdfdfd; border-radius: 1.5rem; cursor: ew-resize; touch-action: none; overflow: hidden; }
+        .briefing-tag { background: #F1F5F9; padding: 8px 16px; border-radius: 12px; display: flex; flex-direction: column; border-left: 5px solid #E2E8F0; min-width: 120px; }
+        .briefing-tag-highlight { background: #1E2937; border-left: 5px solid #F59E0B; min-width: 140px; }
+        .error-monitor { background: #fff; padding: 8px 15px; border-radius: 12px; border: 1px solid #e5e7eb; display: flex; flex-direction: column; align-items: center; min-width: 100px; }
+        .activity-card { background: #fff; border-radius: 1.5rem; padding: 2.5rem; border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: all 0.3s ease; display: flex; flex-direction: column; height: 100%; }
+        .activity-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        .keyword-tag { padding: 4px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 800; align-self: flex-start; }
+        .strategy-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+        .formula-box { font-family: 'Cambria Math', 'Times New Roman', serif; background: #F8FAFC; padding: 1.5rem; border-radius: 1rem; border: 2px dashed #CBD5E1; font-size: 1.25rem; }
+        input[type="number"] { font-size: 1.5rem !important; }
+        /* 입력창 화살표(스피너) 숨기기 */
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+        .interactive-hint { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body class="antialiased min-h-screen">
+
+    <header class="bg-white border-b border-gray-100 sticky top-0 z-50 py-3 shadow-sm">
+        <div class="max-w-tv mx-auto px-6 lg:px-8 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-base shadow-md shrink-0">SM</div>
+                <h1 class="text-lg lg:text-xl font-black text-gray-900 tracking-tighter hidden sm:block">세제곱근 수사 전략 센터</h1>
+            </div>
+            
+            <div class="flex items-center">
+                <div class="flex items-center bg-indigo-50 border-2 border-indigo-100 rounded-2xl px-3 sm:px-5 py-1 shadow-sm">
+                    <div class="flex flex-col items-center min-w-[28px] sm:min-w-[32px]">
+                        <span id="ineq-lower-pow" class="text-sm font-serif text-indigo-800">$2^3$</span>
+                        <span id="ineq-lower-val" class="text-[10px] font-black text-indigo-400 bg-white px-2 rounded-full mt-0.5">8</span>
+                    </div>
+                    <div class="text-base sm:text-lg font-serif text-indigo-300 mx-2 sm:mx-4">$\le$</div>
+                    
+                    <div class="flex items-center gap-1 bg-white border-2 border-indigo-200 rounded-xl px-2 sm:px-3 py-1 shadow-inner focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-200 transition-all cursor-text group" onclick="document.getElementById('header-target-val').focus()">
+                        <span class="text-indigo-400 font-serif text-sm group-focus-within:text-indigo-600 transition-colors">$\sqrt[3]{}$</span>
+                        <input type="number" id="header-target-val" value="12" step="1" min="1" max="500" class="w-12 sm:w-16 text-center bg-transparent text-indigo-700 text-lg sm:text-xl font-black tabular-nums outline-none" oninput="updateGlobalTarget(this.value)">
+                    </div>
+                    
+                    <div class="text-base sm:text-lg font-serif text-indigo-300 mx-2 sm:mx-4">$<$</div>
+                    <div class="flex flex-col items-center min-w-[28px] sm:min-w-[32px]">
+                        <span id="ineq-upper-pow" class="text-sm font-serif text-indigo-800">$3^3$</span>
+                        <span id="ineq-upper-val" class="text-[10px] font-black text-indigo-400 bg-white px-2 rounded-full mt-0.5">27</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-tv mx-auto px-8 mt-10 space-y-10 pb-32">
+
+        <!-- Strategy Quick Access -->
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="strategy-container">
+                <div id="card-method1" class="strategy-card-inner" onclick="navigateTo('method1')">
+                    <div class="card-front bg-white border-b-4 border-amber-400">
+                        <span class="strategy-icon">🔢</span>
+                        <h4 class="text-lg font-black text-gray-800">대입 수사</h4>
+                    </div>
+                    <div class="card-back"><span class="text-xs font-black uppercase text-amber-600">Enter Stats</span></div>
+                </div>
+            </div>
+            <div class="strategy-container">
+                <div id="card-method2" class="strategy-card-inner" onclick="navigateTo('method2')">
+                    <div class="card-front bg-white border-b-4 border-indigo-400">
+                        <span class="strategy-icon">📈</span>
+                        <h4 class="text-lg font-black text-gray-800">기하 수사</h4>
+                    </div>
+                    <div class="card-back"><span class="text-xs font-black uppercase text-indigo-600">View Map</span></div>
+                </div>
+            </div>
+            <div class="strategy-container">
+                <div id="card-method3" class="strategy-card-inner" onclick="navigateTo('method3')">
+                    <div class="card-front bg-white border-b-4 border-emerald-500">
+                        <span class="strategy-icon">📐</span>
+                        <h4 class="text-lg font-black text-gray-800">대수 수사</h4>
+                    </div>
+                    <div class="card-back"><span class="text-xs font-black uppercase text-emerald-600">Solve Logic</span></div>
+                </div>
+            </div>
+            <div class="strategy-container">
+                <div id="card-method4" class="strategy-card-inner" onclick="navigateTo('method4')">
+                    <div class="card-front bg-white border-b-4 border-purple-400">
+                        <span class="strategy-icon">🎯</span>
+                        <h4 class="text-lg font-black text-gray-800">미분 수사</h4>
+                    </div>
+                    <div class="card-back"><span class="text-xs font-black uppercase text-purple-600">Find Tangent</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Method Sections -->
+        <div class="space-y-16">
+            <!-- Method 1 & 2 Grid -->
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-10">
+                <!-- Method 1: Substitution -->
+                <section id="method1" class="method-card scroll-mt-32 flex flex-col">
+                    <div class="flex items-center gap-4 mb-6">
+                        <span class="text-4xl">🔢</span>
+                        <h3 class="text-3xl font-black text-gray-900">대입 수사: 수치 대조</h3>
+                    </div>
+                    <p class="text-lg text-gray-500 mb-8">직접 숫자를 입력하여 세제곱 결과와 타겟을 비교합니다.</p>
+                    
+                    <div class="flex gap-6 mb-8">
+                        <div class="w-1/2">
+                            <label class="text-[11px] font-bold text-amber-600 ml-1 uppercase mb-2 block">Your Guess ($t$)</label>
+                            <input type="number" id="m1-input" value="2.3" step="0.01" class="w-full p-4 bg-gray-50 border-2 rounded-2xl text-2xl font-black outline-none focus:border-amber-400" oninput="runM1(this.value)">
+                        </div>
+                        <div class="w-1/2 p-4 bg-amber-50 rounded-2xl border-2 border-amber-100 text-center flex flex-col justify-center">
+                            <span class="text-[11px] text-amber-500 font-black uppercase mb-1">Result ($t^3$)</span>
+                            <span class="text-3xl font-black text-amber-700 tabular-nums" id="m1-res">12.167</span>
+                        </div>
+                    </div>
+                    <div class="w-full flex-grow min-h-[300px] bg-gray-50 rounded-2xl p-6 border-2 border-gray-100 relative">
+                        <canvas id="m1Chart"></canvas>
+                    </div>
+                </section>
+
+                <!-- Method 2: Geometry -->
+                <section id="method2" class="method-card scroll-mt-32 flex flex-col">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-4">
+                            <span class="text-4xl">📈</span>
+                            <h3 class="text-3xl font-black text-gray-900">기하 수사: 곡선 추적</h3>
+                        </div>
+                        <div class="px-4 py-2 bg-indigo-50 rounded-xl border-2 border-indigo-100 text-center focus-within:ring-2 focus-within:ring-indigo-400 focus-within:border-indigo-400 transition-all cursor-text" onclick="document.getElementById('m2-current-x').focus()">
+                            <span class="text-[10px] font-bold text-indigo-600 uppercase block leading-none mb-1">현재 위치</span>
+                            <input type="number" id="m2-current-x" class="text-xl font-black text-indigo-700 tabular-nums bg-transparent outline-none w-20 text-center" value="2.289" step="0.001" oninput="runM2(this.value)">
+                        </div>
+                    </div>
+                    <p class="text-lg text-gray-500 mb-8">그래프를 드래그하여 세제곱 곡선 위에서 타겟 값을 탐색하세요.</p>
+                    <div class="chart-container-box p-6 border-2 flex-grow min-h-[300px] !h-auto" id="m2-interaction-area">
+                        <canvas id="m2Chart"></canvas>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Method 3 & 4 Grid -->
+            <div class="grid grid-cols-1 gap-10">
+                <!-- Method 3: Algebra -->
+                <section id="method3" class="method-card border-l-[16px] border-emerald-500 scroll-mt-32">
+                    <div class="flex flex-col xl:flex-row justify-between items-stretch gap-12">
+                        <div class="w-full xl:w-1/2 space-y-6">
+                            <div class="flex items-center gap-4">
+                                <span class="text-4xl">📐</span>
+                                <h3 class="text-3xl font-black text-gray-900">대수 수사: 고차항 소거 근사법</h3>
+                            </div>
+                            <div class="bg-emerald-50 p-8 rounded-3xl border-2 border-emerald-100 text-lg leading-relaxed space-y-6">
+                                <p>$(n+h)^3 = n^3 + 3n^2h + 3nh^2 + h^3$ 전개식에서 꼬리항을 무시하고 타겟 $x \approx n^3 + 3n^2h$ 로 근사하여 비교합니다.</p>
+                                <div class="formula-box text-center shadow-sm">변화량 산출 공식: $h \approx \frac{x - n^3}{3n^2}$</div>
+                            </div>
+                        </div>
+
+                        <!-- 복원된 M3 UI 영역 -->
+                        <div class="w-full xl:w-1/2 flex flex-col gap-6">
+                            <div class="grid grid-cols-2 gap-6">
+                                <div class="p-6 bg-gray-50 rounded-3xl border-2">
+                                    <label class="text-xs font-black text-gray-400 uppercase mb-4 block">기준 정수 (n)</label>
+                                    <div class="flex items-center justify-between">
+                                        <button onclick="adjustN(-1)" class="w-12 h-12 bg-white border-2 rounded-2xl shadow-sm hover:bg-gray-100 font-black text-xl">-</button>
+                                        <input type="number" id="shared-n" value="2" class="w-16 text-center text-3xl font-black bg-transparent outline-none" oninput="updateM3FromInput(this.value)">
+                                        <button onclick="adjustN(1)" class="w-12 h-12 bg-white border-2 rounded-2xl shadow-sm hover:bg-gray-100 font-black text-xl">+</button>
+                                    </div>
+                                </div>
+                                <div class="p-6 bg-emerald-600 rounded-3xl shadow-lg shadow-emerald-200 flex flex-col justify-center">
+                                    <label class="text-xs font-black text-emerald-100 uppercase mb-2 block">미세 변화량 (h)</label>
+                                    <div id="m3-h-output-display" class="text-center text-3xl font-black text-white tabular-nums">0.3333</div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-6 bg-slate-900 rounded-[2rem] text-white text-center shadow-xl flex items-center justify-between">
+                                <span class="text-sm font-bold text-slate-400 uppercase">최종 근사치 ($n+h$)</span>
+                                <span id="m3-final-val" class="text-3xl font-black text-amber-400 tabular-nums">2.3333</span>
+                            </div>
+
+                            <div class="p-6 bg-white border-2 border-emerald-100 rounded-[2rem] shadow-sm">
+                                <div class="flex items-center justify-between mb-4">
+                                    <label class="text-xs font-black text-emerald-600 uppercase">1소수점 대입 검증</label>
+                                    <span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg tracking-wider">Target: <span id="m3-verify-target" class="text-indigo-600">12</span></span>
+                                </div>
+                                <div id="m3-verification-list" class="flex flex-wrap gap-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 복원된 Method 4: Calculus -->
+                <section id="method4" class="method-card border-l-[16px] border-purple-500 scroll-mt-32 flex flex-col">
+                    <div class="flex flex-col lg:flex-row justify-between items-start gap-8 mb-8">
+                        <div class="w-full lg:w-1/2 space-y-4">
+                            <div class="flex items-center gap-4">
+                                <span class="text-4xl">🎯</span>
+                                <h3 class="text-3xl font-black text-gray-900">미분 수사: 접선 추적</h3>
+                            </div>
+                            <p class="text-lg text-gray-600 leading-relaxed">대수 수사에서의 고차항 소거는 기하학적으로 $f(t) = t^3 - x$ 그래프의 $t=n$ 에서 <strong>접선(Tangent)</strong>을 긋고 그 x절편을 구하는 뉴턴-랩슨법과 완벽히 일치합니다.</p>
+                        </div>
+
+                        <div class="w-full lg:w-1/2 flex flex-col gap-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="p-6 bg-slate-900 rounded-3xl text-white shadow-lg focus-within:ring-2 focus-within:ring-purple-500 transition-all cursor-text relative transition-colors duration-300" id="m4-n-container" onclick="document.getElementById('m4-current-n').focus()">
+                                    <span class="text-xs font-black text-slate-500 uppercase block mb-2">현재 접점 $n$</span>
+                                    <input type="number" id="m4-current-n" class="text-3xl font-black text-purple-400 tabular-nums bg-transparent outline-none w-full" value="2.0000" step="0.0001" oninput="updateM4FromInput(this.value)">
+                                </div>
+                                <div class="p-6 bg-purple-50 rounded-3xl border-2 border-purple-100 shadow-sm flex flex-col justify-center relative transition-colors duration-300" id="m4-result-container">
+                                    <span class="text-xs font-black text-purple-400 uppercase block mb-2">도출된 근 ($t_{new}$)</span>
+                                    <div id="m4-result" class="text-3xl font-black text-purple-600 tracking-tighter tabular-nums">2.33333</div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-col gap-2 mt-2">
+                                <div class="flex items-center justify-between px-2">
+                                    <div class="text-sm font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-xl shadow-inner border border-gray-200">
+                                        반복 횟수: <span id="m4-iteration-count" class="text-purple-600 font-black text-lg mx-1">0</span><span class="text-xs">회</span>
+                                    </div>
+                                    <button onclick="resetNewton()" class="text-sm font-bold text-gray-500 hover:text-red-500 hover:border-red-200 hover:bg-red-50 transition-all flex items-center gap-1.5 bg-white border border-gray-200 px-3 py-1.5 rounded-xl shadow-sm active:scale-95">
+                                        <span class="text-base leading-none">↺</span> 초기화
+                                    </button>
+                                </div>
+                                <button onclick="iterateNewton()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-black text-lg py-4 rounded-3xl shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-3 group">
+                                    <span class="text-2xl group-hover:-rotate-180 transition-transform duration-500">🔄</span> 
+                                    뉴턴 근사 반복 실행 ($t_{new} \rightarrow n$)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container-box p-4 border-2 flex-grow min-h-[400px] !h-auto relative" id="m4-interaction-area">
+                        <div class="absolute top-6 left-8 z-10 pointer-events-none bg-white/90 px-4 py-3 rounded-xl shadow-sm border border-purple-100 backdrop-blur-sm">
+                            <p class="text-sm text-gray-700 font-bold">🟣 곡선 위의 <span class="text-purple-600">접점 $n$</span>에서 접선을 그어</p>
+                            <p class="text-sm text-gray-700 font-bold mt-1">🟩 x축과 만나는 <span class="text-emerald-600">새로운 근사값 $t_{new}$</span>를 찾습니다.</p>
+                        </div>
+                        <canvas id="m4Chart"></canvas>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <section class="mt-20 bg-slate-100 p-16 rounded-[4rem] border-2 border-slate-200">
+            <h3 class="text-4xl font-black text-gray-900 mb-12 flex items-center gap-6">
+                <span class="w-14 h-14 bg-indigo-600 rounded-full flex items-center justify-center text-white text-lg shadow-lg">BOOK</span>
+                수사관 심화 활동 가이드
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
+                <div class="activity-card border-t-[10px] border-t-purple-500">
+                    <span class="keyword-tag bg-purple-100 text-purple-700">미분 수사 심화</span>
+                    <h4 class="font-black text-2xl text-gray-800 mt-4 mb-4">반복 수사 (Iteration)</h4>
+                    <p class="text-base text-gray-500 leading-relaxed flex-grow">찾아낸 $t_{new}$를 다시 새로운 $n$으로 대입하여 접선을 그어보세요. 단 몇 번의 반복만으로 실제 근에 소름 돋을 정도로 가까워지는 과정을 직접 확인할 수 있습니다.</p>
+                </div>
+                <div class="activity-card border-t-[10px] border-t-indigo-400">
+                    <span class="keyword-tag bg-indigo-100 text-indigo-700">데이터 수사</span>
+                    <h4 class="font-black text-2xl text-gray-800 mt-4 mb-4">기하 수사의 정밀도</h4>
+                    <p class="text-base text-gray-500 leading-relaxed flex-grow">그래프에서 육안으로 근을 찾는 것과 수식으로 계산하는 것의 차이를 비교해 보세요. 대형 화면을 활용해 아주 좁은 범위까지 확대했을 때 직선과 곡선이 어떻게 닮아가는지 관찰합니다.</p>
+                </div>
+                <div class="activity-card border-t-[10px] border-t-emerald-500">
+                    <span class="keyword-tag bg-emerald-100 text-emerald-700">알고리즘 수사</span>
+                    <h4 class="font-black text-2xl text-gray-800 mt-4 mb-4">고차항 소거의 마법</h4>
+                    <p class="text-base text-gray-500 leading-relaxed flex-grow">$(n+h)^3$ 전개식에서 $h^2, h^3$ 항을 무시하는 결정이 왜 합리적인지 생각해 보세요. $h$가 작을수록 이 항들은 기하급수적으로 작아져 수사 결과($n^3 + 3n^2h$)에 거의 영향을 주지 않게 됩니다.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="py-20 bg-white border-t mt-20 text-center">
+        <p class="text-xs text-gray-400 font-bold uppercase tracking-[0.3em]">© 2026 SM Mathematical Investigation Bureau | Interactive Lab Edition</p>
+    </footer>
+
+    <script>
+        let m1Chart, m2Chart, m4Chart;
+        let targetX = 12;
+        let m1Y = 2.3;
+        let m2Y = 2.289;
+        let m3CurrentN = 2; // 대수 수사(Method 3)용 독립 n
+        let m4CurrentN = 2; // 미분 수사(Method 4)용 독립 n
+        let iterationCount = 0; // 뉴턴 반복 횟수
+
+        Chart.defaults.font.size = 14;
+        Chart.defaults.font.weight = 'bold';
+
+        function navigateTo(id) {
+            const card = document.getElementById('card-' + id);
+            card.classList.add('is-flipped');
+            const target = document.getElementById(id);
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => { card.classList.remove('is-flipped'); }, 1000);
+        }
+
+        function adjustN(delta) {
+            const input = document.getElementById('shared-n');
+            let newVal = Math.max(1, parseInt(input.value || 0) + delta);
+            input.value = newVal;
+            m3CurrentN = newVal;
+            updateM3();
+        }
+
+        function calculateError(approx, actual) {
+            if (actual === 0) return 0;
+            return Math.abs((approx - actual) / actual) * 100;
+        }
+
+        function updateGlobalTarget(val) {
+            targetX = parseFloat(val) || 1;
+            const trueRoot = Math.pow(targetX, 1/3);
+            
+            const headerInput = document.getElementById('header-target-val');
+            
+            // 현재 입력 중이 아닌(포커스가 없는) 창만 값을 업데이트하여 타이핑 간섭 방지
+            if (document.activeElement !== headerInput) headerInput.value = val;
+            
+            const n = Math.floor(trueRoot) || 1;
+            
+            // Method 3, 4 초기화 (각각 독립된 변수 업데이트)
+            const sharedN = document.getElementById('shared-n');
+            if(sharedN) sharedN.value = n;
+            m3CurrentN = n;
+            m4CurrentN = n;
+            
+            updateInequality(n);
+            runM1(m1Y); 
+            updateM2ChartRange(n); 
+            resetIterationCount();
+            updateM3(); 
+            updateM4(); 
+        }
+
+        function updateInequality(n) {
+            document.getElementById('ineq-lower-pow').innerHTML = `$${n}^3$`;
+            document.getElementById('ineq-lower-val').innerText = Math.pow(n, 3);
+            document.getElementById('ineq-upper-pow').innerHTML = `$${n+1}^3$`;
+            document.getElementById('ineq-upper-val').innerText = Math.pow(n+1, 3);
+            if (window.MathJax) MathJax.typesetPromise();
+        }
+
+        function updateM3FromInput(val) {
+            let parsed = parseFloat(val);
+            if (isNaN(parsed)) return;
+            m3CurrentN = parsed;
+            updateM3();
+        }
+
+        function updateM4FromInput(val) {
+            let parsed = parseFloat(val);
+            if (isNaN(parsed)) return;
+            m4CurrentN = parsed;
+            resetIterationCount();
+            updateM4();
+        }
+
+        function runM1(val) {
+            m1Y = parseFloat(val) || 0;
+            const res = Math.pow(m1Y, 3);
+            
+            document.getElementById('m1-res').innerText = res.toFixed(3);
+            if (m1Chart) { m1Chart.data.datasets[0].data = [res, targetX]; m1Chart.update('none'); }
+        }
+
+        function runM2(val) {
+            m2Y = parseFloat(val) || 0;
+            
+            const m2Input = document.getElementById('m2-current-x');
+            if (m2Input && document.activeElement !== m2Input) m2Input.value = m2Y.toFixed(3);
+            
+            if (m2Chart) {
+                m2Chart.data.datasets[2].data = [{x: m2Y, y: 0}, {x: m2Y, y: m2Chart.scales.y.max}];
+                m2Chart.update('none');
+            }
+        }
+
+        function updateM3() {
+            const n = m3CurrentN;
+            const x = targetX;
+            
+            const n3 = Math.pow(n, 3);
+            const derivative = 3 * n * n;
+            const h = (x - n3) / derivative;
+            const approx = n + h;
+            
+            // Method 3 UI 업데이트
+            const m3h = document.getElementById('m3-h-output-display');
+            if(m3h) m3h.innerText = h.toFixed(4);
+            
+            const m3final = document.getElementById('m3-final-val');
+            if(m3final) m3final.innerText = approx.toFixed(4);
+            
+            // 1소수점 대입 검증 로직 업데이트
+            const m3verifyTarget = document.getElementById('m3-verify-target');
+            if(m3verifyTarget) m3verifyTarget.innerText = x;
+
+            let verificationHTML = '';
+            let step = h >= 0 ? 0.1 : -0.1;
+            let maxDecimals = Math.abs(Math.floor(h * 10)); // 예: 0.33 -> 3번 반복
+            
+            if (maxDecimals === 0) {
+                verificationHTML = '<span class="text-sm text-gray-400 p-2 font-medium">검증할 소수 첫째 자리 수가 없습니다. (변화량이 0.1보다 작음)</span>';
+            } else {
+                for (let i = 1; i <= maxDecimals; i++) {
+                    let testVal = n + (step * i);
+                    testVal = Math.round(testVal * 10) / 10; // 부동소수점 오류 방지
+                    let cubeVal = Math.pow(testVal, 3);
+                    let isClosest = (i === maxDecimals);
+                    
+                    verificationHTML += `
+                        <div class="flex-1 min-w-[80px] p-3 rounded-2xl border-2 ${isClosest ? 'bg-emerald-50 border-emerald-300 shadow-md transform scale-105 transition-transform' : 'bg-gray-50 border-gray-100'} flex flex-col items-center justify-center text-center">
+                            <span class="text-[11px] font-black ${isClosest ? 'text-emerald-500' : 'text-gray-400'} mb-1">${testVal.toFixed(1)}³</span>
+                            <span class="text-lg font-black ${isClosest ? 'text-emerald-700' : 'text-gray-700'} tabular-nums">${cubeVal.toFixed(2)}</span>
+                        </div>
+                    `;
+                }
+            }
+            const m3verList = document.getElementById('m3-verification-list');
+            if(m3verList) m3verList.innerHTML = verificationHTML;
+        }
+
+        function updateM4() {
+            const n = m4CurrentN;
+            const x = targetX;
+            
+            const n3 = Math.pow(n, 3);
+            const derivative = 3 * n * n;
+            const h = (x - n3) / derivative;
+            const approx = n + h;
+
+            // Method 4 UI 업데이트
+            const m4Input = document.getElementById('m4-current-n');
+            if (m4Input && document.activeElement !== m4Input) m4Input.value = n.toFixed(4);
+            
+            const m4Result = document.getElementById('m4-result');
+            if(m4Result) m4Result.innerText = approx.toFixed(5);
+            
+            updateM4Chart(n, derivative, approx);
+        }
+
+        function resetIterationCount() {
+            iterationCount = 0;
+            const cntElem = document.getElementById('m4-iteration-count');
+            if (cntElem) cntElem.innerText = iterationCount;
+        }
+
+        function resetNewton() {
+            const trueRoot = Math.pow(targetX, 1/3);
+            const n = Math.floor(trueRoot) || 1;
+            m4CurrentN = n;
+            resetIterationCount();
+            updateM4(); // 연동 끊음: Method 4만 업데이트
+        }
+
+        function iterateNewton() {
+            const n = m4CurrentN;
+            const x = targetX;
+            const n3 = Math.pow(n, 3);
+            const derivative = 3 * n * n;
+            const h = (x - n3) / derivative;
+            const t_new = n + h;
+            
+            m4CurrentN = t_new;
+            
+            iterationCount++;
+            const cntElem = document.getElementById('m4-iteration-count');
+            if (cntElem) cntElem.innerText = iterationCount;
+            
+            // 시각적 피드백 효과
+            const nContainer = document.getElementById('m4-n-container');
+            const resContainer = document.getElementById('m4-result-container');
+            if (nContainer && resContainer) {
+                nContainer.classList.add('ring-4', 'ring-purple-500');
+                resContainer.classList.add('bg-purple-200');
+                setTimeout(() => {
+                    nContainer.classList.remove('ring-4', 'ring-purple-500');
+                    resContainer.classList.remove('bg-purple-200');
+                }, 300);
+            }
+            
+            updateM4(); // 연동 끊음: Method 4만 업데이트
+        }
+
+        function updateM2ChartRange(n) {
+            if (!m2Chart) return;
+            const trueRoot = Math.pow(targetX, 1/3);
+            const xMin = n - 0.2;
+            const xMax = n + 1.2;
+            const curveData = [];
+            for (let i = xMin; i <= xMax; i += 0.01) curveData.push({x: i, y: Math.pow(i, 3)});
+            m2Chart.options.scales.x.min = xMin; m2Chart.options.scales.x.max = xMax;
+            m2Chart.options.scales.y.min = Math.pow(xMin, 3); m2Chart.options.scales.y.max = Math.pow(xMax, 3);
+            m2Chart.data.datasets[0].data = curveData;
+            m2Chart.data.datasets[1].data = [{x: trueRoot, y: targetX}];
+            m2Chart.data.datasets[3].data = [{x: xMin, y: targetX}, {x: xMax, y: targetX}];
+            runM2((n + n + 1) / 2);
+            m2Chart.update();
+        }
+
+        function updateM4Chart(n, slope, xInt) {
+            if (!m4Chart) return;
+            const trueRoot = Math.pow(targetX, 1/3);
+            
+            // 뉴턴-랩슨 과정 시각화를 위한 동적 줌 (오차에 비례하여 화면 축소)
+            const error = Math.abs(n - trueRoot);
+            // 최소 줌 레벨(0.0001)과 최대 줌 레벨(1.0) 설정
+            const padding = Math.max(Math.min(error * 2.5, 1.0), 0.0001);
+            
+            const xMin = trueRoot - padding;
+            const xMax = trueRoot + padding;
+            const f_n = Math.pow(n, 3) - targetX;
+            
+            const curve = [];
+            const step = (xMax - xMin) / 50; // 동적 스텝
+            for (let i = xMin; i <= xMax; i += step) {
+                curve.push({x: i, y: Math.pow(i, 3) - targetX});
+            }
+            // 마지막 점 강제 추가
+            curve.push({x: xMax, y: Math.pow(xMax, 3) - targetX});
+            
+            const tangent = [{x: xMin, y: slope * (xMin - n) + f_n}, {x: xMax, y: slope * (xMax - n) + f_n}];
+            
+            m4Chart.options.scales.x.min = xMin;
+            m4Chart.options.scales.x.max = xMax;
+            m4Chart.data.datasets[0].data = curve;
+            m4Chart.data.datasets[1].data = tangent;
+            m4Chart.data.datasets[2].data = [{x: n, y: f_n}];
+            m4Chart.data.datasets[3].data = [{x: xInt, y: 0}];
+            m4Chart.update('none');
+        }
+
+        window.onload = function() {
+            const ctx1 = document.getElementById('m1Chart').getContext('2d');
+            m1Chart = new Chart(ctx1, {
+                type: 'bar',
+                data: { labels: ['Guess', 'Target'], datasets: [{ data: [0, 0], backgroundColor: ['#F59E0B', '#6366f1'], borderRadius: 10 }] },
+                options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { display: false }, ticks: { font: { size: 16 } } } } }
+            });
+
+            const ctx2 = document.getElementById('m2Chart').getContext('2d');
+            m2Chart = new Chart(ctx2, {
+                type: 'line',
+                data: { datasets: [
+                    { label: 'y=t³', data: [], borderColor: '#6366f1', borderWidth: 5, pointRadius: 0, fill: false },
+                    { label: 'Target Point', data: [], backgroundColor: '#ef4444', pointRadius: 10, type: 'scatter' },
+                    { label: 'Current Pos', data: [], borderColor: 'rgba(99, 102, 241, 0.8)', borderWidth: 3, borderDash: [10, 5], pointRadius: 0 }, 
+                    { label: 'Target Line', data: [], borderColor: 'rgba(239, 68, 68, 0.4)', borderWidth: 2, borderDash: [5, 5], pointRadius: 0 } 
+                ]},
+                options: { 
+                    responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } }, 
+                    scales: { 
+                        x: { type: 'linear', title: { display: true, text: 'Root (t)', font: { size: 18, weight: '900' } } }, 
+                        y: { type: 'linear', title: { display: true, text: 't³', font: { size: 18, weight: '900' } } } 
+                    } 
+                }
+            });
+
+            // m4Chart 에러를 수정하기 위해 m4Chart 컨텍스트 복구
+            const m4Canvas = document.getElementById('m4Chart');
+            if(m4Canvas) {
+                const ctx4 = m4Canvas.getContext('2d');
+                m4Chart = new Chart(ctx4, {
+                    type: 'line',
+                    data: { datasets: [
+                        { label: 'f(t)=t³-x', data: [], borderColor: '#e2e8f0', borderWidth: 3, pointRadius: 0, fill: false },
+                        { label: 'Tangent', data: [], borderColor: '#a855f7', borderWidth: 4, pointRadius: 0, fill: false },
+                        { label: 'n (Point of Tangency)', data: [], backgroundColor: '#a855f7', pointRadius: 12, hoverRadius: 15, type: 'scatter' },
+                        { label: 't_new (x-intercept)', data: [], backgroundColor: '#10b981', pointRadius: 12, pointStyle: 'rectRot', type: 'scatter' }
+                    ]},
+                    options: { 
+                        responsive: true, maintainAspectRatio: false, animation: false, 
+                        plugins: { tooltip: { enabled: true }, legend: { display: false } }, 
+                        scales: { 
+                            x: { type: 'linear', grid: { color: '#f1f5f9' }, title: { display: true, text: 'Root (t)', font: { weight: 'bold' } } }, 
+                            y: { type: 'linear', grid: { color: '#f1f5f9' }, title: { display: true, text: 'f(t)', font: { weight: 'bold' } } } 
+                        } 
+                    }
+                });
+            }
+
+            // M2 Interaction (드래그)
+            const area2 = document.getElementById('m2-interaction-area');
+            if (area2) {
+                let isDragging2 = false;
+                const handle2 = (e) => {
+                    if (!isDragging2) return;
+                    const rect = area2.getBoundingClientRect();
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const xVal = m2Chart.scales.x.getValueForPixel(clientX - rect.left);
+                    if (xVal >= m2Chart.scales.x.min && xVal <= m2Chart.scales.x.max) runM2(xVal);
+                };
+                area2.addEventListener('mousedown', (e) => { isDragging2 = true; handle2(e); });
+                window.addEventListener('mouseup', () => isDragging2 = false);
+                area2.addEventListener('mousemove', handle2);
+                
+                area2.addEventListener('touchstart', (e) => { isDragging2 = true; handle2(e); }, {passive: true});
+                window.addEventListener('touchend', () => isDragging2 = false);
+                area2.addEventListener('touchmove', (e) => { if(isDragging2) { e.preventDefault(); handle2(e); } }, {passive: false});
+            }
+
+            // 초기 로딩 세팅 실행
+            updateGlobalTarget(targetX);
+        };
+    </script>
+</body>
+</html>
