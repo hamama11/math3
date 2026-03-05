@@ -1,7 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.title("🧩 Root 제곱근/세제곱근 근사 추적", layout="wide")
+st.title("🧩 Root 제곱근/세제곱근 근사 추적")
 
 PAGES_URL = "https://hamama11.github.io/math3/newton.html"  # ✅ 여기만 바꾸면 됨
 
