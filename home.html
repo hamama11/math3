@@ -18,42 +18,26 @@
     background:linear-gradient(160deg,#061026 0%,#0a1b3a 55%,#030714 100%);
   }
 
-  /* ✅ 별(2겹: 패럴랙스 느낌, JS로 background-position 이동) */
-  .stars{
-    position:absolute; inset:-20%;
-    opacity:.95;
-    will-change: background-position, transform, opacity;
-    background-size: 520px 520px;
-    background-image:
-      radial-gradient(circle, rgba(255,255,255,.95) 0 1px, transparent 2px),
-      radial-gradient(circle, rgba(255,255,255,.70) 0 1px, transparent 2px),
-      radial-gradient(circle, rgba(255,255,255,.55) 0 1px, transparent 2px),
-      radial-gradient(circle, rgba(255,255,255,.45) 0 1px, transparent 2px);
-    /* 각 레이어 위치를 다르게(한 장의 연속사진처럼) */
-    background-position:
-      40px 80px,
-      220px 140px,
-      340px 360px,
-      120px 420px;
-    filter: drop-shadow(0 0 6px rgba(255,255,255,.05));
-  }
-  .stars.back{
-    opacity:.55;
-    transform: scale(1.02);
-    background-size: 760px 760px;
-    filter: blur(.2px);
+  /* ⭐ 사진 느낌: 캔버스 스타트레일 */
+  #starsCanvas{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    z-index:0;
   }
 
   /* 바다 */
   .ocean{
     position:absolute; left:0; right:0; bottom:0; height:46vh;
+    z-index:1;
     background:
       radial-gradient(1000px 260px at 26% 40%, rgba(59,130,246,.28), transparent 65%),
       radial-gradient(800px 240px at 78% 70%, rgba(16,185,129,.16), transparent 65%),
       linear-gradient(180deg, rgba(2,6,23,0) 0%, rgba(2,6,23,.30) 18%, rgba(2,6,23,.92) 100%);
   }
 
-  /* 파도 */
+  /* 파도(얕은 움직임) */
   .wave{
     position:absolute; left:-25%; width:150%;
     height:64px; bottom:13vh;
@@ -76,13 +60,18 @@
   .swim.t1{bottom:11vh;font-size:46px}
   .swim.w2{bottom:7vh;font-size:50px;opacity:.75}
 
-  /* 하단 텍스트 */
-  .center{position:relative; z-index:2; text-align:center}
+  /* 하단 텍스트 (D-day 하단 고정) */
+  .center{
+    position:relative;
+    z-index:2;
+    text-align:center;
+  }
   .title{
     font-weight:1000;
     font-size:min(6vw,44px);
     color:rgba(255,255,255,.92);
     margin-bottom:8px;
+    text-shadow: 0 16px 50px rgba(0,0,0,.5);
   }
   .dday{
     font-weight:1000;
@@ -95,15 +84,13 @@
     filter:drop-shadow(0 16px 32px rgba(99,102,241,.25));
   }
 
-  /* D-day 아래 공간 */
+  /* D-day 아래 공간(버튼 자리) */
   .spacer{height:72px;}
 </style>
 </head>
 <body>
   <div class="hero">
-    <!-- ✅ 은하수 삭제 -->
-    <div class="stars back" id="starsBack"></div>
-    <div class="stars" id="starsFront"></div>
+    <canvas id="starsCanvas"></canvas>
 
     <div class="ocean">
       <div class="wave" id="w1"></div>
@@ -123,8 +110,93 @@
   </div>
 
 <script>
-  const starsBack  = document.getElementById("starsBack");
-  const starsFront = document.getElementById("starsFront");
+  // ====== Star Trails (photo-like) ======
+  const canvas = document.getElementById("starsCanvas");
+  const ctx = canvas.getContext("2d", { alpha: true });
+
+  function resize(){
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    canvas.width  = Math.floor(canvas.clientWidth  * dpr);
+    canvas.height = Math.floor(canvas.clientHeight * dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0); // draw in CSS px
+  }
+  window.addEventListener("resize", resize);
+  resize();
+
+  // “북극성” 같은 회전 중심(살짝 왼쪽/위)
+  function pole(){
+    return { x: canvas.clientWidth * 0.38, y: canvas.clientHeight * 0.28 };
+  }
+
+  // 별 생성
+  const STAR_N = 260;                    // 별 개수
+  const stars = [];
+  for (let i=0;i<STAR_N;i++){
+    // 중심에서의 반경 분포 (가까운 별도 있고 먼 별도)
+    const r = Math.pow(Math.random(), 0.55) * Math.min(canvas.clientWidth, canvas.clientHeight) * 0.95;
+    const a = Math.random() * Math.PI * 2;
+    const tw = 0.6 + Math.random() * 0.9;  // 밝기
+    const sz = 0.6 + Math.random() * 1.4;  // 크기
+    stars.push({ r, a, tw, sz });
+  }
+
+  // 장노출 느낌: 매 프레임 완전히 지우지 않고, 살짝 어두운 막을 덮어 잔상 남김
+  // 값이 작을수록 “궤적이 더 길게” 남음 (0.03~0.09 추천)
+  const TRAIL_FADE = 0.06;
+
+  // 회전 속도: 작게 할수록 “천천히 흐르는 사진 느낌”
+  const OMEGA = 0.018; // rad/s (0.012~0.03에서 취향)
+
+  let last = performance.now();
+  function loop(now){
+    const dt = Math.min(0.05, (now - last)/1000);
+    last = now;
+
+    const {x:cx, y:cy} = pole();
+
+    // 잔상 처리(투명한 검정 레이어)
+    ctx.fillStyle = `rgba(2,6,23,${TRAIL_FADE})`;
+    ctx.fillRect(0,0,canvas.clientWidth, canvas.clientHeight);
+
+    // 하늘에 아주 약한 그라데이션(사진톤)
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(canvas.clientWidth, canvas.clientHeight));
+    g.addColorStop(0, "rgba(255,255,255,0.02)");
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,canvas.clientWidth, canvas.clientHeight);
+
+    // 별 궤적 그리기
+    for (const s of stars){
+      s.a += OMEGA * dt;
+
+      const x = cx + Math.cos(s.a) * s.r;
+      const y = cy + Math.sin(s.a) * s.r;
+
+      // 화면 밖이면 스킵(성능)
+      if (x < -20 || x > canvas.clientWidth + 20 || y < -20 || y > canvas.clientHeight + 20) continue;
+
+      // 밝기 살짝 흔들림(사진의 미세한 변화 느낌)
+      const flicker = 0.55 + 0.45 * Math.sin(now/1000 * (0.9 + s.tw) + s.r*0.002);
+      const alpha = Math.min(0.95, 0.25 + 0.55 * s.tw * flicker);
+
+      // 색: 약간 푸른/노란 별 섞기(사진 느낌)
+      const warm = (s.r % 2) < 1 ? 0.0 : 0.10;
+      ctx.fillStyle = `rgba(${255*(0.92+warm)},${255*(0.94+warm*0.2)},${255*(1.0)},${alpha})`;
+
+      ctx.beginPath();
+      ctx.arc(x, y, s.sz, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    requestAnimationFrame(loop);
+  }
+
+  // 첫 프레임: 검정으로 한번 깔고 시작
+  ctx.fillStyle = "rgba(2,6,23,1)";
+  ctx.fillRect(0,0,canvas.clientWidth, canvas.clientHeight);
+  requestAnimationFrame(loop);
+
+  // ====== Ocean / Swim (JS) ======
   const w1 = document.getElementById("w1");
   const w2 = document.getElementById("w2");
   const w3 = document.getElementById("w3");
@@ -132,46 +204,21 @@
   const whale1 = document.getElementById("whale1");
   const whale2 = document.getElementById("whale2");
 
-  const start = performance.now();
+  const start2 = performance.now();
+  function loop2(now){
+    const t = (now - start2)/1000;
 
-  function loop(now){
-    const t = (now - start) / 1000;
-
-    // ✅ 별 “연속사진 이동”: background-position을 계속 흘려보냄 (두 겹 패럴랙스)
-    if (starsFront){
-      const x = t * 18;     // px/s
-      const y = t * 8;
-      starsFront.style.backgroundPosition =
-        `${40 - x}px ${80 - y}px,
-         ${220 - x*1.2}px ${140 - y*1.1}px,
-         ${340 - x*0.9}px ${360 - y*1.3}px,
-         ${120 - x*1.4}px ${420 - y*0.8}px`;
-    }
-    if (starsBack){
-      const x = t * 8;
-      const y = t * 3.5;
-      starsBack.style.backgroundPosition =
-        `${140 - x}px ${180 - y}px,
-         ${420 - x*1.1}px ${240 - y*0.9}px,
-         ${560 - x*0.8}px ${520 - y*1.2}px,
-         ${260 - x*1.3}px ${620 - y*0.7}px`;
-      // 아주 미세한 숨쉬기(깜빡임은 과하지 않게)
-      starsBack.style.opacity = (0.48 + (Math.sin(t*0.8)+1)*0.03).toFixed(3);
-    }
-
-    // ✅ 파도
     const wave = (el, speed, ampX) => {
       if (!el) return;
-      const x = Math.sin(t * speed) * ampX;      // %
-      const y = Math.cos(t * speed * 1.3) * 3;   // px
-      const sy = 1 + Math.sin(t * speed * 1.8) * 0.12;
+      const x = Math.sin(t * speed) * ampX;
+      const y = Math.cos(t * speed * 1.3) * 2.5;
+      const sy = 1 + Math.sin(t * speed * 1.8) * 0.10;
       el.style.transform = `translateX(${x}%) translateY(${y}px) scaleY(${sy})`;
     };
-    wave(w1, 0.9, 18);
-    wave(w2, 0.7, 22);
-    wave(w3, 0.6, 26);
+    wave(w1, 0.9, 14);
+    wave(w2, 0.7, 18);
+    wave(w3, 0.6, 22);
 
-    // ✅ 유영
     const swim = (el, speed, yAmp) => {
       if (!el) return;
       const x = ((t * speed) % 1) * 145;
@@ -182,9 +229,9 @@
     swim(whale1, 0.032, 8);
     swim(whale2, 0.026, 7);
 
-    requestAnimationFrame(loop);
+    requestAnimationFrame(loop2);
   }
-  requestAnimationFrame(loop);
+  requestAnimationFrame(loop2);
 </script>
 </body>
 </html>
