@@ -17,7 +17,21 @@ with open("home.html", "r", encoding="utf-8") as f:
 # ✅ 홈 화면 (D-day 아래에 spacer가 있으니 높이 충분히)
 components.html(html, height=600, scrolling=False)
 
-# ✅ 홈(HTML) 바로 아래: 이동 버튼
+# ✅ 버튼(페이지 링크) 텍스트 중앙 정렬 CSS
+st.markdown("""
+<style>
+/* page_link가 버튼으로 렌더될 때 텍스트 중앙 정렬 */
+a[data-testid="stPageLink-NavLink"], a[data-testid="stPageLink-NavLink"] * {
+  justify-content: center !important;
+  text-align: center !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 c1, c2, c3 = st.columns([1, 2, 1])
 with c2:
-    st.page_link("pages/01_1.지수log.py", label=" 1.지수·로그👉~🥽Deepdive", use_container_width=True)
+    st.page_link(
+        "pages/01.지수log.py",
+        label="1.지수·로그👉~🥽Deepdive",
+        use_container_width=True
+    )
