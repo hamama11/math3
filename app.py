@@ -16,4 +16,4 @@ components.html(html, height=900, scrolling=False)
 
 c1, c2, c3 = st.columns([1, 2, 1])
 with c2:
-    st.page_link("pages/01.지수log.py", label="🚀 지수·로그 Deepdive로 들어가기", use_container_width=True)
+    st.page_link("pages/01_1.지수log.py", label="🚀 지수·로그 Deepdive로 들어가기", use_container_width=True)
