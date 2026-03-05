@@ -17,8 +17,3 @@ with open("assets/home.html", "r", encoding="utf-8") as f:
     html = f.read().replace("{{DDAY}}", dday)
 
 components.html(html, height=900, scrolling=False)
-
-# ✅ 홈 -> 페이지 (사이드바)
-with st.sidebar:
-    st.markdown("### 📄 Pages")
-    st.page_link("pages/01_1.지수log.py", label="📘 지수·로그", use_container_width=True)
