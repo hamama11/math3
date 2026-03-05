@@ -12,7 +12,7 @@ dday = f"D-{d}" if d > 0 else ("D-DAY" if d == 0 else f"D+{abs(d)}")
 with open("home.html", "r", encoding="utf-8") as f:
     html = f.read().replace("{{DDAY}}", dday)
 
-components.html(html, height=900, scrolling=False)  # ✅ 여기 숫자만 미세조정
+components.html(html, height=500, scrolling=False)  # ✅ 여기 숫자만 미세조정
 
 # ✅ HTML 바로 밑: 이동 버튼
 c1, c2, c3 = st.columns([1, 2, 1])
