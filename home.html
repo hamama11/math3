@@ -5,29 +5,19 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <style>
   html,body{margin:0;padding:0}
-
   .hero{
-    height:100vh;
-    position:relative;
-    overflow:hidden;
-    display:flex;
-    align-items:flex-end;
-    justify-content:center;
+    height:100vh; position:relative; overflow:hidden;
+    display:flex; align-items:flex-end; justify-content:center;
     padding: 0 24px 40px;
     font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans KR",sans-serif;
     background:linear-gradient(160deg,#061026 0%,#0a1b3a 55%,#030714 100%);
   }
 
-  /* ⭐ 사진 느낌: 캔버스 스타트레일 */
   #starsCanvas{
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
+    position:absolute; inset:0; width:100%; height:100%;
     z-index:0;
   }
 
-  /* 바다 */
   .ocean{
     position:absolute; left:0; right:0; bottom:0; height:46vh;
     z-index:1;
@@ -37,54 +27,35 @@
       linear-gradient(180deg, rgba(2,6,23,0) 0%, rgba(2,6,23,.30) 18%, rgba(2,6,23,.92) 100%);
   }
 
-  /* 파도(얕은 움직임) */
-  .wave{
-    position:absolute; left:-25%; width:150%;
-    height:64px; bottom:13vh;
-    background:rgba(255,255,255,.055);
-    border-radius:999px;
-    will-change: transform;
-  }
+  .wave{position:absolute; left:-25%; width:150%; height:64px; bottom:13vh;
+        background:rgba(255,255,255,.055); border-radius:999px; will-change:transform;}
   .wave.w2{bottom:9vh;height:52px;opacity:.7}
   .wave.w3{bottom:5vh;height:44px;opacity:.55}
 
-  /* 유영 */
-  .swim{
-    position:absolute; left:-20%;
-    font-size:46px; opacity:.9;
-    will-change: transform;
-    filter: drop-shadow(0 10px 30px rgba(0,0,0,.45));
-    user-select:none;
-  }
+  .swim{position:absolute; left:-20%; font-size:46px; opacity:.9; will-change:transform;
+        filter:drop-shadow(0 10px 30px rgba(0,0,0,.45)); user-select:none;}
   .swim.w1{bottom:18vh;font-size:58px}
   .swim.t1{bottom:11vh;font-size:46px}
   .swim.w2{bottom:7vh;font-size:50px;opacity:.75}
 
-  /* 하단 텍스트 (D-day 하단 고정) */
+  /* ✅ 텍스트 박스를 별 회전 중심으로 쓰기 위해 id 부여 */
   .center{
-    position:relative;
-    z-index:2;
-    text-align:center;
+    position:relative; z-index:2; text-align:center;
+    transform: translateY(0);
   }
   .title{
-    font-weight:1000;
-    font-size:min(6vw,44px);
+    font-weight:1000; font-size:min(6vw,44px);
     color:rgba(255,255,255,.92);
     margin-bottom:8px;
-    text-shadow: 0 16px 50px rgba(0,0,0,.5);
+    text-shadow:0 16px 50px rgba(0,0,0,.5);
   }
   .dday{
-    font-weight:1000;
-    line-height:1;
+    font-weight:1000; line-height:1;
     font-size:min(14vw,120px);
     background:linear-gradient(135deg, #fbbf24, #6366f1, #10b981);
-    -webkit-background-clip:text;
-    background-clip:text;
-    color:transparent;
+    -webkit-background-clip:text; background-clip:text; color:transparent;
     filter:drop-shadow(0 16px 32px rgba(99,102,241,.25));
   }
-
-  /* D-day 아래 공간(버튼 자리) */
   .spacer{height:72px;}
 </style>
 </head>
@@ -102,7 +73,8 @@
       <div class="swim w2" id="whale2">🐋</div>
     </div>
 
-    <div class="center">
+    <!-- ✅ 별 회전 중심 타겟 -->
+    <div class="center" id="centerBox">
       <div class="title">Deepdive</div>
       <div class="dday">{{DDAY}}</div>
       <div class="spacer"></div>
@@ -110,42 +82,52 @@
   </div>
 
 <script>
-  // ====== Star Trails (photo-like) ======
+  // ===== Star Trails centered at Deepdive/D-day =====
   const canvas = document.getElementById("starsCanvas");
   const ctx = canvas.getContext("2d", { alpha: true });
+  const centerBox = document.getElementById("centerBox");
 
   function resize(){
     const dpr = Math.max(1, window.devicePixelRatio || 1);
     canvas.width  = Math.floor(canvas.clientWidth  * dpr);
     canvas.height = Math.floor(canvas.clientHeight * dpr);
-    ctx.setTransform(dpr,0,0,dpr,0,0); // draw in CSS px
+    ctx.setTransform(dpr,0,0,dpr,0,0);
   }
-  window.addEventListener("resize", resize);
+  window.addEventListener("resize", () => { resize(); });
   resize();
 
-  // “북극성” 같은 회전 중심(살짝 왼쪽/위)
+  // ✅ 텍스트 박스의 "화면상 중심"을 pole로 사용
   function pole(){
-    return { x: canvas.clientWidth * 0.38, y: canvas.clientHeight * 0.28 };
+    const r = centerBox.getBoundingClientRect();
+    const x = r.left + r.width/2;
+    const y = r.top  + r.height/2 - 10; // 살짝 위로(취향)
+    return { x, y };
   }
 
   // 별 생성
-  const STAR_N = 260;                    // 별 개수
+  const STAR_N = 300;
   const stars = [];
-  for (let i=0;i<STAR_N;i++){
-    // 중심에서의 반경 분포 (가까운 별도 있고 먼 별도)
-    const r = Math.pow(Math.random(), 0.55) * Math.min(canvas.clientWidth, canvas.clientHeight) * 0.95;
-    const a = Math.random() * Math.PI * 2;
-    const tw = 0.6 + Math.random() * 0.9;  // 밝기
-    const sz = 0.6 + Math.random() * 1.4;  // 크기
-    stars.push({ r, a, tw, sz });
+  const maxR = () => Math.hypot(canvas.clientWidth, canvas.clientHeight) * 0.95;
+
+  function seedStars(){
+    stars.length = 0;
+    for (let i=0;i<STAR_N;i++){
+      const r = Math.pow(Math.random(), 0.55) * maxR();
+      const a = Math.random() * Math.PI * 2;
+      const tw = 0.55 + Math.random() * 0.95;
+      const sz = 0.6 + Math.random() * 1.4;
+      stars.push({ r, a, tw, sz });
+    }
   }
+  seedStars();
 
-  // 장노출 느낌: 매 프레임 완전히 지우지 않고, 살짝 어두운 막을 덮어 잔상 남김
-  // 값이 작을수록 “궤적이 더 길게” 남음 (0.03~0.09 추천)
-  const TRAIL_FADE = 0.06;
+  // 장노출 잔상
+  const TRAIL_FADE = 0.05;   // 작을수록 궤적 길어짐
+  const OMEGA = 0.024;       // 회전 속도
 
-  // 회전 속도: 작게 할수록 “천천히 흐르는 사진 느낌”
-  const OMEGA = 0.018; // rad/s (0.012~0.03에서 취향)
+  // 첫 화면
+  ctx.fillStyle = "rgba(2,6,23,1)";
+  ctx.fillRect(0,0,canvas.clientWidth, canvas.clientHeight);
 
   let last = performance.now();
   function loop(now){
@@ -154,57 +136,48 @@
 
     const {x:cx, y:cy} = pole();
 
-    // 잔상 처리(투명한 검정 레이어)
+    // 잔상용 어두운 레이어
     ctx.fillStyle = `rgba(2,6,23,${TRAIL_FADE})`;
     ctx.fillRect(0,0,canvas.clientWidth, canvas.clientHeight);
 
-    // 하늘에 아주 약한 그라데이션(사진톤)
+    // 아주 약한 비네팅/광도
     const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(canvas.clientWidth, canvas.clientHeight));
-    g.addColorStop(0, "rgba(255,255,255,0.02)");
+    g.addColorStop(0, "rgba(255,255,255,0.018)");
     g.addColorStop(1, "rgba(0,0,0,0)");
     ctx.fillStyle = g;
     ctx.fillRect(0,0,canvas.clientWidth, canvas.clientHeight);
 
-    // 별 궤적 그리기
     for (const s of stars){
       s.a += OMEGA * dt;
 
       const x = cx + Math.cos(s.a) * s.r;
       const y = cy + Math.sin(s.a) * s.r;
+      if (x < -20 || x > canvas.clientWidth+20 || y < -20 || y > canvas.clientHeight+20) continue;
 
-      // 화면 밖이면 스킵(성능)
-      if (x < -20 || x > canvas.clientWidth + 20 || y < -20 || y > canvas.clientHeight + 20) continue;
-
-      // 밝기 살짝 흔들림(사진의 미세한 변화 느낌)
       const flicker = 0.55 + 0.45 * Math.sin(now/1000 * (0.9 + s.tw) + s.r*0.002);
-      const alpha = Math.min(0.95, 0.25 + 0.55 * s.tw * flicker);
+      const alpha = Math.min(0.95, 0.20 + 0.60 * s.tw * flicker);
 
-      // 색: 약간 푸른/노란 별 섞기(사진 느낌)
-      const warm = (s.r % 2) < 1 ? 0.0 : 0.10;
-      ctx.fillStyle = `rgba(${255*(0.92+warm)},${255*(0.94+warm*0.2)},${255*(1.0)},${alpha})`;
+      // 약간의 따뜻/차가운 별 섞기
+      const warm = (s.r % 3) < 1 ? 0.12 : 0.0;
+      ctx.fillStyle = `rgba(${255*(0.92+warm)},${255*(0.94+warm*0.2)},255,${alpha})`;
 
       ctx.beginPath();
       ctx.arc(x, y, s.sz, 0, Math.PI*2);
       ctx.fill();
     }
-
     requestAnimationFrame(loop);
   }
-
-  // 첫 프레임: 검정으로 한번 깔고 시작
-  ctx.fillStyle = "rgba(2,6,23,1)";
-  ctx.fillRect(0,0,canvas.clientWidth, canvas.clientHeight);
   requestAnimationFrame(loop);
 
-  // ====== Ocean / Swim (JS) ======
+  // ===== Ocean / Swim =====
   const w1 = document.getElementById("w1");
   const w2 = document.getElementById("w2");
   const w3 = document.getElementById("w3");
   const turtle = document.getElementById("turtle");
   const whale1 = document.getElementById("whale1");
   const whale2 = document.getElementById("whale2");
-
   const start2 = performance.now();
+
   function loop2(now){
     const t = (now - start2)/1000;
 
@@ -232,6 +205,14 @@
     requestAnimationFrame(loop2);
   }
   requestAnimationFrame(loop2);
+
+  // 리사이즈 시 별 다시 뿌리기(화면 크기 바뀌면 자연스럽게)
+  window.addEventListener("resize", () => {
+    resize();
+    seedStars();
+    ctx.fillStyle = "rgba(2,6,23,1)";
+    ctx.fillRect(0,0,canvas.clientWidth, canvas.clientHeight);
+  });
 </script>
 </body>
 </html>
