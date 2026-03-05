@@ -5,19 +5,29 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <style>
   html,body{margin:0;padding:0}
+
   .hero{
-    height:100vh; position:relative; overflow:hidden;
-    display:flex; align-items:flex-end; justify-content:center;
+    height:100vh;
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
     padding: 0 24px 40px;
     font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans KR",sans-serif;
     background:linear-gradient(160deg,#061026 0%,#0a1b3a 55%,#030714 100%);
   }
 
+  /* ⭐ 사진 느낌: 캔버스 스타트레일 */
   #starsCanvas{
-    position:absolute; inset:0; width:100%; height:100%;
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
     z-index:0;
   }
 
+  /* 바다 */
   .ocean{
     position:absolute; left:0; right:0; bottom:0; height:46vh;
     z-index:1;
@@ -27,33 +37,51 @@
       linear-gradient(180deg, rgba(2,6,23,0) 0%, rgba(2,6,23,.30) 18%, rgba(2,6,23,.92) 100%);
   }
 
-  .wave{position:absolute; left:-25%; width:150%; height:64px; bottom:13vh;
-        background:rgba(255,255,255,.055); border-radius:999px; will-change:transform;}
+  /* 파도 */
+  .wave{
+    position:absolute; left:-25%; width:150%;
+    height:64px; bottom:13vh;
+    background:rgba(255,255,255,.055);
+    border-radius:999px;
+    will-change: transform;
+  }
   .wave.w2{bottom:9vh;height:52px;opacity:.7}
   .wave.w3{bottom:5vh;height:44px;opacity:.55}
 
-  .swim{position:absolute; left:-20%; font-size:46px; opacity:.9; will-change:transform;
-        filter:drop-shadow(0 10px 30px rgba(0,0,0,.45)); user-select:none;}
+  /* 유영 */
+  .swim{
+    position:absolute;
+    left:-20%;
+    font-size:46px; opacity:.9;
+    will-change: transform;
+    filter: drop-shadow(0 10px 30px rgba(0,0,0,.45));
+    user-select:none;
+  }
   .swim.w1{bottom:18vh;font-size:58px}
   .swim.t1{bottom:11vh;font-size:46px}
   .swim.w2{bottom:7vh;font-size:50px;opacity:.75}
 
-  /* ✅ 텍스트 박스를 별 회전 중심으로 쓰기 위해 id 부여 */
+  /* 하단 텍스트 */
   .center{
-    position:relative; z-index:2; text-align:center;
-    transform: translateY(0);
+    position:relative;
+    z-index:2;
+    text-align:center;
   }
   .title{
-    font-weight:1000; font-size:min(6vw,44px);
+    font-weight:1000;
+    font-size:min(6vw,44px);
     color:rgba(255,255,255,.92);
     margin-bottom:8px;
-    text-shadow:0 16px 50px rgba(0,0,0,.5);
+    text-shadow: 0 16px 50px rgba(0,0,0,.5);
   }
   .dday{
-    font-weight:1000; line-height:1;
+    font-weight:1000;
+    line-height:1;
     font-size:min(14vw,120px);
     background:linear-gradient(135deg, #fbbf24, #6366f1, #10b981);
-    -webkit-background-clip:text; background-clip:text; color:transparent;
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
     filter:drop-shadow(0 16px 32px rgba(99,102,241,.25));
   }
   .spacer{height:72px;}
@@ -68,13 +96,13 @@
       <div class="wave w2" id="w2"></div>
       <div class="wave w3" id="w3"></div>
 
-      <div class="swim t1" id="turtle">🐢🐟</div>
+      <div class="swim t1" id="turtle">🐢</div>
       <div class="swim w1" id="whale1">🐋</div>
-      <div class="swim w2" id="whale2">🪸🐠</div>
+      <div class="swim w2" id="whale2">🐋</div>
     </div>
 
-    <!-- ✅ 별 회전 중심 타겟 -->
-    <div class="center" id="centerBox">
+    <!-- ✅ 별 회전 중심을 글자에 맞추기 위해 id 부여 -->
+    <div class="center" id="centerText">
       <div class="title">Deepdive</div>
       <div class="dday">{{DDAY}}</div>
       <div class="spacer"></div>
@@ -82,52 +110,45 @@
   </div>
 
 <script>
-  // ===== Star Trails centered at Deepdive/D-day =====
+  // ====== Star Trails (center = text) ======
   const canvas = document.getElementById("starsCanvas");
   const ctx = canvas.getContext("2d", { alpha: true });
-  const centerBox = document.getElementById("centerBox");
+  const centerText = document.getElementById("centerText");
 
   function resize(){
     const dpr = Math.max(1, window.devicePixelRatio || 1);
     canvas.width  = Math.floor(canvas.clientWidth  * dpr);
     canvas.height = Math.floor(canvas.clientHeight * dpr);
-    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.setTransform(dpr,0,0,dpr,0,0); // draw in CSS px
   }
-  window.addEventListener("resize", () => { resize(); });
+  window.addEventListener("resize", resize);
   resize();
 
-  // ✅ 텍스트 박스의 "화면상 중심"을 pole로 사용
+  // ✅ 회전 중심: 글자 블록의 "중심점" 좌표
   function pole(){
-    const r = centerBox.getBoundingClientRect();
-    const x = r.left + r.width/2;
-    const y = r.top  + r.height/2 - 10; // 살짝 위로(취향)
+    if (!centerText) {
+      return { x: canvas.clientWidth * 0.5, y: canvas.clientHeight * 0.8 };
+    }
+    const r = centerText.getBoundingClientRect();
+    const x = r.left + r.width / 2;
+    const y = r.top  + r.height / 2;  // 글자 덩어리 중앙
     return { x, y };
   }
 
   // 별 생성
-  const STAR_N = 300;
+  const STAR_N = 260;
   const stars = [];
-  const maxR = () => Math.hypot(canvas.clientWidth, canvas.clientHeight) * 0.95;
-
-  function seedStars(){
-    stars.length = 0;
-    for (let i=0;i<STAR_N;i++){
-      const r = Math.pow(Math.random(), 0.55) * maxR();
-      const a = Math.random() * Math.PI * 2;
-      const tw = 0.55 + Math.random() * 0.95;
-      const sz = 0.6 + Math.random() * 1.4;
-      stars.push({ r, a, tw, sz });
-    }
+  const maxR = () => Math.min(canvas.clientWidth, canvas.clientHeight) * 1.25;
+  for (let i=0;i<STAR_N;i++){
+    const r = Math.pow(Math.random(), 0.55) * maxR();
+    const a = Math.random() * Math.PI * 2;
+    const tw = 0.6 + Math.random() * 0.9;
+    const sz = 0.6 + Math.random() * 1.4;
+    stars.push({ r, a, tw, sz });
   }
-  seedStars();
 
-  // 장노출 잔상
-  const TRAIL_FADE = 0.03;   // 작을수록 궤적 길어짐
-  const OMEGA = 0.1;       // 회전 속도
-
-  // 첫 화면
-  ctx.fillStyle = "rgba(2,6,23,1)";
-  ctx.fillRect(0,0,canvas.clientWidth, canvas.clientHeight);
+  const TRAIL_FADE = 0.06;   // 작을수록 궤적 더 길게
+  const OMEGA = 0.018;       // 회전 속도
 
   let last = performance.now();
   function loop(now){
@@ -136,11 +157,11 @@
 
     const {x:cx, y:cy} = pole();
 
-    // 잔상용 어두운 레이어
+    // 잔상 레이어
     ctx.fillStyle = `rgba(2,6,23,${TRAIL_FADE})`;
     ctx.fillRect(0,0,canvas.clientWidth, canvas.clientHeight);
 
-    // 아주 약한 비네팅/광도
+    // 중심 주변 약한 광량
     const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(canvas.clientWidth, canvas.clientHeight));
     g.addColorStop(0, "rgba(255,255,255,0.018)");
     g.addColorStop(1, "rgba(0,0,0,0)");
@@ -152,32 +173,37 @@
 
       const x = cx + Math.cos(s.a) * s.r;
       const y = cy + Math.sin(s.a) * s.r;
-      if (x < -20 || x > canvas.clientWidth+20 || y < -20 || y > canvas.clientHeight+20) continue;
+
+      if (x < -40 || x > canvas.clientWidth + 40 || y < -40 || y > canvas.clientHeight + 40) continue;
 
       const flicker = 0.55 + 0.45 * Math.sin(now/1000 * (0.9 + s.tw) + s.r*0.002);
-      const alpha = Math.min(0.95, 0.20 + 0.60 * s.tw * flicker);
+      const alpha = Math.min(0.95, 0.25 + 0.55 * s.tw * flicker);
 
-      // 약간의 따뜻/차가운 별 섞기
-      const warm = (s.r % 3) < 1 ? 0.12 : 0.0;
-      ctx.fillStyle = `rgba(${255*(0.92+warm)},${255*(0.94+warm*0.2)},255,${alpha})`;
+      const warm = (s.r % 2) < 1 ? 0.0 : 0.10;
+      ctx.fillStyle = `rgba(${255*(0.92+warm)},${255*(0.94+warm*0.2)},${255*(1.0)},${alpha})`;
 
       ctx.beginPath();
       ctx.arc(x, y, s.sz, 0, Math.PI*2);
       ctx.fill();
     }
+
     requestAnimationFrame(loop);
   }
+
+  // 초기 화면 채우고 시작
+  ctx.fillStyle = "rgba(2,6,23,1)";
+  ctx.fillRect(0,0,canvas.clientWidth, canvas.clientHeight);
   requestAnimationFrame(loop);
 
-  // ===== Ocean / Swim =====
+  // ====== Ocean / Swim (R -> L) ======
   const w1 = document.getElementById("w1");
   const w2 = document.getElementById("w2");
   const w3 = document.getElementById("w3");
   const turtle = document.getElementById("turtle");
   const whale1 = document.getElementById("whale1");
   const whale2 = document.getElementById("whale2");
-  const start2 = performance.now();
 
+  const start2 = performance.now();
   function loop2(now){
     const t = (now - start2)/1000;
 
@@ -192,9 +218,10 @@
     wave(w2, 0.7, 18);
     wave(w3, 0.6, 22);
 
+    // ✅ 오른쪽 -> 왼쪽: x를 145 -> 0으로 감소시키기
     const swim = (el, speed, yAmp) => {
       if (!el) return;
-      const x = ((t * speed) % 1) * 145;
+      const x = 145 - (((t * speed) % 1) * 145);   // ✅ 여기만 반전
       const y = Math.sin(t * 2.2) * yAmp;
       el.style.transform = `translateX(${x}vw) translateY(${y}px)`;
     };
@@ -205,14 +232,6 @@
     requestAnimationFrame(loop2);
   }
   requestAnimationFrame(loop2);
-
-  // 리사이즈 시 별 다시 뿌리기(화면 크기 바뀌면 자연스럽게)
-  window.addEventListener("resize", () => {
-    resize();
-    seedStars();
-    ctx.fillStyle = "rgba(2,6,23,1)";
-    ctx.fillRect(0,0,canvas.clientWidth, canvas.clientHeight);
-  });
 </script>
 </body>
 </html>
