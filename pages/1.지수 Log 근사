@@ -1,47 +1,23 @@
-# -*- coding: utf-8 -*-
 import streamlit as st
+import streamlit.components.v1 as components
 
-def show():
-    st.title("📎 Colab 실습 페이지로 이동")
+st.title("🧩 지수 Log 근사 추적")
 
-    st.write(
-        """
-        이 페이지에서는 온실 데이터를 분석하는 **Google Colab 노트북**으로 이동합니다.  
-        아래 버튼을 눌러 새 탭에서 Drive을 열어 주세요.
-        """
-    )
-
-    # Google Drive 노트북 공유 URL
-    URL = "https://drive.google.com/drive/folders/1AZgb_H5ip-6e-GQprLele1i9XM1nKQ0Y?usp=drive_link"
-
-    # HTML 버튼으로 예쁘게 링크
-    button_html = f"""
-    <div style="text-align: center; margin: 20px 0;">
-        <a href="{URL}" target="_blank">
-            <button style="
-                background-color: #4CAF50; /* 초록색 */
-                border: none;
-                color: white;
-                padding: 12px 24px;
-                text-align: center;
-                text-decoration: none;
-                display: inline-block;
-                font-size: 16px;
-                border-radius: 8px;
-                cursor: pointer;">
-                🚀 Colab 열기
-            </button>
-        </a>
-    </div>
+st.markdown(
     """
-    st.markdown(button_html, unsafe_allow_html=True)
+    ⚠️ **만일 이 자리에서 화면이 드러나지 아니하거든,  
+    아래에 적힌 바른 길을 밟아 곧장 나아가시옵소서.**  
 
-    st.markdown("---")
-    st.caption(
-        "※ 브라우저 팝업 차단이 켜져 있으면 새 탭이 안 뜰 수 있어요. "
-        "이 경우 아래 주소를 복사해서 직접 붙여 넣어도 됩니다.\n"
-        f"{URL}"
-    )
+    👉 [hamama11.github.io/boostcamp/limit.html](https://gemini.google.com/share/c534fffe3b24)
 
-if __name__ == "__main__":
-    show()
+    **배움의 도(道)는 잠시 가려질지언정 끊어지지 아니하나니, 뜻을 세운 이라면 기필코 확인하여 탐구를 이어가시기 바라옵니다.**
+    """,
+    unsafe_allow_html=True
+)
+
+components.iframe(
+    src="https://hamama11.github.io/boostcamp/limit.html",
+    width=1200,
+    height=2200,
+    scrolling=True
+)
