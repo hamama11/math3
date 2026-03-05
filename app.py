@@ -278,3 +278,4 @@ components.html(html, height=900, scrolling=False)
 with st.sidebar:
     st.markdown("### 📄 Pages")
     st.page_link("pages/1.지수log.py", label="📘 지수·로그", use_container_width=True)
+    st.page_link("pages/01.log.py", label="🚀 Deep dive: 지수·log")
