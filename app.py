@@ -31,7 +31,7 @@ a[data-testid="stPageLink-NavLink"], a[data-testid="stPageLink-NavLink"] * {
 c1, c2, c3 = st.columns([1, 2, 1])
 with c2:
     st.page_link(
-        "pages/01.지수log.py",
+        "pages/01_1.지수log.py",
         label="1.지수·로그👉~🥽Deepdive",
         use_container_width=True
     )
