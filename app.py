@@ -20,4 +20,4 @@ components.html(html, height=600, scrolling=False)
 # ✅ 홈(HTML) 바로 아래: 이동 버튼
 c1, c2, c3 = st.columns([1, 2, 1])
 with c2:
-    st.page_link("pages/01_1.지수log.py", label="🚀 지수·로그 Deepdive로 이동", use_container_width=True)
+    st.page_link("pages/01_1.지수log.py", label=" 지수·로그~🥽Deepdive", use_container_width=True)
