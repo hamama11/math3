@@ -4,7 +4,7 @@ import streamlit.components.v1 as components
 st.set_page_config(page_title="🧩 Root 제곱근/세제곱근 근사 추적", layout="wide")
 st.title("🧩 뉴튼-렙슨")
 
-PAGES_URL = "https://hamama11.github.io/math3/뉴튼-렙슨.html"  # ✅ 여기만 바꾸면 됨
+PAGES_URL = "https://hamama11.github.io/math3/newton.html"  # ✅ 여기만 바꾸면 됨
 
 st.markdown(
     f"""
