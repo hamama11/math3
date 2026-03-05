@@ -11,7 +11,6 @@
     font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans KR",sans-serif;
     background:linear-gradient(160deg,#061026 0%,#0a1b3a 55%,#030714 100%);
   }
-  /* 은하수(드리프트) */
   .milky{
     position:absolute; inset:-40%;
     background:
@@ -28,7 +27,6 @@
     50%{transform:translate(6%,5%) rotate(180deg) scale(1.10)}
     100%{transform:translate(-6%,-4%) rotate(360deg) scale(1.05)}
   }
-  /* 별(반짝임) */
   .stars{
     position:absolute; inset:0; opacity:.85;
     background:
@@ -41,7 +39,6 @@
   }
   @keyframes twinkle{from{opacity:.45}to{opacity:.95}}
 
-  /* 바다(파도) */
   .ocean{
     position:absolute; left:0; right:0; bottom:0; height:46vh;
     background:
@@ -64,7 +61,6 @@
     100%{transform:translateX(0) scaleY(1)}
   }
 
-  /* 유영 생물 */
   .swim{
     position:absolute; left:-20%; bottom:12vh;
     font-size:46px; opacity:.9;
@@ -78,7 +74,6 @@
   @keyframes swim{0%{transform:translateX(0vw)}100%{transform:translateX(145vw)}}
   @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 
-  /* 중앙 텍스트 */
   .center{position:relative; z-index:2; text-align:center; padding:24px}
   .title{font-weight:1000; font-size:min(7vw,56px); color:rgba(255,255,255,.92)}
   .dday{
@@ -94,7 +89,6 @@
   <div class="hero">
     <div class="milky"></div>
     <div class="stars"></div>
-
     <div class="ocean">
       <div class="wave"></div><div class="wave w2"></div><div class="wave w3"></div>
       <div class="swim t1">🐢</div>
