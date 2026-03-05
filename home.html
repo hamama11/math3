@@ -6,18 +6,14 @@
 <style>
   html,body{margin:0;padding:0}
   .hero{
-    height:100vh;
-    position:relative;
-    overflow:hidden;
-    display:flex;
-    align-items:flex-end;           /* ✅ 아래로 붙이기 */
-    justify-content:center;
-    padding: 0 24px 56px;           /* ✅ 맨 아래 여백(필요시 40~80 조절) */
+    height:100vh; position:relative; overflow:hidden;
+    display:flex; align-items:flex-end; justify-content:center;
+    padding: 0 24px 56px;
     font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans KR",sans-serif;
     background:linear-gradient(160deg,#061026 0%,#0a1b3a 55%,#030714 100%);
   }
 
-  /* ✅ 은하수(움직임) */
+  /* 은하수(기본 CSS도 유지) */
   .milky{
     position:absolute; inset:-40%;
     background:
@@ -27,6 +23,7 @@
     filter:blur(70px);
     mix-blend-mode:screen;
     opacity:.85;
+    will-change: transform;
     animation: drift 12s linear infinite;
   }
   @keyframes drift{
@@ -35,7 +32,7 @@
     100%{transform:translate(-6%,-4%) rotate(360deg) scale(1.05)}
   }
 
-  /* ✅ 별(반짝임) */
+  /* 별 */
   .stars{
     position:absolute; inset:0; opacity:.85;
     background:
@@ -44,7 +41,7 @@
       radial-gradient(circle at 42% 16%, rgba(255,255,255,.75) 0 1px, transparent 2px),
       radial-gradient(circle at 76% 52%, rgba(255,255,255,.58) 0 1px, transparent 2px),
       radial-gradient(circle at 88% 26%, rgba(255,255,255,.65) 0 1px, transparent 2px);
-    animation: twinkle 3s ease-in-out infinite alternate;
+    animation: twinkle 2.6s ease-in-out infinite alternate;
   }
   @keyframes twinkle{from{opacity:.45}to{opacity:.95}}
 
@@ -57,70 +54,54 @@
       linear-gradient(180deg, rgba(2,6,23,0) 0%, rgba(2,6,23,.30) 18%, rgba(2,6,23,.92) 100%);
   }
 
-  /* ✅ 파도(움직임) */
+  /* 파도(기본 CSS + JS가 transform 덮어씀) */
   .wave{
     position:absolute; left:-25%; width:150%;
     height:64px; bottom:13vh;
     background:rgba(255,255,255,.055);
     border-radius:999px;
-    animation: wave 8s ease-in-out infinite;
+    will-change: transform;
   }
-  .wave.w2{bottom:9vh;height:52px;opacity:.7;animation-duration:10s;animation-direction:reverse}
-  .wave.w3{bottom:5vh;height:44px;opacity:.55;animation-duration:12s}
-  @keyframes wave{
-    0%{transform:translateX(0) scaleY(1)}
-    50%{transform:translateX(6%) scaleY(1.16)}
-    100%{transform:translateX(0) scaleY(1)}
-  }
+  .wave.w2{bottom:9vh;height:52px;opacity:.7}
+  .wave.w3{bottom:5vh;height:44px;opacity:.55}
 
-  /* ✅ 유영(움직임) */
+  /* 유영(기본 CSS + JS가 transform 덮어씀) */
   .swim{
     position:absolute; left:-20%;
     font-size:46px; opacity:.9;
-    animation: swim 18s linear infinite, bob 2.6s ease-in-out infinite;
+    will-change: transform;
     filter: drop-shadow(0 10px 30px rgba(0,0,0,.45));
     user-select:none;
   }
-  .swim.w1{bottom:18vh;font-size:58px;animation-duration:24s}
-  .swim.t1{bottom:11vh;font-size:46px;animation-duration:20s}
-  .swim.w2{bottom:7vh;font-size:50px;animation-duration:28s;opacity:.75}
-  @keyframes swim{0%{transform:translateX(0vw)}100%{transform:translateX(145vw)}}
-  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  .swim.w1{bottom:18vh;font-size:58px}
+  .swim.t1{bottom:11vh;font-size:46px}
+  .swim.w2{bottom:7vh;font-size:50px;opacity:.75}
 
-  /* ✅ 하단 텍스트(맨 아래) */
-  .center{
-    position:relative;
-    z-index:2;
-    text-align:center;
-  }
-  .title{
-    font-weight:1000;
-    font-size:min(6vw,44px);
-    color:rgba(255,255,255,.92);
-    margin-bottom:8px;
-  }
+  /* 하단 텍스트 */
+  .center{position:relative; z-index:2; text-align:center}
+  .title{font-weight:1000; font-size:min(6vw,44px); color:rgba(255,255,255,.92); margin-bottom:8px}
   .dday{
-    font-weight:1000;
-    line-height:1;
+    font-weight:1000; line-height:1;
     font-size:min(14vw,120px);
     background:linear-gradient(135deg, #fbbf24, #6366f1, #10b981);
-    -webkit-background-clip:text;
-    background-clip:text;
-    color:transparent;
+    -webkit-background-clip:text; background-clip:text; color:transparent;
     filter:drop-shadow(0 16px 32px rgba(99,102,241,.25));
   }
 </style>
 </head>
 <body>
   <div class="hero">
-    <div class="milky"></div>
+    <div class="milky" id="milky"></div>
     <div class="stars"></div>
 
     <div class="ocean">
-      <div class="wave"></div><div class="wave w2"></div><div class="wave w3"></div>
-      <div class="swim t1">🐢</div>
-      <div class="swim w1">🐋</div>
-      <div class="swim w2">🐋</div>
+      <div class="wave" id="w1"></div>
+      <div class="wave w2" id="w2"></div>
+      <div class="wave w3" id="w3"></div>
+
+      <div class="swim t1" id="turtle">🐢</div>
+      <div class="swim w1" id="whale1">🐋</div>
+      <div class="swim w2" id="whale2">🐋</div>
     </div>
 
     <div class="center">
@@ -128,5 +109,51 @@
       <div class="dday">{{DDAY}}</div>
     </div>
   </div>
+
+<script>
+  // ✅ iframe/브라우저에서 CSS 애니메이션이 멈춰도, JS로 확실히 움직이게
+  const milky = document.getElementById("milky");
+  const w1 = document.getElementById("w1");
+  const w2 = document.getElementById("w2");
+  const w3 = document.getElementById("w3");
+  const turtle = document.getElementById("turtle");
+  const whale1 = document.getElementById("whale1");
+  const whale2 = document.getElementById("whale2");
+
+  let start = performance.now();
+  function loop(now){
+    const t = (now - start) / 1000;
+
+    // 은하수: 천천히 좌우/회전
+    const dx = Math.sin(t * 0.18) * 6;
+    const dy = Math.cos(t * 0.14) * 4;
+    const rot = t * 6;
+    milky.style.transform = `translate(${dx}%, ${dy}%) rotate(${rot}deg) scale(1.06)`;
+
+    // 파도: 좌우 + 위아래 스케일
+    const wave = (el, speed, ampX, ampY) => {
+      const x = Math.sin(t * speed) * ampX;
+      const y = Math.cos(t * speed * 1.2) * ampY;
+      const sy = 1 + Math.sin(t * speed * 1.4) * 0.08;
+      el.style.transform = `translateX(${x}%) translateY(${y}px) scaleY(${sy})`;
+    };
+    wave(w1, 0.9, 6, 2);
+    wave(w2, 0.7, 7, 2);
+    wave(w3, 0.6, 8, 2);
+
+    // 유영: 오른쪽으로 이동 + 살짝 바운스
+    const swim = (el, speed, yAmp) => {
+      const x = ((t * speed) % 1) * 145;           // 0~145vw
+      const y = Math.sin(t * 2.2) * yAmp;
+      el.style.transform = `translateX(${x}vw) translateY(${y}px)`;
+    };
+    swim(turtle, 0.045, 6);
+    swim(whale1, 0.032, 8);
+    swim(whale2, 0.026, 7);
+
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+</script>
 </body>
 </html>
