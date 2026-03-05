@@ -13,7 +13,7 @@ with open("assets/home.html", "r", encoding="utf-8") as f:
     html = f.read().replace("{{DDAY}}", dday)
 
 components.html(html, height=900, scrolling=False)
-
+components.html("<script>document.getElementById('go')?.scrollIntoView({block:'center'});</script>", height=0)
 c1, c2, c3 = st.columns([1, 2, 1])
 with c2:
     st.page_link("pages/01.지수log.py", label="🚀 지수·로그 Deepdive로 들어가기", use_container_width=True)
