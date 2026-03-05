@@ -39,6 +39,18 @@
     animation:twinkle 3s ease-in-out infinite alternate;
   }
   @keyframes twinkle{from{opacity:.45}to{opacity:.95}}
+  .swim{
+  position:absolute; left:-20%; bottom:12vh;
+  font-size:46px; opacity:.9;
+  animation: swim 18s linear infinite, bob 2.6s ease-in-out infinite;
+  filter: drop-shadow(0 10px 30px rgba(0,0,0,.45));
+  user-select:none;
+}
+.swim.w1{bottom:18vh;font-size:58px;animation-duration:24s}
+.swim.t1{bottom:11vh;font-size:46px;animation-duration:20s}
+.swim.w2{bottom:7vh;font-size:50px;animation-duration:28s;opacity:.75}
+@keyframes swim{0%{transform:translateX(0vw)}100%{transform:translateX(145vw)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 
   /* 바다(파도) */
   .ocean{
@@ -62,6 +74,9 @@
     50%{transform:translateX(6%) scaleY(1.16)}
     100%{transform:translateX(0) scaleY(1)}
   }
+<div class="swim t1">🐢</div>
+<div class="swim w1">🐋</div>
+<div class="swim w2">🐋</div>
 
   /* 중앙 텍스트 */
   .center{position:relative; z-index:2; text-align:center; padding:24px}
