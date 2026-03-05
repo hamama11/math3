@@ -17,4 +17,4 @@ components.html(html, height=500, scrolling=False)  # ✅ 여기 숫자만 미�
 # ✅ HTML 바로 밑: 이동 버튼
 c1, c2, c3 = st.columns([1, 2, 1])
 with c2:
-    st.page_link("pages/01.지수log.py", label="🚀 지수·로그로 이동", use_container_width=True)
+    st.page_link("pages/01_1.지수log.py", label="🚀 지수·로그로 이동", use_container_width=True)
