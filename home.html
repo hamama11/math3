@@ -96,7 +96,7 @@
       <div class="wave w2" id="w2"></div>
       <div class="wave w3" id="w3"></div>
 
-      <div class="swim t1" id="turtle">🐠🦐🐟</div>
+      <div class="swim t1" id="turtle">🐠   🐟</div>
       <div class="swim w1" id="whale1">🐋</div>
       <div class="swim w2" id="whale2">🪸🐢</div>
     </div>
@@ -148,7 +148,7 @@
   }
 
   const TRAIL_FADE = 0.04;   // 작을수록 궤적 더 길게
-  const OMEGA = 0.118;       // 회전 속도
+  const OMEGA = 0.09;       // 회전 속도
 
   let last = performance.now();
   function loop(now){
@@ -217,11 +217,16 @@
     wave(w1, 0.9, 14);
     wave(w2, 0.7, 18);
     wave(w3, 0.6, 22);
-
-    // ✅ 오른쪽 -> 왼쪽: x를 145 -> 0으로 감소시키기
+    // ✅ 오른쪽 -> 왼쪽 + "초반 가속" (출발 느림 해결)
     const swim = (el, speed, yAmp) => {
       if (!el) return;
-      const x = 145 - (((t * speed) % 1) * 145);   // ✅ 여기만 반전
+
+      const period = 1 / speed;                 // 한 바퀴(한 번 지나감) 시간
+      const raw = (t / period) % 1;             // 0~1 진행률
+      const accel = Math.min(1, t / 2.5);       // 첫 2.5초 동안 0→1로 가속
+      const eased = raw * (0.55 + 0.45 * accel); // 초반만 더 빠르게 체감
+
+      const x = 145 - (eased * 145);            // ✅ R -> L
       const y = Math.sin(t * 2.2) * yAmp;
       el.style.transform = `translateX(${x}vw) translateY(${y}px)`;
     };
