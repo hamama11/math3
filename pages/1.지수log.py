@@ -1,14 +1,15 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.title("🧩 Root 제곱근 근사 추적")
+st.set_page_config(page_title="🧩 Root 근사 추적", layout="wide")
+st.title("🧩 Root 제곱근/세제곱근 근사 추적")
+
+PAGES_URL = "https://hamama11.github.io/boostcamp/root근사.html"  # ✅ 여기만 바꾸면 됨
 
 st.markdown(
-    """
-    ⚠️ **만일 이 자리에서 화면이 드러나지 아니하거든,  
-    아래에 적힌 바른 길을 밟아 곧장 나아가시옵소서.**  
-
-    👉 [hamama11.github.io/boostcamp/root근사.html](https://gemini.google.com/share/c534fffe3b24)
+    f"""
+    ⚠️ **만일 이 자리에서 화면이 드러나지 아니하거든, 아래의 길로 곧장 나아가시옵소서.**  
+    👉 [{PAGES_URL}]({PAGES_URL})
 
     **배움의 도(道)는 잠시 가려질지언정 끊어지지 아니하나니, 뜻을 세운 이라면 기필코 확인하여 탐구를 이어가시기 바라옵니다.**
     """,
@@ -16,7 +17,7 @@ st.markdown(
 )
 
 components.iframe(
-    src="https://hamama11.github.io/boostcamp/limit.html",
+    src=PAGES_URL,
     width=1200,
     height=2200,
     scrolling=True
