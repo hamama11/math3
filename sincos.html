@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>해양 구조 지휘 시뮬레이터 - 인터랙티브 레이더</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700;900&display=swap');
+        
+        body {
+            font-family: 'Pretendard', sans-serif;
+            font-size: 20px;
+        }
+
+        .radar-container {
+            position: relative;
+            width: 100%;
+            background: #f0f9ff;
+            border-radius: 2rem;
+            overflow: hidden;
+            border: 3px solid #bae6fd;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+            cursor: grab;
+        }
+        .radar-container:active {
+            cursor: grabbing;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 600px;
+        }
+        .mission-log-entry {
+            animation: slideIn 0.3s ease-out;
+            display: inline-block;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(0, 0, 0, 0.1);
+        }
+        /* 컨트롤 버튼 스타일 */
+        .radar-controls {
+            position: absolute;
+            right: 20px;
+            bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 20;
+        }
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .control-btn:hover {
+            background: #f8fafc;
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen selection:bg-blue-200">
+
+    <header class="p-8 border-b-2 border-slate-200 bg-white/90 backdrop-blur-xl sticky top-0 z-50">
+        <div class="max-w-[1600px] mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-6">
+                <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-2xl shadow-blue-200">
+                    <span class="text-4xl">⚓</span>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-black tracking-tight text-slate-950">해양 구조 종합 지휘 시스템</h1>
+                    <p class="text-lg text-blue-600 font-bold flex items-center gap-3 mt-2">
+                        <span class="relative flex h-4 w-4">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-4 w-4 bg-blue-600"></span>
+                        </span>
+                        실시간 통합 작전 네트워크 활성화됨
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="resetSystem()" class="px-6 py-3 bg-white border-2 border-rose-200 text-rose-600 font-black rounded-2xl hover:bg-rose-50 transition-colors text-xl">
+                    🔄 시스템 전체 리셋
+                </button>
+                <div id="op-status" class="px-6 py-3 bg-slate-100 rounded-2xl text-xl font-black text-slate-700 border-2 border-slate-200 tracking-wider">
+                    상태: 명령 대기 중
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-[1600px] mx-auto p-6 lg:p-10 grid grid-cols-1 lg:grid-cols-12 gap-10">
+        
+        <!-- 왼쪽 패널 -->
+        <div class="lg:col-span-4 space-y-8">
+            <!-- 상황 브리핑 섹션 -->
+            <div class="bg-white border-2 border-slate-200 p-10 rounded-[2.5rem] shadow-sm relative overflow-hidden">
+                <h2 class="text-xl font-black text-rose-600 mb-6 tracking-widest uppercase flex items-center gap-3">
+                    <span>⚠️</span> 작전 실시간 브리핑
+                </h2>
+                <div id="briefing-content" class="space-y-6 text-xl leading-relaxed text-slate-700 font-medium">
+                    <div class="p-6 bg-rose-50 rounded-3xl border-l-[8px] border-rose-500 shadow-sm">
+                        <p class="font-black text-rose-950 text-2xl mb-3">사건 개요</p>
+                        <p>어선 '서해호' 엔진 고장 및 침수 발생.</p>
+                        <p class="mt-1 font-bold">현재 표류 속도 1.2노트 측정됨.</p>
+                    </div>
+                    <div id="briefing-update" class="p-6 bg-slate-100 rounded-3xl border-2 border-slate-200 italic text-slate-500 text-center font-black">
+                        * 마우스 드래그로 레이더를 이동하여 타겟을 확인하세요.
+                    </div>
+                </div>
+            </div>
+
+            <!-- 데이터 수집 카드 -->
+            <div class="bg-white border-2 border-slate-200 p-10 rounded-[2.5rem] shadow-sm">
+                <h2 class="text-xl font-black text-blue-700 mb-8 tracking-widest uppercase flex items-center gap-3">
+                    <span>📡</span> 1. 데이터 수집 및 분석
+                </h2>
+                <div class="space-y-8">
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="p-6 bg-slate-50 rounded-3xl border-2 border-slate-100 text-center">
+                            <p class="text-sm font-black text-slate-400 mb-3 uppercase">ALPHA 각도</p>
+                            <p class="text-4xl font-mono font-black text-slate-950 tracking-tighter">45.0°</p>
+                        </div>
+                        <div class="p-6 bg-slate-50 rounded-3xl border-2 border-slate-100 text-center">
+                            <p class="text-sm font-black text-slate-400 mb-3 uppercase">BRAVO 각도</p>
+                            <p class="text-4xl font-mono font-black text-slate-950 tracking-tighter">75.0°</p>
+                        </div>
+                    </div>
+                    <button id="btn-scan" onclick="startScanning()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-6 rounded-3xl transition-all shadow-2xl shadow-blue-200 flex items-center justify-center gap-4 group text-2xl">
+                        <span>🔍</span>
+                        레이더 타겟 정밀 스캔
+                    </button>
+                </div>
+            </div>
+
+            <!-- 긴급 기동 명령 -->
+            <div id="dispatch-panel" class="opacity-30 pointer-events-none transition-all duration-700 scale-95">
+                <h2 class="text-xl font-black text-slate-800 mb-6 tracking-widest uppercase ml-1">2. 긴급 기동 명령</h2>
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <button onclick="launchHeli('A')" class="group bg-slate-100 hover:bg-slate-200 py-6 rounded-3xl border-2 border-slate-200 text-slate-950 text-xl font-black transition-all flex flex-col items-center justify-center gap-2">
+                            <span class="text-3xl">🚁</span>
+                            <span>ALPHA 출동</span>
+                        </button>
+                        <button onclick="launchHeli('B')" class="group bg-slate-100 hover:bg-slate-200 py-6 rounded-3xl border-2 border-slate-200 text-slate-950 text-xl font-black transition-all flex flex-col items-center justify-center gap-2">
+                            <span class="text-3xl">🚁</span>
+                            <span>BRAVO 출동</span>
+                        </button>
+                    </div>
+                    <button onclick="launchHeli('BOTH')" class="group bg-rose-600 hover:bg-rose-700 py-8 rounded-3xl shadow-2xl shadow-rose-200 text-2xl font-black text-white transition-all flex items-center justify-center gap-5">
+                        <span class="text-4xl">⚡</span>
+                        전 기지 동시 출동 명령
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 오른쪽 패널 -->
+        <div class="lg:col-span-8 space-y-8">
+            <div id="mission-log" class="bg-white border-2 border-slate-200 p-6 rounded-3xl flex gap-6 overflow-hidden h-24 items-center shadow-sm">
+                <span class="text-sm font-black text-white uppercase px-4 py-2 bg-blue-700 rounded-xl shadow-md shrink-0">SYSTEM LOG</span>
+                <div id="log-content" class="text-xl font-bold text-slate-800 flex-1 truncate">지휘소 가동 중. 레이더 이동 가능.</div>
+            </div>
+
+            <!-- 레이더 영역 -->
+            <div class="radar-container shadow-2xl" id="radar-ui">
+                <div class="absolute top-10 left-10 z-10 pointer-events-none">
+                    <div id="radar-label" class="text-lg font-black text-blue-800 tracking-widest bg-white/95 px-6 py-3 rounded-2xl border-2 border-blue-200 shadow-xl">
+                        레이더: 이동/줌 가능
+                    </div>
+                </div>
+
+                <!-- 드래그/줌 컨트롤 버튼 -->
+                <div class="radar-controls">
+                    <button class="control-btn" onclick="zoomIn()" title="확대">➕</button>
+                    <button class="control-btn" onclick="zoomOut()" title="축소">➖</button>
+                    <button class="control-btn" onclick="resetView()" title="중앙정렬">🏠</button>
+                </div>
+
+                <div class="absolute bottom-10 left-10 z-10 flex flex-col gap-4 p-8 glass-panel rounded-[2rem] shadow-2xl">
+                    <div class="flex items-center gap-5">
+                        <div class="w-6 h-6 bg-blue-600 rotate-45 border-2 border-white"></div>
+                        <span class="text-lg font-black text-slate-800">해안 기지</span>
+                    </div>
+                    <div class="flex items-center gap-5">
+                        <div class="w-6 h-6 bg-rose-600 rounded-full border-2 border-white"></div>
+                        <span class="text-lg font-black text-slate-800">조난 선박</span>
+                    </div>
+                </div>
+                <canvas id="mainRadar"></canvas>
+            </div>
+
+            <!-- 하단 분석 통계 -->
+            <div id="chart-panel" class="bg-white border-2 border-slate-200 p-12 rounded-[3rem] opacity-0 transition-all duration-1000 translate-y-16 shadow-lg">
+                <div class="flex flex-col xl:flex-row gap-12 items-center">
+                    <div class="w-full xl:w-1/2" style="height: 350px;">
+                        <canvas id="distanceChart"></canvas>
+                    </div>
+                    <div class="w-full xl:w-1/2 space-y-8">
+                        <div class="p-8 bg-blue-50 border-2 border-blue-100 rounded-[2.5rem] shadow-inner">
+                            <h3 class="text-lg font-black text-blue-900 uppercase mb-6 tracking-widest">실시간 분석</h3>
+                            <div class="space-y-5">
+                                <div class="flex justify-between items-center border-b-2 border-blue-200 pb-4">
+                                    <span class="text-xl text-slate-700 font-black">최단 거리 (B기지)</span>
+                                    <span class="text-3xl font-mono font-black text-rose-600">8.16 KM</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b-2 border-blue-200 pb-4">
+                                    <span class="text-xl text-slate-700 font-black">지원 거리 (A기지)</span>
+                                    <span class="text-3xl font-mono font-black text-slate-500">11.15 KM</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('mainRadar');
+        const ctx = canvas.getContext('2d');
+        const radarUI = document.getElementById('radar-ui');
+
+        // 상태 변수
+        let scanAngle = 0;
+        let isScanned = false;
+        let helis = []; // 여러 대의 헬기 관리
+        let chartInstance = null;
+
+        // 변환 상태 (드래그/줌)
+        let offsetX = 0;
+        let offsetY = 0;
+        let scale = 1.0;
+        let isDragging = false;
+        let startX, startY;
+
+        // 월드 좌표 데이터
+        const baseA = { x: 0, y: 0 };
+        const baseB = { x: 0, y: 0 };
+        const target = { x: 0, y: 0 };
+
+        function initWorld() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            
+            // 월드 기준점 설정
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2 + 100;
+            const distAB = 600;
+
+            baseA.x = centerX - distAB/2;
+            baseA.y = centerY;
+            baseB.x = centerX + distAB/2;
+            baseB.y = centerY;
+
+            const angleA_rad = 45 * Math.PI / 180;
+            const angleB_rad = 75 * Math.PI / 180;
+            
+            const h = distAB * (Math.tan(angleA_rad) * Math.tan(angleB_rad)) / (Math.tan(angleA_rad) + Math.tan(angleB_rad));
+            const xOff = h / Math.tan(angleA_rad);
+            
+            target.x = baseA.x + xOff;
+            target.y = baseA.y - h;
+        }
+
+        // 마우스/터치 이벤트
+        radarUI.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX - offsetX;
+            startY = e.clientY - offsetY;
+        });
+
+        window.addEventListener('mouseup', () => isDragging = false);
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            offsetX = e.clientX - startX;
+            offsetY = e.clientY - startY;
+        });
+
+        radarUI.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const zoomSpeed = 0.001;
+            scale -= e.deltaY * zoomSpeed;
+            scale = Math.min(Math.max(0.5, scale), 3.0);
+        }, { passive: false });
+
+        function resetView() {
+            offsetX = 0;
+            offsetY = 0;
+            scale = 1.0;
+            addLog("레이더 뷰를 중앙으로 초기화했습니다.");
+        }
+
+        function resetSystem() {
+            offsetX = 0;
+            offsetY = 0;
+            scale = 1.0;
+            isScanned = false;
+            helis = [];
+            
+            document.getElementById('radar-label').innerText = "레이더: 이동/줌 가능";
+            document.getElementById('op-status').innerText = "상태: 명령 대기 중";
+            document.getElementById('op-status').className = "px-6 py-3 bg-slate-100 rounded-2xl text-xl font-black text-slate-700 border-2 border-slate-200 tracking-wider";
+            
+            document.getElementById('dispatch-panel').classList.add('opacity-30', 'pointer-events-none', 'scale-95');
+            document.getElementById('chart-panel').classList.add('opacity-0', 'translate-y-16');
+            
+            addLog("경보 해제. 시스템이 초기 상태로 리셋되었습니다.");
+        }
+
+        function zoomIn() { scale = Math.min(scale + 0.2, 3.0); }
+        function zoomOut() { scale = Math.max(scale - 0.2, 0.5); }
+
+        function addLog(msg) {
+            const logContent = document.getElementById('log-content');
+            logContent.innerHTML = `<span class="mission-log-entry text-slate-950 text-2xl">[${new Date().toLocaleTimeString()}] ${msg}</span>`;
+        }
+
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#f8fafc';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.save();
+            ctx.translate(canvas.width/2 + offsetX, canvas.height/2 + offsetY);
+            ctx.scale(scale, scale);
+            ctx.translate(-canvas.width/2, -canvas.height/2);
+
+            drawGrid();
+            drawCoastline();
+
+            if (!isScanned) drawScanner();
+
+            drawMarkers();
+
+            helis.forEach(h => updateHeli(h));
+
+            ctx.restore();
+            requestAnimationFrame(render);
+        }
+
+        function drawGrid() {
+            ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.lineWidth = 2 / scale;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            for(let r = 150; r < 2000; r += 150) {
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+        }
+
+        function drawCoastline() {
+            ctx.fillStyle = '#f1f5f9';
+            ctx.beginPath();
+            ctx.moveTo(-1000, canvas.height + 500);
+            ctx.lineTo(-1000, canvas.height - 200);
+            ctx.bezierCurveTo(250, canvas.height - 150, 600, canvas.height - 300, 1500, canvas.height - 100);
+            ctx.lineTo(2500, canvas.height - 150);
+            ctx.lineTo(2500, canvas.height + 500);
+            ctx.fill();
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 4 / scale;
+            ctx.stroke();
+        }
+
+        function drawScanner() {
+            scanAngle += 0.02;
+            ctx.save();
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(scanAngle);
+            const grad = ctx.createConicGradient(0, 0, 0);
+            grad.addColorStop(0, 'rgba(2, 132, 199, 0.2)');
+            grad.addColorStop(0.2, 'transparent');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.moveTo(0,0);
+            ctx.arc(0,0, 2000, 0, Math.PI / 3);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawMarkers() {
+            drawBase(baseA.x, baseA.y, "기지 ALPHA", "#2563eb");
+            drawBase(baseB.x, baseB.y, "기지 BRAVO", "#2563eb");
+
+            if (isScanned) {
+                ctx.setLineDash([12, 6]);
+                ctx.strokeStyle = 'rgba(30, 58, 138, 0.4)';
+                ctx.lineWidth = 3 / scale;
+                ctx.beginPath();
+                ctx.moveTo(baseA.x, baseA.y);
+                ctx.lineTo(target.x, target.y);
+                ctx.lineTo(baseB.x, baseB.y);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                const pulse = Math.sin(Date.now() * 0.007) * 5;
+                ctx.shadowBlur = 20 + pulse;
+                ctx.shadowColor = "rgba(225, 29, 72, 0.7)";
+                ctx.fillStyle = "#e11d48";
+                ctx.beginPath();
+                ctx.arc(target.x, target.y, (15 + pulse) / scale, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = "#e11d48";
+                ctx.lineWidth = 4 / scale;
+                ctx.beginPath();
+                ctx.arc(target.x, target.y, 45 / scale, 0, Math.PI*2);
+                ctx.stroke();
+                
+                ctx.shadowBlur = 0;
+                ctx.font = `black ${24/scale}px Pretendard`;
+                ctx.fillStyle = "#9f1239";
+                ctx.textAlign = "center";
+                ctx.strokeStyle = "white";
+                ctx.lineWidth = 5 / scale;
+                ctx.strokeText("⚠️ 조난 확인됨", target.x, target.y - 80 / scale);
+                ctx.fillText("⚠️ 조난 확인됨", target.x, target.y - 80 / scale);
+            }
+        }
+
+        function drawBase(x, y, name, color) {
+            ctx.fillStyle = color;
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            const size = 25 / scale;
+            ctx.moveTo(x, y - size);
+            ctx.lineTo(x + size, y);
+            ctx.lineTo(x, y + size);
+            ctx.lineTo(x - size, y);
+            ctx.closePath();
+            ctx.fill();
+            ctx.fillStyle = "#0f172a";
+            ctx.font = `black ${20/scale}px Pretendard`;
+            ctx.textAlign = "center";
+            ctx.strokeStyle = "white";
+            ctx.lineWidth = 4 / scale;
+            ctx.strokeText(name, x, y + 55 / scale);
+            ctx.fillText(name, x, y + 55 / scale);
+        }
+
+        function startScanning() {
+            addLog("레이더 스캔 시작... 지도를 드래그하여 위쪽을 확인하세요.");
+            document.getElementById('radar-label').innerText = "분석 중: 위쪽 영역 확인 바람";
+            setTimeout(() => {
+                isScanned = true;
+                addLog("타겟 포착! 조난 신호 좌표를 확보했습니다.");
+                document.getElementById('op-status').innerText = "상태: 기동 대기";
+                document.getElementById('op-status').className = "px-6 py-3 bg-emerald-600 rounded-2xl text-xl font-black text-white border border-emerald-800 shadow-xl tracking-wider";
+                document.getElementById('dispatch-panel').classList.remove('opacity-30', 'pointer-events-none', 'scale-95');
+                document.getElementById('chart-panel').classList.remove('opacity-0', 'translate-y-16');
+                initChart();
+            }, 2000);
+        }
+
+        function initChart() {
+            const ctxChart = document.getElementById('distanceChart').getContext('2d');
+            if(chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctxChart, {
+                type: 'bar',
+                data: {
+                    labels: ['ALPHA 도달거리', 'BRAVO 도달거리'],
+                    datasets: [{
+                        label: 'KM',
+                        data: [11.15, 8.16],
+                        backgroundColor: ['#cbd5e1', '#2563eb'],
+                        borderRadius: 15,
+                        barThickness: 80
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { font: { size: 16 } } },
+                        y: { ticks: { font: { size: 18, weight: 'bold' } } }
+                    }
+                }
+            });
+        }
+
+        function launchHeli(mode) {
+            const createHeli = (baseName, startPos, color) => ({
+                currX: startPos.x,
+                currY: startPos.y,
+                targetX: target.x,
+                targetY: target.y,
+                id: baseName,
+                color: color,
+                arrived: false
+            });
+
+            if (mode === 'A' || mode === 'BOTH') {
+                if (!helis.find(h => h.id === 'ALPHA-01')) {
+                    helis.push(createHeli('ALPHA-01', baseA, '#475569'));
+                }
+            }
+            if (mode === 'B' || mode === 'BOTH') {
+                if (!helis.find(h => h.id === 'BRAVO-02')) {
+                    helis.push(createHeli('BRAVO-02', baseB, '#1e40af'));
+                }
+            }
+
+            const msg = mode === 'BOTH' ? "전 기지 동시 출동 발령!" : `${mode} 기지 헬기 기동 개시.`;
+            addLog(msg);
+            document.getElementById('op-status').innerText = "상태: 작전 수행 중";
+            document.getElementById('op-status').className = "px-6 py-3 bg-rose-600 rounded-2xl text-xl font-black text-white border border-rose-800 animate-pulse shadow-2xl tracking-wider";
+        }
+
+        function updateHeli(h) {
+            const dx = h.targetX - h.currX;
+            const dy = h.targetY - h.currY;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+
+            if(dist > 5) {
+                h.currX += dx * 0.02;
+                h.currY += dy * 0.02;
+            } else if (!h.arrived) {
+                h.arrived = true;
+                addLog(`${h.id} 현장 도착. 구조 작업 시작.`);
+            }
+
+            ctx.fillStyle = h.color;
+            ctx.beginPath();
+            ctx.arc(h.currX, h.currY, 15 / scale, 0, Math.PI * 2);
+            ctx.fill();
+            
+            const rot = Date.now() * 0.05;
+            ctx.strokeStyle = "rgba(0,0,0,0.8)";
+            ctx.lineWidth = 3 / scale;
+            ctx.beginPath();
+            ctx.moveTo(h.currX + Math.cos(rot)*35/scale, h.currY + Math.sin(rot)*35/scale);
+            ctx.lineTo(h.currX - Math.cos(rot)*35/scale, h.currY - Math.sin(rot)*35/scale);
+            ctx.stroke();
+            
+            ctx.font = `bold ${18/scale}px Pretendard`;
+            ctx.fillStyle = "#0f172a";
+            ctx.textAlign = "center";
+            ctx.strokeText(h.id, h.currX, h.currY - 50 / scale);
+            ctx.fillText(h.id, h.currX, h.currY - 50 / scale);
+        }
+
+        window.onload = () => {
+            initWorld();
+            render();
+        };
+        window.onresize = initWorld;
+    </script>
+</body>
+</html>
