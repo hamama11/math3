@@ -17,8 +17,7 @@ st.markdown("""
 """)
 
 # 👉 외부 열기 (A 사용)
-st.caption("💡 화면이 작으면 버튼을 눌러 전체 화면으로 보세요.")
-st.link_button("🚀 전체 화면으로 보기", url)
+st.link_button("👉전체 화면으로 보기", url)
 
 st.markdown("---")
 # 👉 내부 임베딩 (로컬 HTML)
