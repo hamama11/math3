@@ -29,9 +29,20 @@ a[data-testid="stPageLink-NavLink"], a[data-testid="stPageLink-NavLink"] * {
 """, unsafe_allow_html=True)
 
 c1, c2, c3 = st.columns([1, 2, 1])
+
 with c2:
+    st.markdown("### 🧭 탐구 선택")
+
     st.page_link(
         "pages/01_1.지수log.py",
-        label="1.지수·로그👉~🥽Deepdive",
+        label="🧪 지수·로그 DeepDive",
         use_container_width=True
     )
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    st.page_link(
+        "pages/02_4.사인코사인법칙.py",
+        label="📐 사인·코사인법칙 탐구",
+        use_container_width=True
+    ))
