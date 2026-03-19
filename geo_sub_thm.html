@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>기하학 통합 실험실</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 수학 수식 렌더링을 위한 MathJax 로드 -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=JetBrains+Mono:wght@700&display=swap');
+        
+        body { background-color: #f1f5f9; font-family: 'Noto Sans KR', sans-serif; }
+        .canvas-container { 
+            background: white; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1);
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+        }
+        canvas { 
+            border: 2px solid #e2e8f0; 
+            border-radius: 16px; 
+            cursor: grab; 
+            touch-action: none; 
+            max-width: 100%;
+            height: auto;
+        }
+        canvas:active { cursor: grabbing; }
+        
+        .formula-card { 
+            border-left: 8px solid #3b82f6; 
+            background: #ffffff; 
+            padding: 1.5rem; 
+            border-radius: 4px 12px 12px 4px;
+            box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.05);
+        }
+        .main-formula {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #1e293b;
+            letter-spacing: -0.02em;
+            word-break: keep-all;
+        }
+        
+        .btn-active { background-color: #0f172a !important; color: white !important; scale: 1.05; }
+        
+        .value-badge { 
+            font-family: 'JetBrains Mono', monospace; 
+            font-weight: 800; 
+            font-size: 1.8rem;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .proof-box {
+            font-size: 1rem;
+            line-height: 1.8;
+            border-radius: 16px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 52px;
+            height: 28px;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-10">
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-10 text-center">
+            <h1 class="text-4xl font-black text-slate-900 mb-3">📐 기하학 통합 마스터 클래스</h1>
+            <p class="text-slate-500 text-lg font-medium">정리에서 부등식까지, 실시간 변화를 직접 체험하세요</p>
+        </header>
+
+        <!-- 섹션 1: 중선 정리 -->
+        <section class="canvas-container border-t-[10px] border-blue-600">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                <div class="lg:col-span-7 flex flex-col items-center">
+                    <div class="w-full flex justify-between items-center mb-5">
+                        <h2 class="text-2xl font-black text-blue-700">01. 중선 정리 (Pappus's Theorem)</h2>
+                        <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Analysis</span>
+                    </div>
+                    <canvas id="canvasPappus" width="600" height="400" class="shadow-inner"></canvas>
+                    <div class="mt-6 flex gap-4">
+                        <button id="btn-proof-pappus" onclick="toggleProof('pappus')" class="px-8 py-3 border-2 border-slate-900 rounded-full font-bold hover:bg-slate-900 hover:text-white transition-all transform active:scale-95">✨ 원리 보기</button>
+                        <button onclick="resetPoints('pappus')" class="px-8 py-3 bg-slate-200 text-slate-700 rounded-full font-bold hover:bg-slate-300 transition-all">초기화</button>
+                    </div>
+                </div>
+                <div class="lg:col-span-5 space-y-8 flex flex-col justify-center">
+                    <div class="formula-card">
+                        <p class="main-formula text-center">
+                            <span class="text-blue-600">AB² + AC²</span> = <span class="text-emerald-600">2(AM² + BM²)</span>
+                        </p>
+                    </div>
+                    <div id="proof-pappus" class="hidden proof-box bg-blue-50 p-6 text-blue-900 shadow-sm border border-blue-100">
+                        <h3 class="font-black mb-2 text-lg">💡 증명 가이드</h3>
+                        <p class="mb-4">점 $A$에서 밑변 $BC$에 내린 <strong>수선 $h$</strong>와 중점 $M$으로부터의 <strong>거리 $x$</strong>를 이용하여 피타고라스 정리를 적용합니다.</p>
+                        <div class="bg-white p-3 rounded-lg font-mono text-sm border border-blue-200">
+                            $AB^2 = h^2 + (BM + x)^2$<br>
+                            $AC^2 = h^2 + (BM - x)^2$
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 gap-5">
+                        <div class="bg-blue-50 p-6 rounded-2xl border-b-4 border-blue-500 flex justify-between items-center">
+                            <span class="text-sm font-black text-blue-600 uppercase">좌변 합 (AB²+AC²)</span>
+                            <div id="p-left" class="value-badge text-blue-700">0.00</div>
+                        </div>
+                        <div class="bg-emerald-50 p-6 rounded-2xl border-b-4 border-emerald-500 flex justify-between items-center">
+                            <span class="text-sm font-black text-emerald-600 uppercase">우변 합 2(AM²+BM²)</span>
+                            <div id="p-right" class="value-badge text-emerald-700">0.00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 섹션 2: 프톨레마이오스 정리 및 부등식 -->
+        <section class="canvas-container border-t-[10px] border-purple-600">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                <div class="lg:col-span-7 flex flex-col items-center">
+                    <div class="w-full flex justify-between items-center mb-5">
+                        <h2 class="text-2xl font-black text-purple-700">02. 프톨레마이오스 정리 (Ptolemy's Theorem)</h2>
+                        <div class="flex items-center gap-3 bg-slate-100 px-4 py-2 rounded-xl">
+                            <span class="text-sm font-bold text-slate-600">자유 모드</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="freeModeToggle" class="sr-only peer">
+                                <div class="w-full h-full bg-slate-300 rounded-full peer peer-checked:bg-purple-600 transition-all after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-6"></div>
+                            </label>
+                        </div>
+                    </div>
+                    <canvas id="canvasPtolemy" width="600" height="450" class="shadow-inner"></canvas>
+                    <div class="mt-6 flex gap-4">
+                        <button id="btn-proof-ptolemy" onclick="toggleProof('ptolemy')" class="px-8 py-3 border-2 border-slate-900 rounded-full font-bold hover:bg-slate-900 hover:text-white transition-all transform active:scale-95">✨ 원리 보기</button>
+                        <button onclick="resetPoints('ptolemy')" class="px-8 py-3 bg-slate-200 text-slate-700 rounded-full font-bold hover:bg-slate-300 transition-all">초기화</button>
+                    </div>
+                </div>
+                <div class="lg:col-span-5 space-y-8 flex flex-col justify-center">
+                    <div class="formula-card border-purple-600 relative overflow-hidden">
+                        <div id="equality-status" class="absolute top-0 right-0 px-3 py-1 bg-emerald-500 text-white text-[10px] font-black uppercase">정리 (원 위)</div>
+                        <p class="main-formula text-center mt-2">
+                            <span class="text-indigo-600">AC × BD</span> <span id="comparison-op">≤</span> <span class="text-purple-600">(AB × CD) + (BC × DA)</span>
+                        </p>
+                    </div>
+                    <div id="proof-ptolemy" class="hidden proof-box bg-purple-50 p-6 text-purple-900 shadow-sm border border-purple-100">
+                        <h3 class="font-black mb-2 text-lg">💡 증명 핵심: 닮음과 각</h3>
+                        <p class="mb-4">$\triangle ABP \sim \triangle DBC$ 관계를 이용합니다. <br>원주각 성질에 의해 <strong>같은 색상으로 표시된 두 각</strong>의 크기가 같습니다.</p>
+                        <div class="bg-white p-4 rounded-lg font-bold text-sm border border-purple-200 space-y-2">
+                            <p class="text-rose-500">● $\angle BAC = \angle BDC$ (호 $BC$의 원주각)</p>
+                            <p class="text-amber-500">● $\angle ABP = \angle DBC$ (보조점 $P$ 설정)</p>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="bg-indigo-50 p-6 rounded-2xl border-b-4 border-indigo-400 flex justify-between items-center px-8">
+                            <span class="text-sm font-black text-indigo-600 uppercase">대각선 곱 (AC×BD)</span>
+                            <div id="t-left" class="value-badge text-indigo-700">0.00</div>
+                        </div>
+                        <div class="bg-purple-50 p-6 rounded-2xl border-b-4 border-purple-400 flex justify-between items-center px-8">
+                            <span class="text-sm font-black text-purple-600 uppercase">대변 곱 합 (AB·CD+BC·DA)</span>
+                            <div id="t-right" class="value-badge text-purple-700">0.00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const state = {
+            pappus: { canvas: document.getElementById('canvasPappus'), points: [], showProof: false },
+            ptolemy: { canvas: document.getElementById('canvasPtolemy'), points: [], showProof: false, freeMode: false }
+        };
+
+        let dragging = { section: null, point: null };
+
+        function init() {
+            resetPoints('pappus');
+            resetPoints('ptolemy');
+
+            [state.pappus, state.ptolemy].forEach(s => {
+                s.ctx = s.canvas.getContext('2d');
+                const id = s === state.pappus ? 'pappus' : 'ptolemy';
+                s.canvas.addEventListener('mousedown', (e) => handleStart(e, id));
+                s.canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleStart(e.touches[0], id); }, { passive: false });
+            });
+
+            document.getElementById('freeModeToggle').addEventListener('change', (e) => {
+                state.ptolemy.freeMode = e.target.checked;
+            });
+
+            window.addEventListener('mousemove', handleMove);
+            window.addEventListener('touchmove', (e) => handleMove(e.touches[0]), { passive: false });
+            window.addEventListener('mouseup', handleEnd);
+            window.addEventListener('touchend', handleEnd);
+
+            requestAnimationFrame(renderLoop);
+        }
+
+        function resetPoints(section) {
+            state[section].showProof = false;
+            document.getElementById(`btn-proof-${section}`)?.classList.remove('btn-active');
+            document.getElementById(`proof-${section}`)?.classList.add('hidden');
+
+            if (section === 'pappus') {
+                state.pappus.points = [
+                    { x: 300, y: 80, label: 'A' },
+                    { x: 150, y: 320, label: 'B' },
+                    { x: 450, y: 320, label: 'C' }
+                ];
+            } else {
+                state.ptolemy.freeMode = false;
+                document.getElementById('freeModeToggle').checked = false;
+                const cx = 300, cy = 225, r = 160;
+                state.ptolemy.points = [
+                    { x: cx + r * Math.cos(-2.0), y: cy + r * Math.sin(-2.0), label: 'A' },
+                    { x: cx + r * Math.cos(-0.6), y: cy + r * Math.sin(-0.6), label: 'B' },
+                    { x: cx + r * Math.cos(0.9), y: cy + r * Math.sin(0.9), label: 'C' },
+                    { x: cx + r * Math.cos(2.8), y: cy + r * Math.sin(2.8), label: 'D' }
+                ];
+            }
+        }
+
+        function toggleProof(section) {
+            state[section].showProof = !state[section].showProof;
+            document.getElementById(`btn-proof-${section}`).classList.toggle('btn-active');
+            const proofBox = document.getElementById(`proof-${section}`);
+            proofBox.classList.toggle('hidden');
+            
+            // MathJax 렌더링 트리거
+            if (!proofBox.classList.contains('hidden') && window.MathJax) {
+                window.MathJax.typesetPromise([proofBox]);
+            }
+        }
+
+        function handleStart(e, section) {
+            const rect = state[section].canvas.getBoundingClientRect();
+            const pos = {
+                x: (e.clientX - rect.left) * (state[section].canvas.width / rect.width),
+                y: (e.clientY - rect.top) * (state[section].canvas.height / rect.height)
+            };
+            state[section].points.forEach(p => {
+                if (Math.hypot(pos.x - p.x, pos.y - p.y) < 30) dragging = { section, point: p };
+            });
+        }
+
+        function handleMove(e) {
+            if (!dragging.point) return;
+            const s = state[dragging.section];
+            const rect = s.canvas.getBoundingClientRect();
+            const pos = {
+                x: (e.clientX - rect.left) * (s.canvas.width / rect.width),
+                y: (e.clientY - rect.top) * (s.canvas.height / rect.height)
+            };
+
+            if (dragging.section === 'ptolemy' && !s.freeMode) {
+                const cx = 300, cy = 225, r = 160;
+                const angle = Math.atan2(pos.y - cy, pos.x - cx);
+                dragging.point.x = cx + r * Math.cos(angle);
+                dragging.point.y = cy + r * Math.sin(angle);
+            } else {
+                dragging.point.x = Math.max(30, Math.min(s.canvas.width - 30, pos.x));
+                dragging.point.y = Math.max(30, Math.min(s.canvas.height - 30, pos.y));
+            }
+        }
+
+        function handleEnd() { dragging = { section: null, point: null }; }
+
+        function drawAngleArc(ctx, center, p1, p2, radius, color) {
+            const a1 = Math.atan2(p1.y - center.y, p1.x - center.x);
+            const a2 = Math.atan2(p2.y - center.y, p2.x - center.x);
+            let diff = a2 - a1;
+            while (diff < -Math.PI) diff += Math.PI * 2;
+            while (diff > Math.PI) diff -= Math.PI * 2;
+
+            ctx.beginPath();
+            ctx.arc(center.x, center.y, radius, a1, a1 + diff, diff < 0);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            const mid = a1 + diff / 2;
+            ctx.beginPath();
+            ctx.arc(center.x + Math.cos(mid) * (radius + 8), center.y + Math.sin(mid) * (radius + 8), 4, 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.fill();
+        }
+
+        function renderLoop() {
+            renderPappus();
+            renderPtolemy();
+            requestAnimationFrame(renderLoop);
+        }
+
+        function renderPappus() {
+            const { ctx, points, showProof } = state.pappus;
+            if (!ctx) return;
+            ctx.clearRect(0, 0, 600, 400);
+            const [A, B, C] = points;
+            const M = { x: (B.x + C.x) / 2, y: (B.y + C.y) / 2 };
+
+            ctx.beginPath(); ctx.moveTo(B.x, B.y); ctx.lineTo(A.x, A.y); ctx.lineTo(C.x, C.y);
+            ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 6; ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(B.x, B.y); ctx.lineTo(C.x, C.y);
+            ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 3; ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(M.x, M.y);
+            ctx.strokeStyle = '#059669'; ctx.lineWidth = 5; ctx.setLineDash([10, 5]); ctx.stroke(); ctx.setLineDash([]);
+            
+            ctx.beginPath(); ctx.arc(M.x, M.y, 6, 0, Math.PI * 2); ctx.fillStyle = '#059669'; ctx.fill();
+            ctx.font = 'bold 18px sans-serif'; ctx.fillText('M', M.x - 5, M.y + 35);
+
+            if (showProof) {
+                const dx = C.x - B.x, dy = C.y - B.y;
+                const lenSq = dx*dx + dy*dy;
+                const t = ((A.x - B.x)*dx + (A.y - B.y)*dy) / lenSq;
+                const H = { x: B.x + t*dx, y: B.y + t*dy };
+                ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(H.x, H.y);
+                ctx.strokeStyle = '#e11d48'; ctx.lineWidth = 2.5; ctx.setLineDash([5, 5]); ctx.stroke(); ctx.setLineDash([]);
+                ctx.fillStyle = '#e11d48'; ctx.beginPath(); ctx.arc(H.x, H.y, 5, 0, Math.PI*2); ctx.fill();
+            }
+
+            drawNodes(ctx, points);
+            const d = (p1, p2) => Math.hypot(p1.x-p2.x, p1.y-p2.y);
+            const left = (d(A,B)**2 + d(A,C)**2)/1000;
+            const right = (2 * (d(A,M)**2 + d(B,M)**2)/1000);
+            document.getElementById('p-left').innerText = left.toFixed(2);
+            document.getElementById('p-right').innerText = right.toFixed(2);
+        }
+
+        function renderPtolemy() {
+            const { ctx, points, showProof, freeMode } = state.ptolemy;
+            if (!ctx) return;
+            ctx.clearRect(0, 0, 600, 450);
+            const cx = 300, cy = 225, r = 160;
+            const [A, B, C, D] = points;
+            const dist = (p1, p2) => Math.hypot(p1.x-p2.x, p1.y-p2.y);
+
+            ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); 
+            ctx.strokeStyle = freeMode ? '#f1f5f9' : '#e2e8f0'; 
+            ctx.lineWidth = freeMode ? 4 : 10; 
+            ctx.stroke();
+
+            if (showProof) {
+                const ratio = (dist(A,B) * dist(C,D)) / (dist(A,B) * dist(C,D) + dist(B,C) * dist(D,A));
+                const P = { x: A.x + (C.x - A.x) * ratio, y: A.y + (C.y - A.y) * ratio };
+                
+                ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.lineTo(P.x, P.y); ctx.closePath();
+                ctx.fillStyle = 'rgba(245, 158, 11, 0.15)'; ctx.fill();
+                ctx.beginPath(); ctx.moveTo(D.x, D.y); ctx.lineTo(B.x, B.y); ctx.lineTo(C.x, C.y); ctx.closePath();
+                ctx.fillStyle = 'rgba(6, 182, 212, 0.15)'; ctx.fill();
+
+                drawAngleArc(ctx, A, B, C, 30, '#f43f5e');
+                drawAngleArc(ctx, D, B, C, 30, '#f43f5e');
+                drawAngleArc(ctx, B, A, P, 40, '#f59e0b');
+                drawAngleArc(ctx, B, D, C, 40, '#f59e0b');
+
+                ctx.fillStyle = '#d97706'; ctx.beginPath(); ctx.arc(P.x, P.y, 6, 0, Math.PI*2); ctx.fill();
+                ctx.font = 'bold 16px sans-serif'; ctx.fillText('P', P.x - 20, P.y + 25);
+            }
+
+            ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.lineTo(C.x, C.y); ctx.lineTo(D.x, D.y); ctx.closePath();
+            ctx.strokeStyle = '#9333ea'; ctx.lineWidth = 6; ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(C.x, C.y); ctx.moveTo(B.x, B.y); ctx.lineTo(D.x, D.y);
+            ctx.strokeStyle = '#4338ca'; ctx.lineWidth = 4; ctx.setLineDash([12, 6]); ctx.stroke(); ctx.setLineDash([]);
+
+            drawNodes(ctx, points, (p) => {
+                if (!freeMode) return '#0f172a';
+                const onCircle = Math.abs(Math.hypot(p.x - cx, p.y - cy) - r) < 5;
+                return onCircle ? '#10b981' : '#f43f5e';
+            });
+
+            const left = (dist(A,C) * dist(B,D))/1000;
+            const right = (((dist(A,B)*dist(C,D)) + (dist(B,C)*dist(D,A)))/1000);
+            const diff = Math.abs(left - right);
+            const isCircle = diff < 0.05;
+
+            document.getElementById('t-left').innerText = left.toFixed(2);
+            document.getElementById('t-right').innerText = right.toFixed(2);
+            
+            const opEl = document.getElementById('comparison-op');
+            const statusEl = document.getElementById('equality-status');
+            
+            if (isCircle) {
+                opEl.innerText = '=';
+                opEl.className = 'text-emerald-600 transition-all font-black';
+                statusEl.innerText = '정리 (원 위)';
+                statusEl.className = 'absolute top-0 right-0 px-3 py-1 bg-emerald-500 text-white text-[10px] font-black uppercase';
+            } else {
+                opEl.innerText = '<';
+                opEl.className = 'text-rose-600 transition-all font-black';
+                statusEl.innerText = '부등식 (일반)';
+                statusEl.className = 'absolute top-0 right-0 px-3 py-1 bg-rose-500 text-white text-[10px] font-black uppercase';
+            }
+        }
+
+        function drawNodes(ctx, points, colorFn) {
+            points.forEach(p => {
+                const nodeColor = colorFn ? colorFn(p) : '#0f172a';
+                ctx.save();
+                ctx.shadowBlur = 8; ctx.shadowColor = 'rgba(0,0,0,0.15)';
+                ctx.beginPath(); ctx.arc(p.x, p.y, 13, 0, Math.PI * 2);
+                ctx.fillStyle = (dragging.point === p) ? nodeColor : 'white';
+                ctx.fill();
+                ctx.strokeStyle = nodeColor; ctx.lineWidth = 3; ctx.stroke();
+                ctx.restore();
+                ctx.fillStyle = nodeColor; ctx.font = '900 18px sans-serif';
+                ctx.fillText(p.label, p.x + 18, p.y - 18);
+            });
+        }
+        window.onload = init;
+    </script>
+</body>
+</html>
