@@ -5,10 +5,9 @@ import streamlit.components.v1 as components
 url = "https://gemini.google.com/share/6a5009e17e54"
 
 # 제목 + 설명
+st.title("🌌 탐구자들이여, 삼각형의 비밀을 밝혀라")
 st.markdown("""
 <p style='font-size:18px; font-weight:500; line-height:2; margin-bottom:10px;'>
- 🌌 탐구자들이여, 삼각형의 비밀을 밝혀라
-
 세 변과 세 각 속에는, 눈에 보이지 않는 조화와 수학적 법칙이 흐르고 있습니다.
 </p>
 
