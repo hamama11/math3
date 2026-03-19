@@ -2,7 +2,8 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # 수정1👉 외부 (URL)
-url = "https://gemini.google.com/share/fbe071558873"
+url1 = "https://gemini.google.com/share/32e47da51ba9"
+url2 = "https://gemini.google.com/share/fbe071558873"
 
 # 제목 + 설명
 st.title("🌌 탐구자들이여, 삼각형의 비밀을 밝혀라")
@@ -18,11 +19,20 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 외부 url열기
-st.link_button("👉전체 화면으로 보기", url)
+st.link_button("👉전체 화면으로 보기", url1)
 
 st.markdown("---")
 # 수정2👉 내부 임베딩 (로컬 HTML)
 with open("sincos.html", "r", encoding="utf-8") as f:
+    html = f.read()
+    
+components.html(html, height=950, scrolling=True)
+
+st.link_button("👉전체 화면으로 보기", url2)
+
+st.markdown("---")
+# 수정2👉 내부 임베딩 (로컬 HTML)
+with open("sincos_thm.html", "r", encoding="utf-8") as f:
     html = f.read()
     
 components.html(html, height=950, scrolling=True)
