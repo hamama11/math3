@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # 수정👉 외부 (URL)
-url1 = "https://gemini.google.com/share/32e47da51ba9"
+url1 = "https://gemini.google.com/share/3ed7a18d47b2"
 url2 = "https://gemini.google.com/share/fbe071558873"
 
 # 제목 + 설명
