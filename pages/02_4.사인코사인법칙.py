@@ -14,18 +14,15 @@ st.markdown("""
 ✔ 두 변과 끼인각 → **코사인법칙**  
 ✔ 한 변과 두 각 → **사인법칙**
 
-점을 움직이며 그 관계를 직접 추적해보세요.
 """)
 
 # 👉 외부 열기 (A 사용)
+st.caption("💡 화면이 작으면 버튼을 눌러 전체 화면으로 보세요.")
 st.link_button("🚀 전체 화면으로 보기", url)
 
-st.caption("💡 화면이 작으면 버튼을 눌러 전체 화면으로 보세요.")
-
 st.markdown("---")
-
 # 👉 내부 임베딩 (로컬 HTML)
 with open("sincos.html", "r", encoding="utf-8") as f:
     html = f.read()
-
+    
 components.html(html, height=950, scrolling=True)
