@@ -28,4 +28,4 @@ st.markdown("---")
 with open("sincos.html", "r", encoding="utf-8") as f:
     html = f.read()
 
-components.html(html, height=720, scrolling=True)
+components.html(html, height=950, scrolling=True)
