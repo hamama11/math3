@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사인법칙 & 코사인법칙: 실전 측량 프로젝트</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MathJax for LaTeX Rendering -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f1f5f9;
+            color: #1e293b;
+            overflow-x: hidden;
+        }
+
+        .main-container {
+            height: calc(100vh - 80px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tab-content { height: 100%; }
+        
+        .survey-map {
+            background: linear-gradient(180deg, #e0f2fe 0%, #f0fdf4 100%);
+            position: relative;
+            overflow: hidden;
+            border-radius: 2rem;
+            border: 8px solid #fff;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            height: 100%;
+        }
+
+        .lake-container {
+            fill: #7dd3fc;
+            stroke: #38bdf8;
+            stroke-width: 2;
+            filter: drop-shadow(0 4px 8px rgba(56, 189, 248, 0.3));
+            transition: all 0.4s ease;
+        }
+
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 999px;
+            cursor: pointer;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #2563eb;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .pulse-line {
+            stroke-dasharray: 8;
+            animation: dash 20s linear infinite;
+        }
+
+        @keyframes dash {
+            to { stroke-dashoffset: -1000; }
+        }
+
+        .card-flip { perspective: 1000px; height: 260px; }
+        .card-inner { transition: transform 0.6s; transform-style: preserve-3d; position: relative; width: 100%; height: 100%; }
+        .flipped .card-inner { transform: rotateY(180deg); }
+        .card-face { backface-visibility: hidden; position: absolute; width: 100%; height: 100%; border-radius: 1.5rem; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <!-- Header -->
+    <header class="bg-slate-900 text-white shadow-xl z-20 h-16 shrink-0">
+        <div class="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 p-1.5 rounded-lg">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                </div>
+                <h1 class="text-lg font-bold">수학적 측량 시뮬레이터</h1>
+            </div>
+            
+            <nav class="flex space-x-1">
+                <button onclick="switchTab('tab1')" id="nav-tab1" class="tab-btn hover:bg-slate-800 px-4 py-1.5 rounded-full font-semibold transition-all text-sm text-slate-400">개념 퀴즈</button>
+                <button onclick="switchTab('tab2')" id="nav-tab2" class="tab-btn bg-blue-600 px-4 py-1.5 rounded-full font-semibold transition-all text-sm text-white">실전 시뮬레이션</button>
+                <button onclick="switchTab('tab3')" id="nav-tab3" class="tab-btn hover:bg-slate-800 px-4 py-1.5 rounded-full font-semibold transition-all text-sm text-slate-400">요점 정리</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-container max-w-7xl mx-auto w-full p-4 gap-4 overflow-hidden">
+
+        <!-- TAB 1: VISUAL QUIZ (복구된 4종 카드) -->
+        <section id="tab1" class="tab-content hidden animate-fade-in overflow-y-auto pb-10">
+            <div class="mb-8 text-center mt-6">
+                <h2 class="text-3xl font-black text-slate-900 mb-2">어떤 도구가 필요할까요?</h2>
+                <p class="text-slate-500">주어진 단서에 따라 가장 적합한 수학 공식을 선택해 보세요.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-4">
+                <!-- Card 1 -->
+                <div class="card-flip cursor-pointer" onclick="this.classList.toggle('flipped')">
+                    <div class="card-inner">
+                        <div class="card-face bg-white border-2 border-slate-100 flex flex-col items-center p-6 shadow-sm hover:border-blue-200">
+                            <span class="text-xs font-bold text-slate-400 mb-4 uppercase">CASE 01</span>
+                            <div class="flex-grow flex items-center justify-center">
+                                <svg width="100" height="80" viewBox="0 0 120 100">
+                                    <path d="M20 80 L100 80 L60 20 Z" fill="none" stroke="#e2e8f0" stroke-width="2"/>
+                                    <path d="M20 80 L60 20 L100 80" fill="none" stroke="#2563eb" stroke-width="4" stroke-linecap="round"/>
+                                    <text x="30" y="50" font-size="12" font-weight="bold" fill="#2563eb">b</text>
+                                    <text x="80" y="50" font-size="12" font-weight="bold" fill="#2563eb">c</text>
+                                    <text x="50" y="45" font-size="10" font-weight="bold" fill="#f59e0b">∠A</text>
+                                </svg>
+                            </div>
+                            <p class="text-sm font-bold text-slate-700 mt-4">두 변과 끼인각</p>
+                        </div>
+                        <div class="card-face bg-blue-600 text-white flex flex-col items-center justify-center p-6 rotate-y-180 text-center">
+                            <h3 class="text-xl font-black mb-2">코사인법칙</h3>
+                            <p class="text-xs opacity-90">나머지 한 변(a)의 길이를 구하는 가장 확실한 방법입니다.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="card-flip cursor-pointer" onclick="this.classList.toggle('flipped')">
+                    <div class="card-inner">
+                        <div class="card-face bg-white border-2 border-slate-100 flex flex-col items-center p-6 shadow-sm hover:border-orange-200">
+                            <span class="text-xs font-bold text-slate-400 mb-4 uppercase">CASE 02</span>
+                            <div class="flex-grow flex items-center justify-center">
+                                <svg width="100" height="80" viewBox="0 0 120 100">
+                                    <path d="M20 80 L100 80 L40 20 Z" fill="none" stroke="#e2e8f0" stroke-width="2"/>
+                                    <path d="M20 80 L40 20" fill="none" stroke="#2563eb" stroke-width="4"/>
+                                    <path d="M85 80 A15 15 0 0 0 75 65" fill="none" stroke="#f59e0b" stroke-width="3"/>
+                                    <text x="20" y="50" font-size="12" font-weight="bold" fill="#2563eb">b</text>
+                                    <text x="75" y="75" font-size="10" font-weight="bold" fill="#f59e0b">∠B</text>
+                                </svg>
+                            </div>
+                            <p class="text-sm font-bold text-slate-700 mt-4">마주보는 변과 각</p>
+                        </div>
+                        <div class="card-face bg-orange-500 text-white flex flex-col items-center justify-center p-6 rotate-y-180 text-center">
+                            <h3 class="text-xl font-black mb-2">사인법칙</h3>
+                            <p class="text-xs opacity-90">비율의 일정함을 이용해 다른 각도나 변을 찾아냅니다.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="card-flip cursor-pointer" onclick="this.classList.toggle('flipped')">
+                    <div class="card-inner">
+                        <div class="card-face bg-white border-2 border-slate-100 flex flex-col items-center p-6 shadow-sm hover:border-emerald-200">
+                            <span class="text-xs font-bold text-slate-400 mb-4 uppercase">CASE 03</span>
+                            <div class="flex-grow flex items-center justify-center">
+                                <svg width="100" height="80" viewBox="0 0 120 100">
+                                    <path d="M20 80 L100 80 L60 20 Z" fill="none" stroke="#10b981" stroke-width="4" stroke-linejoin="round"/>
+                                    <text x="55" y="92" font-size="10" font-weight="bold" fill="#10b981">a</text>
+                                    <text x="30" y="50" font-size="10" font-weight="bold" fill="#10b981">b</text>
+                                    <text x="80" y="50" font-size="10" font-weight="bold" fill="#10b981">c</text>
+                                </svg>
+                            </div>
+                            <p class="text-sm font-bold text-slate-700 mt-4">세 변의 길이</p>
+                        </div>
+                        <div class="card-face bg-emerald-600 text-white flex flex-col items-center justify-center p-6 rotate-y-180 text-center">
+                            <h3 class="text-xl font-black mb-2">코사인 변형</h3>
+                            <p class="text-xs opacity-90">변의 길이 정보만으로 내부의 각도를 계산할 수 있습니다.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="card-flip cursor-pointer" onclick="this.classList.toggle('flipped')">
+                    <div class="card-inner">
+                        <div class="card-face bg-white border-2 border-slate-100 flex flex-col items-center p-6 shadow-sm hover:border-purple-200">
+                            <span class="text-xs font-bold text-slate-400 mb-4 uppercase">CASE 04</span>
+                            <div class="flex-grow flex items-center justify-center">
+                                <svg width="100" height="80" viewBox="0 0 120 100">
+                                    <circle cx="60" cy="50" r="35" fill="none" stroke="#a855f7" stroke-width="2"/>
+                                    <line x1="60" y1="50" x2="95" y2="50" stroke="#a855f7" stroke-width="2" stroke-dasharray="2"/>
+                                    <text x="70" y="45" font-size="12" font-weight="bold" fill="#a855f7">R</text>
+                                </svg>
+                            </div>
+                            <p class="text-sm font-bold text-slate-700 mt-4">외접원과 반지름</p>
+                        </div>
+                        <div class="card-face bg-purple-600 text-white flex flex-col items-center justify-center p-6 rotate-y-180 text-center">
+                            <h3 class="text-xl font-black mb-2">사인법칙</h3>
+                            <p class="text-xs opacity-90">삼각형의 한 변/대각과 외접원의 반지름 $R$ 사이의 관계입니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: INTERACTIVE DASHBOARD (대시보드 레이아웃 유지) -->
+        <section id="tab2" class="tab-content block animate-fade-in">
+            <div class="flex flex-col lg:flex-row gap-4 h-full">
+                
+                <!-- 왼쪽: 컨트롤 패널 -->
+                <div class="lg:w-[350px] flex flex-col gap-4 h-full shrink-0">
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200 flex-grow">
+                        <h3 class="font-bold text-sm mb-6 flex items-center gap-2">
+                            <span class="w-1.5 h-4 bg-blue-600 rounded-full"></span>
+                            지형 데이터 조정
+                        </h3>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <div class="flex justify-between mb-2 items-center">
+                                    <label class="text-[11px] font-bold text-slate-500">본부-전망대 ($b$)</label>
+                                    <span class="text-sm font-mono font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded" id="val-b">100</span>
+                                </div>
+                                <input type="range" id="input-b" min="50" max="250" value="100" class="w-full">
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between mb-2 items-center">
+                                    <label class="text-[11px] font-bold text-slate-500">본부-선착장 ($c$)</label>
+                                    <span class="text-sm font-mono font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded" id="val-c">120</span>
+                                </div>
+                                <input type="range" id="input-c" min="50" max="250" value="120" class="w-full accent-emerald-600">
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between mb-2 items-center">
+                                    <label class="text-[11px] font-bold text-slate-500">관측 각도 ($\angle A$)</label>
+                                    <span class="text-sm font-mono font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded" id="val-A">60</span>
+                                </div>
+                                <input type="range" id="input-A" min="20" max="140" value="60" class="w-full accent-orange-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 rounded-3xl p-6 text-white shadow-lg shrink-0">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Real-time Calculation</span>
+                        </div>
+                        <p class="text-slate-400 text-[10px] font-medium mb-1">호수 건너편 예상 거리 ($a$)</p>
+                        <div class="flex items-baseline gap-1 mb-6">
+                            <span class="text-4xl font-black text-white" id="res-a">0</span>
+                            <span class="text-sm font-bold text-slate-500">m</span>
+                        </div>
+
+                        <div class="pt-4 border-t border-slate-800">
+                            <div class="bg-slate-800/50 p-3 rounded-xl font-mono text-[10px] space-y-2">
+                                <div class="flex justify-between opacity-60"><span>측량식:</span> <span>$a^2 = b^2+c^2-2bc\cos A$</span></div>
+                                <div class="flex justify-between text-white"><span>$b^2 + c^2$</span> <span id="calc-sqsum">--</span></div>
+                                <div class="flex justify-between text-orange-400"><span>$- 2bc \cos A$</span> <span id="calc-subtr">--</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 오른쪽: 시각화 지도 -->
+                <div class="flex-grow h-full relative">
+                    <div class="survey-map">
+                        <svg id="svg-map" width="100%" height="100%" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet">
+                            <defs>
+                                <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(0,0,0,0.03)" stroke-width="1"/>
+                                </pattern>
+                                <filter id="glow">
+                                    <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                                    <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                                </filter>
+                            </defs>
+                            <rect width="100%" height="100%" fill="url(#grid)" />
+
+                            <path id="lake" class="lake-container" d="" />
+
+                            <line id="line-b" x1="400" y1="450" x2="0" y2="0" stroke="#3b82f6" stroke-width="4" stroke-linecap="round" />
+                            <line id="line-c" x1="400" y1="450" x2="0" y2="0" stroke="#10b981" stroke-width="4" stroke-linecap="round" />
+                            <line id="line-a" x1="0" y1="0" x2="0" y2="0" stroke="#f59e0b" stroke-width="6" stroke-dasharray="12,8" class="pulse-line" filter="url(#glow)" />
+
+                            <g id="point-A" transform="translate(400, 450)">
+                                <circle r="12" fill="#fff" stroke="#1e293b" stroke-width="3" />
+                                <text y="-25" text-anchor="middle" font-weight="black" font-size="12">본부 (A)</text>
+                                <text y="5" x="-5" font-size="14">🏢</text>
+                            </g>
+                            <g id="point-B">
+                                <circle r="12" fill="#fff" stroke="#3b82f6" stroke-width="3" />
+                                <text y="-25" text-anchor="middle" font-weight="black" font-size="12">전망대 (C)</text>
+                                <text y="5" x="-5" font-size="14">🔭</text>
+                            </g>
+                            <g id="point-C">
+                                <circle r="12" fill="#fff" stroke="#10b981" stroke-width="3" />
+                                <text y="-25" text-anchor="middle" font-weight="black" font-size="12">선착장 (B)</text>
+                                <text y="5" x="-5" font-size="14">⚓</text>
+                            </g>
+                            
+                            <g id="label-a-container">
+                                <rect rx="6" width="70" height="26" fill="#f59e0b" />
+                                <text x="35" y="17" text-anchor="middle" fill="white" font-size="12" font-weight="bold">a km</text>
+                            </g>
+                        </svg>
+                        
+                        <div class="absolute bottom-4 left-4 bg-white/60 backdrop-blur-md px-3 py-2 rounded-xl border border-white shadow-sm flex gap-4">
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-1 bg-blue-500 rounded-full"></div> <span class="text-[10px] font-bold text-slate-600">측정 가능</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-1 bg-orange-400 border-t border-dashed border-orange-400"></div> <span class="text-[10px] font-bold text-orange-600">계산 필요(호수)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: SUMMARY (복구된 요점 정리) -->
+        <section id="tab3" class="tab-content hidden animate-fade-in overflow-y-auto">
+             <div class="max-w-5xl mx-auto py-8 px-4">
+                <div class="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-100 flex flex-col md:flex-row gap-10 items-center">
+                    <div class="w-full md:w-1/2 space-y-6">
+                        <h2 class="text-4xl font-black leading-tight">코사인법칙은<br><span class="text-blue-600">완성된 퍼즐</span>입니다.</h2>
+                        <p class="text-slate-600 leading-relaxed text-sm">삼각형의 두 변과 그 사이의 각도를 알 때, 나머지 한 변은 더 이상 '미지의 영역'이 아닙니다. 이 공식은 피타고라스 정리의 확장판으로, 직각이 아닌 모든 삼각형으로 시야를 넓혀줍니다.</p>
+                        <div class="bg-slate-50 p-6 rounded-2xl border-l-4 border-blue-600">
+                            <span class="block text-xs font-black text-blue-600 mb-2 uppercase tracking-widest">Master Formula</span>
+                            <div class="text-2xl font-serif italic text-slate-800">
+                                $$a^2 = b^2 + c^2 - 2bc \cos A$$
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-1/2 grid grid-cols-1 gap-4">
+                        <div class="p-6 bg-blue-50 rounded-2xl flex items-center gap-5">
+                            <div class="text-3xl">📡</div>
+                            <div>
+                                <h4 class="font-bold">원거리 측량</h4>
+                                <p class="text-xs text-slate-500 leading-normal">GPS 신호가 끊긴 지역에서 기지국 간 거리 계산</p>
+                            </div>
+                        </div>
+                        <div class="p-6 bg-orange-50 rounded-2xl flex items-center gap-5">
+                            <div class="text-3xl">🏗️</div>
+                            <div>
+                                <h4 class="font-bold">건축 및 설계</h4>
+                                <p class="text-xs text-slate-500 leading-normal">지형에 맞춘 다리 설계 및 복잡한 지붕 구조 계산</p>
+                            </div>
+                        </div>
+                        <div class="p-6 bg-emerald-50 rounded-2xl flex items-center gap-5">
+                            <div class="text-3xl">🎮</div>
+                            <div>
+                                <h4 class="font-bold">게임 프로그래밍</h4>
+                                <p class="text-xs text-slate-500 leading-normal">캐릭터 간의 거리 및 시야각 판정 알고리즘</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                        <h5 class="font-bold text-slate-900 mb-2 text-sm">핵심 포인트 01</h5>
+                        <p class="text-xs text-slate-500">$\cos 90^\circ = 0$ 이므로, 직각삼각형일 때 피타고라스 정리와 완벽하게 일치합니다.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                        <h5 class="font-bold text-slate-900 mb-2 text-sm">핵심 포인트 02</h5>
+                        <p class="text-xs text-slate-500">$\angle A$가 둔각이면 $\cos A$가 음수가 되어, 변 $a$가 피타고라스 때보다 더 길어집니다.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                        <h5 class="font-bold text-slate-900 mb-2 text-sm">핵심 포인트 03</h5>
+                        <p class="text-xs text-slate-500">세 변의 길이만 알면 어떤 각이든 구할 수 있어 데이터 분석의 기초가 됩니다.</p>
+                    </div>
+                </div>
+             </div>
+        </section>
+
+    </main>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('bg-blue-600', 'text-white');
+                el.classList.add('text-slate-400', 'hover:bg-slate-800');
+            });
+            
+            document.getElementById(tabId).classList.remove('hidden');
+            const activeBtn = document.getElementById('nav-' + tabId);
+            activeBtn.classList.remove('text-slate-400', 'hover:bg-slate-800');
+            activeBtn.classList.add('bg-blue-600', 'text-white');
+
+            if(tabId === 'tab2') updateVisuals();
+            if (window.MathJax && window.MathJax.typeset) window.MathJax.typeset();
+        }
+
+        function updateVisuals() {
+            const b = parseFloat(document.getElementById('input-b').value);
+            const c = parseFloat(document.getElementById('input-c').value);
+            const degA = parseFloat(document.getElementById('input-A').value);
+            const radA = degA * Math.PI / 180;
+
+            document.getElementById('val-b').innerText = b;
+            document.getElementById('val-c').innerText = c;
+            document.getElementById('val-A').innerText = degA;
+
+            const b2 = b * b;
+            const c2 = c * c;
+            const cosA = Math.cos(radA);
+            const subtr = 2 * b * c * cosA;
+            const a2 = b2 + c2 - subtr;
+            const a = Math.sqrt(Math.max(0, a2));
+
+            document.getElementById('res-a').innerText = Math.round(a);
+            document.getElementById('calc-sqsum').innerText = (b2 + c2).toLocaleString();
+            document.getElementById('calc-subtr').innerText = (subtr > 0 ? "- " : "+ ") + Math.abs(Math.round(subtr)).toLocaleString();
+
+            const originX = 400;
+            const originY = 450;
+            const scale = 1.4; 
+
+            const cx = originX - (b * Math.cos(radA) * scale);
+            const cy = originY - (b * Math.sin(radA) * scale);
+            const bx = originX + (c * scale);
+            const by = originY;
+
+            document.getElementById('line-b').setAttribute('x2', cx);
+            document.getElementById('line-b').setAttribute('y2', cy);
+            document.getElementById('line-c').setAttribute('x2', bx);
+            document.getElementById('line-c').setAttribute('y2', by);
+            document.getElementById('line-a').setAttribute('x1', cx);
+            document.getElementById('line-a').setAttribute('y1', cy);
+            document.getElementById('line-a').setAttribute('x2', bx);
+            document.getElementById('line-a').setAttribute('y2', by);
+
+            document.getElementById('point-B').setAttribute('transform', `translate(${cx}, ${cy})`);
+            document.getElementById('point-C').setAttribute('transform', `translate(${bx}, ${by})`);
+
+            const lakePath = `M ${cx-30} ${cy} Q ${cx} ${cy-50} ${(cx+bx)/2} ${(cy+by)/2 - 20} T ${bx+30} ${by} Q ${bx} ${by+40} ${(cx+bx)/2} ${(cy+by)/2 + 30} Z`;
+            document.getElementById('lake').setAttribute('d', lakePath);
+
+            const label = document.getElementById('label-a-container');
+            label.setAttribute('transform', `translate(${(cx + bx) / 2 - 35}, ${(cy + by) / 2 - 40})`);
+            label.querySelector('text').textContent = Math.round(a) + " m";
+        }
+
+        window.onload = () => {
+            ['input-b', 'input-c', 'input-A'].forEach(id => {
+                document.getElementById(id).addEventListener('input', updateVisuals);
+            });
+            updateVisuals();
+        };
+    </script>
+</body>
+</html>
