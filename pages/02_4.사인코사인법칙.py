@@ -7,10 +7,11 @@ url = "https://gemini.google.com/share/6a5009e17e54"
 # 제목 + 설명
 st.markdown("""
 ### 🌌 탐구자들이여, 삼각형의 비밀을 밝혀라
+st.markdown("""
+<p style='font-size:18px; font-weight:500; line-height:1.6;'>
 세 변과 세 각 속에는 눈에 보이지 않는 조화와 수학적 법칙이 흐르고 있습니다.
-<span style='font-size:18px; font-weight:500;'>
-</span>
-
+</p>
+""", unsafe_allow_html=True)
 ✔ 두 변과 끼인각 → **코사인법칙**  
 ✔ 한 변과 두 각 → **사인법칙**
 
