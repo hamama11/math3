@@ -34,15 +34,9 @@ with c2:
     b1, b2 = st.columns(2)
 
     with b1:
-        st.page_link(
-            "pages/01_1.지수log.py",
-            label="지수·로그",
-            use_container_width=True
-        )
+        if st.button("🔄️ 지수·로그", use_container_width=True):
+            st.switch_page("pages/01_1.지수log.py")
 
     with b2:
-        st.page_link(
-            "pages/02_4.사인코사인법칙.py",
-            label="사인·코사인",
-            use_container_width=True
-        )
+        if st.button("📐 사인·코사인법칙", use_container_width=True):
+            st.switch_page("pages/02_4.사인코사인법칙.py")
