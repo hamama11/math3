@@ -1,8 +1,8 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-# 👉 GitHub Pages URL
-url = "https://사용자명.github.io/레포명/assets/sine_cosine.html"
+# 👉 외부 URL (A)
+url = "https://gemini.google.com/share/6a5009e17e54"
 
 # 제목 + 설명
 st.markdown("""
@@ -17,21 +17,15 @@ st.markdown("""
 점을 움직이며 그 관계를 직접 추적해보세요.
 """)
 
-# 👉 외부 열기 버튼
-st.link_button("🔗 새 탭에서 전체 화면으로 보기", url)
-st.caption("💡 화면이 작으면 위 버튼을 눌러 전체 화면으로 보세요.")
+# 👉 외부 열기 (A 사용)
+st.link_button("🚀 전체 화면으로 보기", url)
+
+st.caption("💡 화면이 작으면 버튼을 눌러 전체 화면으로 보세요.")
 
 st.markdown("---")
 
-# 👉 내부 임베딩
-components.html(
-    f"""
-    <iframe
-        src="{url}"
-        width="100%"
-        height="700"
-        style="border:none; border-radius:12px;">
-    </iframe>
-    """,
-    height=720
-)
+# 👉 내부 임베딩 (로컬 HTML)
+with open("sincos.html", "r", encoding="utf-8") as f:
+    html = f.read()
+
+components.html(html, height=720, scrolling=True)
