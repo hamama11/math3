@@ -45,4 +45,4 @@ with c2:
         "pages/02_4.사인코사인법칙.py",
         label="📐 사인·코사인법칙 탐구",
         use_container_width=True
-    ))
+    )
