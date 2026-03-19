@@ -13,13 +13,10 @@ st.markdown("""
 </p>
 
 <p style='font-size:16px;'>
-✔ 두 변과 끼인각 → <b>코사인법칙</b><br>
-✔ 한 변과 두 각 → <b>사인법칙</b>
+✔ 두 변과 끼인각 → <b>__법칙</b><br>
+✔ 한 변과 두 각 → <b>__법칙</b>
 </p>
 """, unsafe_allow_html=True)
-
-# 외부 url열기
-st.link_button("👉전체 화면으로 보기", url1)
 
 # 수정👉 내부 임베딩 (로컬 HTML)
 with open("sincos.html", "r", encoding="utf-8") as f:
@@ -28,10 +25,14 @@ st.markdown("---")
 
 components.html(html, height=950, scrolling=True)
 
-st.link_button("👉전체 화면으로 보기", url2)
+# 수정 외부 url열기
+st.link_button("👉전체 화면으로 보기", url1)
 
 # 수정👉 내부 임베딩 (로컬 HTML)
 with open("sincos_thm.html", "r", encoding="utf-8") as f:
     html = f.read()
 st.markdown("---")    
 components.html(html, height=950, scrolling=True)
+
+# 수정 외부 url열기
+st.link_button("👉전체 화면으로 보기", url2)
