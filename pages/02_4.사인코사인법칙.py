@@ -1,6 +1,8 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
+st.set_page_config(layout="wide")
+
 # 수정👉 외부 (URL)
 url1 = "https://gemini.google.com/share/3ed7a18d47b2"
 url2 = "https://gemini.google.com/share/fbe071558873"
@@ -19,18 +21,34 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 수정👉 내부 임베딩 (로컬 HTML)
-with open("sincos.html", "r", encoding="utf-8") as f:
+with open("sincos_thm.html", "r", encoding="utf-8") as f:
     html = f.read()
-st.markdown("---")
 
-components.html(html, height=950, scrolling=True)
+wrapped_html = f"""
+<div style="width: 100%; margin: 0; padding: 0;">
+    {html}
+</div>
+"""
+
+st.markdown("---")
+components.html(wrapped_html, height=950, scrolling=True)
 
 # 수정 외부 url열기
 st.link_button("👉전체 화면으로 보기", url1)
+---
 
 # 수정👉 내부 임베딩 (로컬 HTML)
 with open("sincos_thm.html", "r", encoding="utf-8") as f:
     html = f.read()
-st.markdown("---")    
-components.html(html, height=950, scrolling=True)
 
+wrapped_html = f"""
+<div style="width: 100%; margin: 0; padding: 0;">
+    {html}
+</div>
+"""
+
+st.markdown("---")
+components.html(wrapped_html, height=950, scrolling=True)
+
+# 수정 외부 url열기
+st.link_button("👉전체 화면으로 보기", url2)
