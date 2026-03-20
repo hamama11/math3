@@ -21,20 +21,20 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # HTML 1
-with open("cos_thm.html", "r", encoding="utf-8") as f:
-    html1 = f.read()
+with open("cos_thm.html", "r", encoding="utf-8") as f1:
+    html1 = f1.read()
 
-wrapped_html1 = f"""
+wrapped_html1 = f1"""
 <div style="width: 100%; margin: 0; padding: 0;">
     {html1}
 </div>
 """
 
 # HTML 2
-with open("sin_thm.html", "r", encoding="utf-8") as f:
-    html2 = f.read()
+with open("sin_thm.html", "r", encoding="utf-8") as f2:
+    html2 = f2.read()
 
-wrapped_html2 = f"""
+wrapped_html2 = f2"""
 <div style="width: 100%; margin: 0; padding: 0;">
     {html2}
 </div>
