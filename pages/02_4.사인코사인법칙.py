@@ -21,7 +21,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # HTML 1
-with open("sincos_thm.html", "r", encoding="utf-8") as f:
+with open("cos_thm.html", "r", encoding="utf-8") as f:
     html1 = f.read()
 
 wrapped_html1 = f"""
@@ -31,7 +31,7 @@ wrapped_html1 = f"""
 """
 
 # HTML 2
-with open("sincos_law.html", "r", encoding="utf-8") as f:
+with open("sin_thm.html", "r", encoding="utf-8") as f:
     html2 = f.read()
 
 wrapped_html2 = f"""
