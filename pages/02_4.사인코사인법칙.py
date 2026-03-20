@@ -31,26 +31,3 @@ with tab2:
     components.html(wrapped_html, height=900, scrolling=True)
     st.link_button("👉 전체 화면", url2, use_container_width=True)
     
-# 📄 HTML 파일 로드
-with open("sincos.html", "r", encoding="utf-8") as f:
-    html_content = f.read()
-
-wrapped_html = f"""
-<div style="width: 100%; margin: 0; padding: 0;">
-    {html_content}
-</div>
-"""
-
-# 🔹 첫 번째 콘텐츠
-st.markdown("---")
-
-components.html(wrapped_html, height=950, scrolling=True)
-
-st.link_button("👉 전체 화면으로 보기 (1)", url1, use_container_width=True)
-
-# 🔹 두 번째 콘텐츠
-st.markdown("---")
-
-components.html(wrapped_html, height=950, scrolling=True)
-
-st.link_button("👉 전체 화면으로 보기 (2)", url2, use_container_width=True)
