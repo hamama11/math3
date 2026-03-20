@@ -21,26 +21,26 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # HTML 1
-with open("cos_thm.html", "r", encoding="utf-8") as f1:
-    html1 = f1.read()
+with open("cos_thm.html", "r", encoding="utf-8") as f:
+    html1 = f.read()
 
-wrapped_html1 = f1"""
+wrapped_html1 = f"""
 <div style="width: 100%; margin: 0; padding: 0;">
     {html1}
 </div>
 """
 
 # HTML 2
-with open("sin_thm.html", "r", encoding="utf-8") as f2:
-    html2 = f2.read()
+with open("sin_thm.html", "r", encoding="utf-8") as f:
+    html2 = f.read()
 
-wrapped_html2 = f2"""
+wrapped_html2 = f"""
 <div style="width: 100%; margin: 0; padding: 0;">
     {html2}
 </div>
 """
 
-tab1, tab2 = st.tabs(["정리", "탐구"])
+tab1, tab2 = st.tabs(["코사인법칙", "사인법칙"])
 
 with tab1:
     components.html(wrapped_html1, height=950, scrolling=True)
