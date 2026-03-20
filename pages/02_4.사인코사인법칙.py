@@ -15,7 +15,7 @@ st.markdown("""
 </p>
 
 <p style='font-size:16px;'>
-✔ 두 변과 한 각 → <b>~~~법칙 ✔ 한 변과 두 각 → <b>~~~법칙</b>
+✔ 두 변과 한 각 → <b>~~~법칙 </b> ✔ 한 변과 두 각 → <b>~~~법칙</b>
 </p>
 """, unsafe_allow_html=True)
 
