@@ -22,7 +22,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 📄 HTML 파일 1회만 로드
-with open("sincos_thm.html", "r", encoding="utf-8") as f:
+with open("sincos.html", "r", encoding="utf-8") as f:
     html_content = f.read()
 
 wrapped_html = f"""
