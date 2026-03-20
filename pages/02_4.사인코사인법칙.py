@@ -21,7 +21,17 @@ st.markdown("""
 </p>
 """, unsafe_allow_html=True)
 
-# 📄 HTML 파일 1회만 로드
+tab1, tab2 = st.tabs(["📐 사인법칙", "📐 코사인법칙"])
+
+with tab1:
+    components.html(wrapped_html, height=900, scrolling=True)
+    st.link_button("👉 전체 화면", url1, use_container_width=True)
+
+with tab2:
+    components.html(wrapped_html, height=900, scrolling=True)
+    st.link_button("👉 전체 화면", url2, use_container_width=True)
+    
+# 📄 HTML 파일 로드
 with open("sincos.html", "r", encoding="utf-8") as f:
     html_content = f.read()
 
