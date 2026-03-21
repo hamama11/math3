@@ -24,17 +24,35 @@ st.markdown(
 with open(BASE_DIR / "5.s_n,a_n.html", encoding="utf-8") as f:
     html1 = f.read()
 
-st.markdown("---")
-col1, col2 = st.columns([8, 2], gap="small")
+st.markdown(
+    """
+    <div style="
+        display:flex;
+        align-items:center;
+        gap:14px;
+        margin:10px 0;
+    ">
+        <h3 style="margin:0;">
+            ① 수열의 흐름을 따라
+        </h3>
 
-with col1:
-    st.markdown("### ① 수열의 흐름을 따라")
+        <a href="https://gemini.google.com/share/fac0100a3295" target="_blank"
+        style="
+            font-size:14px;
+            text-decoration:none;
+            padding:7px 14px;
+            border-radius:999px;
+            background:#111;
+            color:white;
+        ">
+        길을 열어보라 →
+        </a>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
-with col2:
-    st.link_button(
-        "전체화면으로 보기click",
-        "https://gemini.google.com/share/fac0100a3295"
-    )
+#HTML1
 components.html(html1, height=700, scrolling=True)
 st.markdown("---")
 
