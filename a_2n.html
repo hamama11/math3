@@ -8,9 +8,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        html {
-            font-size: 20px;
-        }
+        /* custom scrollbar for left panel if needed */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        
         body {
             font-family: 'Noto Sans KR', sans-serif;
             background-color: #050510; /* 아주 깊은 밤하늘 */
@@ -31,8 +33,8 @@
         .chart-container {
             position: relative;
             width: 100%;
-            height: 50vh;
-            max-height: 500px;
+            height: 100%;
+            min-height: 250px;
         }
 
         /* 별빛 네온 효과 */
@@ -53,133 +55,111 @@
         }
     </style>
 </head>
-<body class="antialiased scroll-smooth selection:bg-amber-500 selection:text-white">
+<body class="antialiased selection:bg-amber-500 selection:text-white h-screen flex flex-col overflow-hidden">
 
     <!-- Header -->
-    <header class="py-10 px-4 text-center border-b border-indigo-900/50 bg-black/40 backdrop-blur-md sticky top-0 z-50 shadow-sm">
-        <div class="max-w-4xl mx-auto">
-            <h1 class="text-3xl md:text-4xl font-black mb-3 tracking-tight text-white star-twinkle cursor-pointer">
+    <header class="py-4 px-4 border-b border-indigo-900/50 bg-black/40 backdrop-blur-md z-50 shadow-sm shrink-0">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2">
+            <h1 class="text-xl md:text-2xl font-black tracking-tight text-white star-twinkle cursor-pointer">
                 Stellar Odyssey: <span class="text-amber-300 neon-text-gold">Constellation Harmony</span>
             </h1>
-            <p class="text-indigo-200 text-base md:text-lg">
+            <p class="text-indigo-200 text-sm md:text-base hidden md:block">
                 별들을 이어 수열을 완성하고, 우주에 숨겨진 진정한 조화(Harmony)를 발견하세요.
             </p>
         </div>
     </header>
 
-    <main class="max-w-6xl mx-auto px-4 py-8 space-y-12">
+    <main class="flex-1 w-full max-w-7xl mx-auto px-4 py-4 grid grid-cols-1 lg:grid-cols-12 gap-6 h-full overflow-hidden">
 
-        <!-- Target System Info -->
-        <section class="bg-indigo-950/30 backdrop-blur-md border border-indigo-500/30 rounded-2xl p-6 md:p-8 text-center shadow-[0_0_30px_rgba(251,191,36,0.1)] relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-amber-400"></div>
-            <h2 class="text-amber-200 text-sm font-bold uppercase tracking-widest mb-2 font-mono">STELLAR RESONANCE RULE (관측된 별의 공명 법칙)</h2>
-            <div class="text-4xl md:text-5xl font-mono font-bold text-amber-400 neon-text-gold my-6">
-                a<sub>2n+1</sub> = a<sub>2n</sub> + 6
-            </div>
-            <p class="text-slate-300 md:text-lg max-w-3xl mx-auto leading-relaxed">
-                탐사선이 보내온 우주 지도에는 <strong>"짝수 번째 별에서 다음 홀수 번째 별로 이동할 때 에너지가 정확히 6만큼 증폭된다"</strong>고 기록되어 있습니다.<br>
-                하지만 반대 방향(홀수→짝수)의 궤도 정보는 <span class="text-blue-400 font-bold">아직 밝혀지지 않은 미지(Unknown)의 영역입니다.</span>
-            </p>
-        </section>
+        <!-- Left Column: Controls & Info -->
+        <div class="lg:col-span-4 flex flex-col gap-4 overflow-y-auto pr-2 pb-8 custom-scrollbar">
+            <!-- Target System Info -->
+            <section class="bg-indigo-950/30 backdrop-blur-md border border-indigo-500/30 rounded-xl p-4 text-center shadow-[0_0_15px_rgba(251,191,36,0.1)] shrink-0">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-amber-400"></div>
+                <h2 class="text-amber-200 text-xs font-bold uppercase tracking-widest mb-1 font-mono">STELLAR RESONANCE RULE</h2>
+                <div class="text-2xl font-mono font-bold text-amber-400 neon-text-gold my-3">
+                    a<sub>2n+1</sub> = a<sub>2n</sub> + 6
+                </div>
+                <p class="text-slate-300 text-xs leading-relaxed">
+                    "짝수 번째에서 다음 홀수 번째로 이동할 때 에너지가 6만큼 증폭된다"<br>
+                    <span class="text-blue-400 font-bold mt-1 inline-block">반대 방향의 궤도는 아직 미지(Unknown)입니다.</span>
+                </p>
+            </section>
 
-        <!-- Interactive Sandbox Area -->
-        <section class="space-y-8">
-            
-            <!-- Auto Hack Buttons -->
-            <div class="bg-black/40 backdrop-blur-md border border-slate-800 rounded-2xl p-6 shadow-md">
-                <div class="flex flex-col md:flex-row justify-between items-center mb-6">
-                    <h3 class="text-xl font-bold text-slate-200 font-mono">🔭 Telescope Interface: Observation Modes</h3>
-                    <button id="btn-reset" class="mt-4 md:mt-0 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm rounded-lg font-mono border border-slate-600 transition flex items-center gap-2 shadow-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                        Calibrate Scope
+            <!-- Interactive Sandbox Area -->
+            <section class="bg-black/40 backdrop-blur-md border border-slate-800 rounded-xl p-4 shadow-md shrink-0">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-sm font-bold text-slate-200 font-mono">🔭 Observation Modes</h3>
+                    <button id="btn-reset" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] rounded font-mono border border-slate-600 transition flex items-center gap-1 shadow-sm">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        Calibrate
                     </button>
                 </div>
-                <div class="flex flex-wrap justify-center gap-4">
-                    <button id="btn-step" class="py-3 px-6 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-base font-bold shadow-[0_0_15px_rgba(100,116,139,0.5)] transition hover:scale-105">
-                        Orbit Plateau (궤도 안정화)
-                    </button>
-                    <button id="btn-blackhole" class="py-3 px-6 bg-purple-700 hover:bg-purple-600 text-white rounded-lg text-base font-bold shadow-[0_0_15px_rgba(126,34,206,0.5)] transition hover:scale-105">
-                        Gravity Dive (중력 다이브)
-                    </button>
-                    <button id="btn-zigzag" class="py-3 px-6 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-base font-bold shadow-[0_0_15px_rgba(13,148,136,0.5)] transition hover:scale-105">
-                        Binary Resonance (쌍성 공명)
-                    </button>
-                    <button id="btn-chaos" class="py-3 px-6 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-base font-bold shadow-[0_0_15px_rgba(225,29,72,0.5)] transition hover:scale-105">
-                        Supernova Burst (초신성 폭발)
-                    </button>
-                    <button id="btn-random" class="py-3 px-6 bg-fuchsia-600 hover:bg-fuchsia-500 text-white rounded-lg text-base font-bold shadow-[0_0_15px_rgba(192,38,211,0.5)] transition hover:scale-105">
-                        Stardust Scatter (성간 산포)
-                    </button>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="btn-step" class="py-2 px-2 bg-slate-700 hover:bg-slate-600 text-white rounded text-xs font-bold shadow-[0_0_10px_rgba(100,116,139,0.5)] transition hover:scale-105">Orbit Plateau (궤도 안정화)</button>
+                    <button id="btn-blackhole" class="py-2 px-2 bg-purple-700 hover:bg-purple-600 text-white rounded text-xs font-bold shadow-[0_0_10px_rgba(126,34,206,0.5)] transition hover:scale-105">Gravity Dive (중력 다이브)</button>
+                    <button id="btn-zigzag" class="py-2 px-2 bg-teal-600 hover:bg-teal-500 text-white rounded text-xs font-bold shadow-[0_0_10px_rgba(13,148,136,0.5)] transition hover:scale-105">Binary Resonance (쌍성 공명)</button>
+                    <button id="btn-chaos" class="py-2 px-2 bg-rose-600 hover:bg-rose-500 text-white rounded text-xs font-bold shadow-[0_0_10px_rgba(225,29,72,0.5)] transition hover:scale-105">Supernova Burst (초신성 폭발)</button>
+                    <button id="btn-random" class="col-span-2 py-2 px-2 bg-fuchsia-600 hover:bg-fuchsia-500 text-white rounded text-xs font-bold shadow-[0_0_10px_rgba(192,38,211,0.5)] transition hover:scale-105">Stardust Scatter (무작위 산포)</button>
                 </div>
-            </div>
+            </section>
 
-            <!-- Chart Display -->
-            <div class="w-full">
-                <div class="bg-[#0b0c15]/80 backdrop-blur-xl border border-slate-700 rounded-2xl p-4 md:p-6 shadow-2xl relative">
-                    <!-- Status overlay -->
-                    <div class="absolute top-4 right-6 text-right z-10">
-                        <div class="text-xs text-slate-400 font-mono">OBSERVATORY LOG</div>
-                        <div id="status-text" class="text-sm font-bold text-amber-300 font-mono">Awaiting target lock...</div>
-                    </div>
-
-                    <!-- 범례 (Legend) -->
-                    <div class="flex justify-center gap-6 mb-4 text-base font-mono bg-black/50 border border-slate-700 inline-block px-4 py-2 rounded-lg shadow-sm">
-                        <div class="flex items-center text-amber-400 font-bold">
-                            <span class="w-6 h-1 bg-amber-400 mr-2 shadow-[0_0_8px_rgba(251,191,36,0.8)]"></span>
-                            a_2n → a_2n+1 (Verified Orbit, +6)
+            <!-- Final Resolution / Patch -->
+            <section class="bg-gradient-to-br from-indigo-950 to-[#0b0c15] border border-amber-500/30 rounded-xl p-4 text-center shadow-[0_0_20px_rgba(251,191,36,0.1)] shrink-0 relative">
+                <h2 class="text-base font-black text-white mb-3">✨ True Cosmic Harmony</h2>
+                
+                <div id="patch-panel" class="bg-black/40 border border-indigo-500/30 p-3 rounded-lg shadow-inner transition-all duration-500">
+                    <button id="btn-patch" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-black font-black text-sm rounded shadow-[0_0_15px_rgba(251,191,36,0.4)] transition transform hover:scale-[1.02]">
+                        [ SYNC ] a<sub>2n</sub> = a<sub>2n-1</sub> + 6
+                    </button>
+                    <div id="patch-success" class="hidden mt-2 animate-fade-in-up">
+                        <div class="text-amber-400 font-mono font-bold text-[11px] mb-2">
+                            >> SYNCHRONIZATION COMPLETE.
                         </div>
-                        <div class="flex items-center text-blue-400 font-bold">
-                            <span class="w-6 h-0 border-t-2 border-dashed border-blue-500 mr-2"></span>
-                            Odd → Even (Hidden Orbit)
+                        <div class="inline-block px-6 py-3 bg-amber-500/20 border-2 border-amber-400 rounded-xl shadow-[0_0_30px_rgba(251,191,36,0.6)] backdrop-blur-xl relative overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 -translate-x-full animate-shimmer"></div>
+                            <p class="text-amber-200 text-[10px] font-mono mb-1">성도의 공식 명칭</p>
+                            <p class="text-3xl font-black text-white tracking-widest emphasize-word">등차수열</p>
                         </div>
                     </div>
-                    
-                    <div class="chart-container">
-                        <canvas id="mainChart"></canvas>
-                    </div>
+                </div>
+            </section>
+        </div>
 
-                    <!-- Computed Array Display -->
-                    <div class="mt-6 p-4 bg-black/60 rounded-xl border border-slate-800 font-mono overflow-x-auto whitespace-nowrap text-lg shadow-inner">
-                        <span class="text-slate-400 mr-2 font-bold">Observed Coordinates:</span>
-                        <span id="array-display" class="text-amber-200 tracking-wider font-bold"></span>
+        <!-- Right Column: Chart Display -->
+        <div class="lg:col-span-8 flex flex-col h-full pb-8">
+            <div class="flex-1 bg-[#0b0c15]/80 backdrop-blur-xl border border-slate-700 rounded-2xl p-4 shadow-2xl relative flex flex-col">
+                <!-- Status overlay -->
+                <div class="absolute top-3 right-4 text-right z-10">
+                    <div class="text-[10px] text-slate-400 font-mono">OBSERVATORY LOG</div>
+                    <div id="status-text" class="text-xs font-bold text-amber-300 font-mono">Awaiting target lock...</div>
+                </div>
+
+                <!-- 범례 (Legend) -->
+                <div class="flex justify-center gap-4 mb-3 text-xs font-mono bg-black/50 border border-slate-700 inline-flex px-3 py-1.5 rounded-lg shadow-sm self-center">
+                    <div class="flex items-center text-amber-400 font-bold">
+                        <span class="w-4 h-1 bg-amber-400 mr-2 shadow-[0_0_8px_rgba(251,191,36,0.8)]"></span>
+                        Verified (+6)
+                    </div>
+                    <div class="flex items-center text-blue-400 font-bold">
+                        <span class="w-4 h-0 border-t-2 border-dashed border-blue-500 mr-2"></span>
+                        Hidden Orbit
                     </div>
                 </div>
-            </div>
+                
+                <div class="chart-container flex-1">
+                    <canvas id="mainChart"></canvas>
+                </div>
 
-        </section>
-
-        <!-- Final Resolution / Patch -->
-        <section class="bg-gradient-to-br from-indigo-950 to-[#0b0c15] border border-amber-500/30 rounded-2xl p-8 md:p-12 text-center shadow-[0_0_40px_rgba(251,191,36,0.1)] relative overflow-hidden">
-            <h2 class="text-2xl md:text-3xl font-black text-white mb-6">✨ The True Cosmic Harmony</h2>
-            <p class="text-indigo-200 mb-8 max-w-2xl mx-auto leading-relaxed">
-                반쪽짜리 규칙만으로는 이 궤도의 진짜 모습을 확신할 수 없습니다. 
-                비어있는 미지의 구간에 <strong>동일한 공명(+6)</strong>을 연결하는 순간, 이 성도의 아름다운 수학적 정체가 드러납니다.
-            </p>
-            
-            <div id="patch-panel" class="bg-black/40 border border-indigo-500/30 p-6 rounded-xl max-w-xl mx-auto shadow-lg transition-all duration-500">
-                <p class="text-slate-300 mb-4 text-base font-bold">마지막 궤도의 단서를 동기화하시겠습니까?</p>
-                <button id="btn-patch" class="w-full py-4 bg-amber-500 hover:bg-amber-400 text-black font-black text-lg rounded-xl shadow-[0_0_20px_rgba(251,191,36,0.4)] transition transform hover:scale-[1.02]">
-                    [ SYNC ] a<sub>2n</sub> = a<sub>2n-1</sub> + 6 (Activate Full Resonance)
-                </button>
-                <div id="patch-success" class="hidden mt-2 animate-fade-in-up">
-                    <div class="text-amber-400 font-mono font-bold text-lg mb-6">
-                        >> SYNCHRONIZATION COMPLETE. 모든 별이 완벽한 균형으로 정렬되었습니다.
-                    </div>
-                    <div class="inline-block px-12 py-8 bg-amber-500/20 border-2 border-amber-400 rounded-3xl shadow-[0_0_60px_rgba(251,191,36,0.6)] backdrop-blur-xl relative overflow-hidden">
-                        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 -translate-x-full animate-shimmer"></div>
-                        <p class="text-amber-200 text-base font-mono mb-4">성도의 수학적 공식 명칭</p>
-                        <p class="text-6xl md:text-7xl font-black text-white tracking-widest mb-3 emphasize-word">등차수열</p>
-                        <p class="text-amber-300/90 text-lg font-mono">( Arithmetic Sequence )</p>
-                    </div>
+                <!-- Computed Array Display -->
+                <div class="mt-4 p-3 bg-black/60 rounded-xl border border-slate-800 font-mono overflow-x-auto whitespace-nowrap text-sm shadow-inner shrink-0">
+                    <span class="text-slate-400 mr-2 font-bold">Coordinates:</span>
+                    <span id="array-display" class="text-amber-200 tracking-wider font-bold"></span>
                 </div>
             </div>
-        </section>
+        </div>
 
     </main>
-
-    <footer class="py-8 text-center text-slate-600 text-sm font-mono mt-12 border-t border-slate-800">
-        <p>Constellation Simulator: Interactive Sequence Module</p>
-    </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -200,7 +180,7 @@
             
             Chart.defaults.color = '#94a3b8'; 
             Chart.defaults.font.family = "'Space Mono', monospace";
-            Chart.defaults.font.size = 16; 
+            Chart.defaults.font.size = 12; 
 
             const chartData = {
                 labels: ['a₁', 'a₂', 'a₃', 'a₄', 'a₅', 'a₆', 'a₇'], // 좌표축을 문자로 변경
@@ -214,8 +194,8 @@
                     },
                     pointBorderColor: '#fbbf24', // 별 테두리는 금색
                     pointBorderWidth: 2,
-                    pointRadius: 12, // 별 모양이 명확히 보이도록 크기 확대
-                    pointHoverRadius: 18, // 마우스 오버 시 더 크게 빛남
+                    pointRadius: 8, // 별 모양이 명확히 보이도록 크기 확대
+                    pointHoverRadius: 12, // 마우스 오버 시 더 크게 빛남
                     tension: 0,
                     segment: {
                         borderColor: ctx => {
@@ -245,9 +225,9 @@
                         bodyColor: '#fde68a',
                         borderColor: '#fbbf24',
                         borderWidth: 1,
-                        titleFont: { size: 16 },
-                        bodyFont: { size: 16 },
-                        padding: 12,
+                        titleFont: { size: 14 },
+                        bodyFont: { size: 14 },
+                        padding: 10,
                         callbacks: {
                             label: function(context) {
                                 return `관측 위치: ${context.parsed.y}`;
@@ -258,11 +238,11 @@
                 scales: {
                     y: {
                         grid: { color: 'rgba(51, 65, 85, 0.3)', drawBorder: false }, // 그리드를 매우 은은하게
-                        ticks: { font: { size: 16 } }
+                        ticks: { font: { size: 12 } }
                     },
                     x: {
                         grid: { display: false },
-                        ticks: { font: { size: 16, weight: 'bold' }, color: '#fbbf24' }
+                        ticks: { font: { size: 12, weight: 'bold' }, color: '#fbbf24' }
                     }
                 },
                 animation: { duration: 600, easing: 'easeOutQuart' } // 별자리가 그려지는 듯한 부드러운 애니메이션
