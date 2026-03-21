@@ -26,7 +26,7 @@ st.markdown(
         <h3 style="margin:0;">① 수열의 흐름을 따라</h3>
         <a href="https://gemini.google.com/share/fac0100a3295" target="_blank"
            style="font-size:14px; text-decoration:none; padding:7px 14px; border-radius:999px; background:#111; color:white;">
-           전체 화면으로 보기 ↗
+           👉전체 화면으로 보기 click
         </a>
     </div>
     """),
