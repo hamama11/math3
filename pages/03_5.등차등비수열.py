@@ -15,7 +15,7 @@ url1 = ""
 url2 = ""
 
 # 제목 + 설명
-st.title("🌌 탐구자들이여, 수의 흐름을 살피라")
+st.title("🌠 탐구자들이여, 수의 흐름을 살피라")
 st.markdown(
     """
     <p style='font-size:18px; font-weight:500; line-height:2; margin-bottom:10px;'>
