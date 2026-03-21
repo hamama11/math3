@@ -25,7 +25,7 @@ with open(BASE_DIR / "5.s_n,a_n.html", encoding="utf-8") as f:
     html1 = f.read()
 
 st.markdown("---")
-col1, col2 = st.columns([4, 1])
+col1, col2 = st.columns([8, 1])
 
 with col1:
     st.subheader("① 수열의 흐름을 따라")
