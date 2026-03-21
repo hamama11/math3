@@ -26,13 +26,15 @@ with open(BASE_DIR / "5.s_n,a_n.html", encoding="utf-8") as f:
 
 st.markdown("---")
 st.subheader("① 수열의 흐름을 따라")
-components.html(html1, height=700, scrolling=True)
 
 # ✅외부 URL1
 st.link_button(
     "🔗 전체 화면으로보기 Click",
     "https://gemini.google.com/share/fac0100a3295"
 )
+components.html(html1, height=700, scrolling=True)
+
+
 st.markdown("---")
 
 
