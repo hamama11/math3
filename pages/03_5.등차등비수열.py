@@ -22,10 +22,10 @@ st.markdown(
 st.markdown("---")
 
 
-# ✅ URL (html1 위, 거의 전체화면)
+# ✅외부 URL1
 components.iframe(
-    "https://gemini.google.com/share/fac0100a3295",
-    height=900,   # 🔥 핵심 (크게)
+    "https://gemini.google.com/share/ff32a6765473",
+    height=900,  
     scrolling=True
 )
 
@@ -39,7 +39,7 @@ st.subheader("① 수열의 흐름을 좇아")
 components.html(html1, height=700, scrolling=True)
 
 
-# 🔥 구분
+# 구분
 st.markdown("---")
 st.markdown(
     "<h3 style='text-align:center;'>이제 그 이치를 갈라 살필 차례로다</h3>",
