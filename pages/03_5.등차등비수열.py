@@ -49,7 +49,7 @@ st.markdown(
         </a>
     </div>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True  # 🔥 이거 필수
 )
 
 #HTML1
