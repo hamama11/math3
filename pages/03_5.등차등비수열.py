@@ -23,10 +23,9 @@ st.markdown("---")
 
 
 # ✅외부 URL1
-components.iframe(
-    "https://gemini.google.com/share/ff32a6765473",
-    height=900,  
-    scrolling=True
+st.link_button(
+    "🔗 전체 화면으로보기 Click",
+    "https://gemini.google.com/share/fac0100a3295"
 )
 
 
