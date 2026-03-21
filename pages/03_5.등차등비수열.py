@@ -1,13 +1,12 @@
 import streamlit as st
 import streamlit.components.v1 as components
 from pathlib import Path
+from textwrap import dedent
 
 st.set_page_config(layout="wide")
 
-# 경로 설정 (pages 기준)
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# 제목
 st.title("🌠 탐구자들이여, 수의 흐름을 살피라")
 st.markdown(
     """
@@ -19,53 +18,35 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# 🔥 HTML 1
+st.markdown("---")
+
+st.markdown(
+    dedent("""
+    <div style="display:flex; align-items:center; gap:12px; margin:10px 0;">
+        <h3 style="margin:0;">① 수열의 흐름을 따라</h3>
+        <a href="https://gemini.google.com/share/fac0100a3295" target="_blank"
+           style="font-size:14px; text-decoration:none; padding:7px 14px; border-radius:999px; background:#111; color:white;">
+           전체 화면으로 보기 ↗
+        </a>
+    </div>
+    """),
+    unsafe_allow_html=True
+)
 
 with open(BASE_DIR / "5.s_n,a_n.html", encoding="utf-8") as f:
     html1 = f.read()
-    
-st.markdown(
-    """
-    <div style="
-        display:flex;
-        align-items:center;
-        gap:14px;
-        margin:10px 0;
-    ">
-        <h3 style="margin:0;">
-            ① 수열의 흐름을 따라
-        </h3>
 
-        <a href="https://gemini.google.com/share/fac0100a3295" target="_blank"
-        style="
-            font-size:14px;
-            text-decoration:none;
-            padding:7px 14px;
-            border-radius:999px;
-            background:#111;
-            color:white;
-        ">
-        길을 열어보라 →
-        </a>
-    </div>
-    """,
-    unsafe_allow_html=True)
-
-#HTML1
 components.html(html1, height=700, scrolling=True)
-st.markdown("---")
 
-# 구분
+st.markdown("---")
 st.markdown(
     "<h3 style='text-align:center;'>이제 그 이치를 갈라 살필 차례로다</h3>",
     unsafe_allow_html=True
 )
 st.markdown("---")
 
-
-# 🔥 HTML 2
 with open(BASE_DIR / "5.a_2n.html", encoding="utf-8") as f:
     html2 = f.read()
 
-st.subheader("② 짝과 홀 갈림 속에 숨은 것들")
+st.subheader("② 짝과 홀의 갈림 속에 숨은 것들")
 components.html(html2, height=700, scrolling=True)
