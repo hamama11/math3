@@ -35,7 +35,7 @@ with open(BASE_DIR / "5.s_n,a_n.html", encoding="utf-8") as f:
     html1 = f.read()
 
 st.markdown("---")
-st.subheader("① 수열의 흐름을 좇아")
+st.subheader("① 수열의 흐름을 따라")
 components.html(html1, height=700, scrolling=True)
 
 
@@ -52,5 +52,5 @@ st.markdown("---")
 with open(BASE_DIR / "5.a_2n.html", encoding="utf-8") as f:
     html2 = f.read()
 
-st.subheader("② 짝과 홀의 갈림 속에 숨은 것들")
+st.subheader("② 짝과 홀 갈림 속에 숨은 것들")
 components.html(html2, height=700, scrolling=True)
