@@ -25,16 +25,16 @@ with open(BASE_DIR / "5.s_n,a_n.html", encoding="utf-8") as f:
     html1 = f.read()
 
 st.markdown("---")
-col1, col2 = st.columns([2, 1])
+col1, col2 = st.columns([8, 2], gap="small")
 
 with col1:
-    st.subheader("① 수열의 흐름을 따라")
+    st.markdown("### ① 수열의 흐름을 따라")
+
 with col2:
     st.link_button(
-        "🔗 전체 화면으로",
+        "전체화면으로 보기click",
         "https://gemini.google.com/share/fac0100a3295"
     )
-
 components.html(html1, height=700, scrolling=True)
 st.markdown("---")
 
