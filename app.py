@@ -31,17 +31,18 @@ a[data-testid="stPageLink-NavLink"], a[data-testid="stPageLink-NavLink"] * {
 c1, c2, c3 = st.columns([1, 2, 1])
 
 with c2:
-    b1, b2, b3 = st.columns(3)
+    b1, b2, b3, b4 = st.columns(3)
 
     with b1:
         if st.button("🔄️ 지수·로그", use_container_width=True):
             st.switch_page("pages/01_1.지수log.py")
-
     with b2:
         if st.button("📐 사인·코사인법칙", use_container_width=True):
             st.switch_page("pages/02_4.사인코사인법칙.py")
-            
     with b3:
+        if st.button("🔢 수열", use_container_width=True):
+            st.switch_page("pages/03_5.등차등비수열.py")
+    with b4:
         if st.button("😶‍🌫️ 알쓴신잡 ", use_container_width=True):
             st.switch_page("pages/알쓴신잡.py")
 
