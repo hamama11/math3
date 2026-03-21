@@ -44,5 +44,5 @@ with c2:
             st.switch_page("pages/03_5.등차등비수열.py")
     with b4:
         if st.button("😶‍🌫️ 알쓴신잡 ", use_container_width=True):
-            st.switch_page("pages/알쓴신잡.py")
+            st.switch_page("pages/@알쓴신잡.py")
 
