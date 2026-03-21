@@ -5,6 +5,7 @@ st.set_page_config(layout="wide")
 
 # 외부 URL
 url1 = "https://gemini.google.com/share/3ed7a18d47b2"
+url2 = "https://gemini.google.com/share/fbe071558873"
 
 # 제목 + 설명
 st.title("🌌 탐구자들이여, 삼각형의 비밀을 밝혀라")
@@ -27,9 +28,6 @@ wrapped_html1 = f"""
     {html1}
 </div>
 """
-    components.html(wrapped_html1, height=950, scrolling=True)
-    st.link_button("👉 전체 화면으로 보기", url1, use_container_width=True)
-
 
 # HTML 2
 with open("a_2n.html", "r", encoding="utf-8") as f:
@@ -40,5 +38,3 @@ wrapped_html2 = f"""
     {html2}
 </div>
 """
-
-
