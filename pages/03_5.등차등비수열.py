@@ -3,6 +3,7 @@ import streamlit.components.v1 as components
 from pathlib import Path
 
 st.set_page_config(layout="wide")
+#https://gemini.google.com/share/c5aa74b2e0e7
 
 # 경로 설정 (pages 기준)
 BASE_DIR = Path(__file__).resolve().parent.parent
