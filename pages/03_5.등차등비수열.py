@@ -49,8 +49,7 @@ st.markdown(
         </a>
     </div>
     """,
-    unsafe_allow_html=True  # 🔥 이거 필수
-)
+    unsafe_allow_html=True)
 
 #HTML1
 components.html(html1, height=700, scrolling=True)
