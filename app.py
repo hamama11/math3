@@ -31,7 +31,7 @@ a[data-testid="stPageLink-NavLink"], a[data-testid="stPageLink-NavLink"] * {
 c1, c2, c3 = st.columns([1, 2, 1])
 
 with c2:
-    b1, b2, b3, b4 = st.columns(3)
+    b1, b2, b3, b4 = st.columns(4)
 
     with b1:
         if st.button("🔄️ 지수·로그", use_container_width=True):
