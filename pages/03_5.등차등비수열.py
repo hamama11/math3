@@ -21,13 +21,13 @@ st.markdown(
 st.markdown("---")
 
 # HTML 1
-with open(BASE_DIR / "s_n,a_n.html", encoding="utf-8") as f:
+with open(BASE_DIR / "5.s_n,a_n.html", encoding="utf-8") as f:
     html1 = f.read()
 
 components.html(html1, height=700, scrolling=True)
 
 # HTML 2
-with open(BASE_DIR / "a_2n.html", encoding="utf-8") as f:
+with open(BASE_DIR / "5.a_2n.html", encoding="utf-8") as f:
     html2 = f.read()
 
 components.html(html2, height=700, scrolling=True)
