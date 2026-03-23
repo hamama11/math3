@@ -124,16 +124,16 @@
         </section>
 
         <!-- 섹션 2: 프톨레마이오스 정리 및 부등식 -->
-        <section class="canvas-container border-t-[10px] border-purple-600">
+        <section class="canvas-container border-t-[10px] border-indigo-600">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
                 <div class="lg:col-span-7 flex flex-col items-center">
                     <div class="w-full flex justify-between items-center mb-5">
-                        <h2 class="text-2xl font-black text-purple-700">02. 프톨레마이오스 정리 (Ptolemy's Theorem)</h2>
+                        <h2 class="text-2xl font-black text-indigo-700">02. 프톨레마이오스 정리 (Ptolemy's Theorem)</h2>
                         <div class="flex items-center gap-3 bg-slate-100 px-4 py-2 rounded-xl">
                             <span class="text-sm font-bold text-slate-600">자유 모드</span>
                             <label class="toggle-switch">
                                 <input type="checkbox" id="freeModeToggle" class="sr-only peer">
-                                <div class="w-full h-full bg-slate-300 rounded-full peer peer-checked:bg-purple-600 transition-all after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-6"></div>
+                                <div class="w-full h-full bg-slate-300 rounded-full peer peer-checked:bg-indigo-600 transition-all after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-6"></div>
                             </label>
                         </div>
                     </div>
@@ -144,28 +144,28 @@
                     </div>
                 </div>
                 <div class="lg:col-span-5 space-y-8 flex flex-col justify-center">
-                    <div class="formula-card border-purple-600 relative overflow-hidden">
+                    <div class="formula-card border-indigo-600 relative overflow-hidden">
                         <div id="equality-status" class="absolute top-0 right-0 px-3 py-1 bg-emerald-500 text-white text-[10px] font-black uppercase">정리 (원 위)</div>
                         <p class="main-formula text-center mt-2">
-                            <span class="text-indigo-600">AC × BD</span> <span id="comparison-op">≤</span> <span class="text-purple-600">(AB × CD) + (BC × DA)</span>
+                            <span class="text-blue-600">AC × BD</span> <span id="comparison-op">≤</span> <span class="text-emerald-600">(AB × CD) + (BC × DA)</span>
                         </p>
                     </div>
-                    <div id="proof-ptolemy" class="hidden proof-box bg-purple-50 p-6 text-purple-900 shadow-sm border border-purple-100">
+                    <div id="proof-ptolemy" class="hidden proof-box bg-indigo-50 p-6 text-indigo-900 shadow-sm border border-indigo-100">
                         <h3 class="font-black mb-2 text-lg">💡 증명 핵심: 닮음과 각</h3>
                         <p class="mb-4">$\triangle ABP \sim \triangle DBC$ 관계를 이용합니다. <br>원주각 성질에 의해 <strong>같은 색상으로 표시된 두 각</strong>의 크기가 같습니다.</p>
-                        <div class="bg-white p-4 rounded-lg font-bold text-sm border border-purple-200 space-y-2">
+                        <div class="bg-white p-4 rounded-lg font-bold text-sm border border-indigo-200 space-y-2">
                             <p class="text-rose-500">● $\angle BAC = \angle BDC$ (호 $BC$의 원주각)</p>
                             <p class="text-amber-500">● $\angle ABP = \angle DBC$ (보조점 $P$ 설정)</p>
                         </div>
                     </div>
                     <div class="space-y-4">
-                        <div class="bg-indigo-50 p-6 rounded-2xl border-b-4 border-indigo-400 flex justify-between items-center px-8">
-                            <span class="text-sm font-black text-indigo-600 uppercase">대각선 곱 (AC×BD)</span>
-                            <div id="t-left" class="value-badge text-indigo-700">0.00</div>
+                        <div class="bg-blue-50 p-6 rounded-2xl border-b-4 border-blue-500 flex justify-between items-center px-8">
+                            <span class="text-sm font-black text-blue-600 uppercase">대각선 곱 (AC×BD)</span>
+                            <div id="t-left" class="value-badge text-blue-700">0.00</div>
                         </div>
-                        <div class="bg-purple-50 p-6 rounded-2xl border-b-4 border-purple-400 flex justify-between items-center px-8">
-                            <span class="text-sm font-black text-purple-600 uppercase">대변 곱 합 (AB·CD+BC·DA)</span>
-                            <div id="t-right" class="value-badge text-purple-700">0.00</div>
+                        <div class="bg-emerald-50 p-6 rounded-2xl border-b-4 border-emerald-500 flex justify-between items-center px-8">
+                            <span class="text-sm font-black text-emerald-600 uppercase">대변 곱 합 (AB·CD+BC·DA)</span>
+                            <div id="t-right" class="value-badge text-emerald-700">0.00</div>
                         </div>
                     </div>
                 </div>
@@ -365,10 +365,13 @@
                 ctx.font = 'bold 16px sans-serif'; ctx.fillText('P', P.x - 20, P.y + 25);
             }
 
+            // 사각형 대변 (AB, BC, CD, DA) - Indigo 계열 유지
             ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.lineTo(C.x, C.y); ctx.lineTo(D.x, D.y); ctx.closePath();
-            ctx.strokeStyle = '#9333ea'; ctx.lineWidth = 6; ctx.stroke();
+            ctx.strokeStyle = '#6366f1'; ctx.lineWidth = 6; ctx.stroke();
+
+            // 대각선 (AC, BD) - 우변의 합 성분과 시각적 매칭을 위해 초록색(Emerald)으로 변경
             ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(C.x, C.y); ctx.moveTo(B.x, B.y); ctx.lineTo(D.x, D.y);
-            ctx.strokeStyle = '#4338ca'; ctx.lineWidth = 4; ctx.setLineDash([12, 6]); ctx.stroke(); ctx.setLineDash([]);
+            ctx.strokeStyle = '#10b981'; ctx.lineWidth = 4; ctx.setLineDash([12, 6]); ctx.stroke(); ctx.setLineDash([]);
 
             drawNodes(ctx, points, (p) => {
                 if (!freeMode) return '#0f172a';
