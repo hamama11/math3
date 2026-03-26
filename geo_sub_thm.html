@@ -1,19 +1,15 @@
-<!-- ⭐ 핵심: 캔버스 크기 안정화 포함 -->
 <script>
 
 const state = {
     pappus: {
         canvas: document.getElementById('canvasPappus'),
         points: [],
-        showProof: false,
         baseWidth: 600,
         baseHeight: 400
     },
     ptolemy: {
         canvas: document.getElementById('canvasPtolemy'),
         points: [],
-        showProof: false,
-        freeMode: false,
         baseWidth: 600,
         baseHeight: 450
     }
@@ -22,26 +18,29 @@ const state = {
 let dragging = { section: null, point: null };
 
 
-// ✅ 핵심 함수 (반응형 + DPR 보정)
+// ✅ 반응형 + PC/모바일 분리 + DPR 보정
 function resizeCanvas(section) {
     const s = state[section];
     const canvas = s.canvas;
     const wrap = canvas.parentElement;
 
-    const wrapStyle = window.getComputedStyle(wrap);
-    const width = wrap.clientWidth
-        - parseFloat(wrapStyle.paddingLeft)
-        - parseFloat(wrapStyle.paddingRight);
+    const wrapWidth = wrap.clientWidth;
+
+    const isMobile = window.innerWidth < 768;
+
+    // ⭐ 핵심
+    const displayWidth = isMobile
+        ? Math.max(280, wrapWidth)
+        : Math.min(600, wrapWidth);
 
     const aspect = s.baseHeight / s.baseWidth;
-    const displayWidth = Math.max(320, width);
     const displayHeight = displayWidth * aspect;
 
     // CSS 크기
     canvas.style.width = displayWidth + "px";
     canvas.style.height = displayHeight + "px";
 
-    // 실제 해상도
+    // 내부 해상도
     const dpr = window.devicePixelRatio || 1;
     canvas.width = displayWidth * dpr;
     canvas.height = displayHeight * dpr;
@@ -51,6 +50,16 @@ function resizeCanvas(section) {
     ctx.scale(dpr, dpr);
 
     s.ctx = ctx;
+}
+
+
+// 디바운스
+function debounce(fn, delay){
+    let t;
+    return (...args)=>{
+        clearTimeout(t);
+        t=setTimeout(()=>fn(...args), delay);
+    }
 }
 
 
@@ -71,16 +80,6 @@ function init() {
     window.addEventListener('mouseup', handleEnd);
 
     requestAnimationFrame(renderLoop);
-}
-
-
-// 디바운스
-function debounce(fn, delay){
-    let t;
-    return (...args)=>{
-        clearTimeout(t);
-        t=setTimeout(()=>fn(...args), delay);
-    }
 }
 
 
@@ -120,7 +119,7 @@ function handleStart(e, section){
 }
 
 
-// 드래그 이동
+// 이동
 function handleMove(e){
     if(!dragging.point) return;
 
@@ -164,13 +163,19 @@ function renderPappus(){
     ctx.moveTo(B.x,B.y);
     ctx.lineTo(A.x,A.y);
     ctx.lineTo(C.x,C.y);
+    ctx.strokeStyle="#2563eb";
+    ctx.lineWidth=5;
     ctx.stroke();
 
     ctx.beginPath();
     ctx.moveTo(A.x,A.y);
     ctx.lineTo(M.x,M.y);
-    ctx.strokeStyle="green";
+    ctx.strokeStyle="#059669";
+    ctx.setLineDash([10,5]);
     ctx.stroke();
+    ctx.setLineDash([]);
+
+    drawNodes(ctx,[A,B,C]);
 }
 
 
@@ -190,7 +195,22 @@ function renderPtolemy(){
     ctx.lineTo(C.x,C.y);
     ctx.lineTo(D.x,D.y);
     ctx.closePath();
+    ctx.strokeStyle="#6366f1";
+    ctx.lineWidth=5;
     ctx.stroke();
+
+    drawNodes(ctx,[A,B,C,D]);
+}
+
+
+// 노드 그리기
+function drawNodes(ctx, points){
+    points.forEach(p=>{
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,10,0,Math.PI*2);
+        ctx.fillStyle="#111";
+        ctx.fill();
+    });
 }
 
 
