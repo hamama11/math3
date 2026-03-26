@@ -1,5 +1,6 @@
 import streamlit as st
 import streamlit.components.v1 as components
+from pathlib import Path
 
 # 수정👉 외부 (URL)
 url1 = "https://gemini.google.com/share/5e531d00887d"
@@ -15,9 +16,9 @@ st.markdown("""
 </p>
 """, unsafe_allow_html=True)
 
-# 수정👉 내부 임베딩 (로컬 HTML)
-with open("geo_sub_thm.html", "r", encoding="utf-8") as f:
-    html = f.read()
-st.markdown("---")
+BASE_DIR = Path(__file__).resolve().parent.parent
 
-components.html(html, height=950, scrolling=True)
+with open(BASE_DIR / "geo_sub_thm.html", encoding="utf-8") as f:
+    html = f.read()
+
+components.html(html, height=1400, scrolling=True)
