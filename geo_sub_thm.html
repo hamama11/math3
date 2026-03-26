@@ -1,5 +1,4 @@
 <script>
-
 const state = {
     pappus: {
         canvas: document.getElementById('canvasPappus'),
@@ -17,59 +16,60 @@ const state = {
 
 let dragging = { section: null, point: null };
 
-
-// ✅ 반응형 + PC/모바일 분리 + DPR 보정
 function resizeCanvas(section) {
     const s = state[section];
     const canvas = s.canvas;
     const wrap = canvas.parentElement;
 
     const wrapWidth = wrap.clientWidth;
-
     const isMobile = window.innerWidth < 768;
 
-    // ⭐ 핵심
-    const displayWidth = isMobile
-        ? Math.max(280, wrapWidth)
-        : Math.min(600, wrapWidth);
+    const displayWidth = Math.min(
+        isMobile ? 420 : 600,
+        Math.max(280, wrapWidth)
+    );
 
     const aspect = s.baseHeight / s.baseWidth;
     const displayHeight = displayWidth * aspect;
 
-    // CSS 크기
     canvas.style.width = displayWidth + "px";
     canvas.style.height = displayHeight + "px";
 
-    // 내부 해상도
     const dpr = window.devicePixelRatio || 1;
     canvas.width = displayWidth * dpr;
     canvas.height = displayHeight * dpr;
 
     const ctx = canvas.getContext("2d");
-    ctx.setTransform(1,0,0,1,0,0);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.scale(dpr, dpr);
 
     s.ctx = ctx;
 }
 
-
-// 디바운스
 function debounce(fn, delay){
     let t;
     return (...args)=>{
         clearTimeout(t);
-        t=setTimeout(()=>fn(...args), delay);
-    }
+        t = setTimeout(() => fn(...args), delay);
+    };
 }
 
-
-// 초기화
 function init() {
     resetPoints('pappus');
     resetPoints('ptolemy');
 
     resizeCanvas('pappus');
     resizeCanvas('ptolemy');
+
+    [state.pappus, state.ptolemy].forEach(s => {
+        const id = s === state.pappus ? 'pappus' : 'ptolemy';
+
+        s.canvas.addEventListener('mousedown', (e) => handleStart(e, id));
+        s.canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleStart(e.touches[0], id);
+        }, { passive: false });
+    });
 
     window.addEventListener('resize', debounce(() => {
         resizeCanvas('pappus');
@@ -79,11 +79,17 @@ function init() {
     window.addEventListener('mousemove', handleMove);
     window.addEventListener('mouseup', handleEnd);
 
+    window.addEventListener('touchmove', (e) => {
+        if (e.touches.length > 0) {
+            handleMove(e.touches[0]);
+        }
+    }, { passive: false });
+
+    window.addEventListener('touchend', handleEnd);
+
     requestAnimationFrame(renderLoop);
 }
 
-
-// 점 초기화
 function resetPoints(section) {
     if (section === 'pappus') {
         state.pappus.points = [
@@ -92,18 +98,16 @@ function resetPoints(section) {
             { x: 450, y: 320 }
         ];
     } else {
-        const cx=300, cy=225, r=160;
+        const cx = 300, cy = 225, r = 160;
         state.ptolemy.points = [
-            { x: cx+r*Math.cos(-2.0), y: cy+r*Math.sin(-2.0) },
-            { x: cx+r*Math.cos(-0.6), y: cy+r*Math.sin(-0.6) },
-            { x: cx+r*Math.cos(0.9), y: cy+r*Math.sin(0.9) },
-            { x: cx+r*Math.cos(2.8), y: cy+r*Math.sin(2.8) }
+            { x: cx + r * Math.cos(-2.0), y: cy + r * Math.sin(-2.0) },
+            { x: cx + r * Math.cos(-0.6), y: cy + r * Math.sin(-0.6) },
+            { x: cx + r * Math.cos(0.9), y: cy + r * Math.sin(0.9) },
+            { x: cx + r * Math.cos(2.8), y: cy + r * Math.sin(2.8) }
         ];
     }
 }
 
-
-// 드래그 시작
 function handleStart(e, section){
     const s = state[section];
     const rect = s.canvas.getBoundingClientRect();
@@ -111,17 +115,15 @@ function handleStart(e, section){
     const x = (e.clientX - rect.left) * (s.baseWidth / rect.width);
     const y = (e.clientY - rect.top) * (s.baseHeight / rect.height);
 
-    s.points.forEach(p=>{
-        if(Math.hypot(x-p.x,y-p.y)<30){
-            dragging = {section, point:p};
+    s.points.forEach(p => {
+        if (Math.hypot(x - p.x, y - p.y) < 30) {
+            dragging = { section, point: p };
         }
     });
 }
 
-
-// 이동
 function handleMove(e){
-    if(!dragging.point) return;
+    if (!dragging.point) return;
 
     const s = state[dragging.section];
     const rect = s.canvas.getBoundingClientRect();
@@ -133,87 +135,75 @@ function handleMove(e){
     dragging.point.y = y;
 }
 
-
-// 종료
 function handleEnd(){
-    dragging = {section:null, point:null};
+    dragging = { section: null, point: null };
 }
 
-
-// 렌더 루프
 function renderLoop(){
     renderPappus();
     renderPtolemy();
     requestAnimationFrame(renderLoop);
 }
 
-
-// 🔵 중선 정리
 function renderPappus(){
     const s = state.pappus;
     const ctx = s.ctx;
-    if(!ctx) return;
+    if (!ctx) return;
 
-    ctx.clearRect(0,0,s.baseWidth,s.baseHeight);
+    ctx.clearRect(0, 0, s.baseWidth, s.baseHeight);
 
-    const [A,B,C]=s.points;
-    const M={x:(B.x+C.x)/2,y:(B.y+C.y)/2};
+    const [A, B, C] = s.points;
+    const M = { x: (B.x + C.x) / 2, y: (B.y + C.y) / 2 };
 
     ctx.beginPath();
-    ctx.moveTo(B.x,B.y);
-    ctx.lineTo(A.x,A.y);
-    ctx.lineTo(C.x,C.y);
-    ctx.strokeStyle="#2563eb";
-    ctx.lineWidth=5;
+    ctx.moveTo(B.x, B.y);
+    ctx.lineTo(A.x, A.y);
+    ctx.lineTo(C.x, C.y);
+    ctx.strokeStyle = "#2563eb";
+    ctx.lineWidth = 5;
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.moveTo(A.x,A.y);
-    ctx.lineTo(M.x,M.y);
-    ctx.strokeStyle="#059669";
-    ctx.setLineDash([10,5]);
+    ctx.moveTo(A.x, A.y);
+    ctx.lineTo(M.x, M.y);
+    ctx.strokeStyle = "#059669";
+    ctx.setLineDash([10, 5]);
     ctx.stroke();
     ctx.setLineDash([]);
 
-    drawNodes(ctx,[A,B,C]);
+    drawNodes(ctx, [A, B, C]);
 }
 
-
-// 🟣 프톨레마이오스
 function renderPtolemy(){
     const s = state.ptolemy;
     const ctx = s.ctx;
-    if(!ctx) return;
+    if (!ctx) return;
 
-    ctx.clearRect(0,0,s.baseWidth,s.baseHeight);
+    ctx.clearRect(0, 0, s.baseWidth, s.baseHeight);
 
-    const [A,B,C,D]=s.points;
+    const [A, B, C, D] = s.points;
 
     ctx.beginPath();
-    ctx.moveTo(A.x,A.y);
-    ctx.lineTo(B.x,B.y);
-    ctx.lineTo(C.x,C.y);
-    ctx.lineTo(D.x,D.y);
+    ctx.moveTo(A.x, A.y);
+    ctx.lineTo(B.x, B.y);
+    ctx.lineTo(C.x, C.y);
+    ctx.lineTo(D.x, D.y);
     ctx.closePath();
-    ctx.strokeStyle="#6366f1";
-    ctx.lineWidth=5;
+    ctx.strokeStyle = "#6366f1";
+    ctx.lineWidth = 5;
     ctx.stroke();
 
-    drawNodes(ctx,[A,B,C,D]);
+    drawNodes(ctx, [A, B, C, D]);
 }
 
-
-// 노드 그리기
 function drawNodes(ctx, points){
-    points.forEach(p=>{
+    points.forEach(p => {
         ctx.beginPath();
-        ctx.arc(p.x,p.y,10,0,Math.PI*2);
-        ctx.fillStyle="#111";
+        ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
+        ctx.fillStyle = "#111";
         ctx.fill();
     });
 }
 
-
-window.onload = init;
-
+window.addEventListener("load", init);
 </script>
