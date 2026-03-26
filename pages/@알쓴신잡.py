@@ -19,7 +19,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-html_path = BASE_DIR / "geo_sub_thm.html"
+html_path = BASE_DIR / "sub_geo_thm.html"
 
 st.markdown("---")
 
