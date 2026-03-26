@@ -18,7 +18,10 @@ st.markdown("""
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-with open(BASE_DIR / "geo_sub_thm.html", encoding="utf-8") as f:
+# 수정 👉 내부 임베딩 (로컬 HTML)
+with open(BASE_DIR / "geo_sub_thm.html", "r", encoding="utf-8") as f:
     html = f.read()
 
-components.html(html, height=1400, scrolling=True)
+st.markdown("---")
+
+components.html(html, height=950, scrolling=True)
