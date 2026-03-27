@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>기하학 통합 실험실</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 수학 수식 렌더링을 위한 MathJax 로드 -->
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>
         window.MathJax = {
@@ -14,516 +15,158 @@
             }
         };
     </script>
-
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;800;900&family=JetBrains+Mono:wght@700&display=swap');
-
-        :root {
-            --bg: #f8fafc;
-            --card: #ffffff;
-            --text: #0f172a;
-            --muted: #64748b;
-            --line: #e2e8f0;
-            --blue: #2563eb;
-            --blue-soft: #eff6ff;
-            --emerald: #059669;
-            --emerald-soft: #ecfdf5;
-            --indigo: #4f46e5;
-            --indigo-soft: #eef2ff;
-            --rose: #e11d48;
-            --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=JetBrains+Mono:wght@700&display=swap');
+        
+        body { background-color: #f1f5f9; font-family: 'Noto Sans KR', sans-serif; }
+        .canvas-container { 
+            background: white; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1);
+            padding: 2rem;
+            margin-bottom: 2.5rem;
         }
-
-        * { box-sizing: border-box; }
-
-        body {
-            margin: 0;
-            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
-            color: var(--text);
-            font-family: 'Noto Sans KR', sans-serif;
-        }
-
-        .page-wrap {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 24px 18px 56px;
-        }
-
-        .hero {
-            text-align: center;
-            margin-bottom: 28px;
-        }
-
-        .hero h1 {
-            margin: 0 0 10px;
-            font-size: clamp(2rem, 4vw, 2.8rem);
-            font-weight: 900;
-            letter-spacing: -0.03em;
-            color: #0f172a;
-        }
-
-        .hero p {
-            margin: 0;
-            font-size: 1rem;
-            color: var(--muted);
-            font-weight: 600;
-        }
-
-        .section-card {
-            background: var(--card);
-            border-radius: 24px;
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            margin-bottom: 28px;
-            border: 1px solid #eef2f7;
-        }
-
-        .section-accent-blue { border-top: 10px solid var(--blue); }
-        .section-accent-indigo { border-top: 10px solid var(--indigo); }
-
-        .section-inner {
-            display: grid;
-            grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.95fr);
-            gap: 28px;
-            padding: 28px;
-        }
-
-        .left-panel,
-        .right-panel {
-            min-width: 0;
-        }
-
-        .panel-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-        }
-
-        .panel-title {
-            margin: 0;
-            font-size: clamp(1.2rem, 2.5vw, 1.7rem);
-            font-weight: 900;
-            letter-spacing: -0.02em;
-        }
-
-        .panel-title.blue { color: var(--blue); }
-        .panel-title.indigo { color: var(--indigo); }
-
-        .chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 7px 12px;
-            border-radius: 999px;
-            font-size: 11px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            border: 1px solid transparent;
-            white-space: nowrap;
-        }
-
-        .chip-blue {
-            background: var(--blue-soft);
-            color: var(--blue);
-            border-color: #bfdbfe;
-        }
-
-        .toggle-box {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 12px;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 14px;
-        }
-
-        .toggle-box span {
-            font-size: 13px;
-            font-weight: 800;
-            color: #475569;
-            white-space: nowrap;
-        }
-
-        .canvas-wrap {
-            background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
-            border: 1px solid #e5edf6;
-            border-radius: 20px;
-            padding: 12px;
-            width: 100%;
-        }
-
-        canvas {
-            display: block;
-            width: 100%;
+        canvas { 
+            border: 2px solid #e2e8f0; 
+            border-radius: 16px; 
+            cursor: grab; 
+            touch-action: none; 
             max-width: 100%;
             height: auto;
-            border: 2px solid #e2e8f0;
-            border-radius: 16px;
-            cursor: grab;
-            touch-action: none;
-            background: #fff;
         }
-
         canvas:active { cursor: grabbing; }
-
-        .action-row {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-top: 16px;
-            flex-wrap: wrap;
+        
+        .formula-card { 
+            border-left: 8px solid #3b82f6; 
+            background: #ffffff; 
+            padding: 1.5rem; 
+            border-radius: 4px 12px 12px 4px;
+            box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.05);
         }
-
-        .btn {
-            border: 0;
-            outline: 0;
-            cursor: pointer;
-            border-radius: 999px;
-            font-weight: 800;
-            font-size: 0.96rem;
-            transition: 0.2s ease;
-            padding: 12px 20px;
-        }
-
-        .btn:hover { transform: translateY(-1px); }
-        .btn:active { transform: scale(0.98); }
-
-        .btn-outline {
-            background: white;
-            border: 2px solid #0f172a;
-            color: #0f172a;
-        }
-
-        .btn-outline:hover {
-            background: #0f172a;
-            color: white;
-        }
-
-        .right-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            justify-content: center;
-        }
-
-        .formula-card {
-            position: relative;
-            background: #ffffff;
-            border: 1px solid #e5edf6;
-            border-left: 7px solid var(--blue);
-            border-radius: 18px;
-            padding: 20px 18px;
-        }
-
-        .formula-card.indigo {
-            border-left-color: var(--indigo);
-        }
-
         .main-formula {
-            margin: 0;
-            text-align: center;
-            font-size: clamp(1.08rem, 2vw, 1.5rem);
-            font-weight: 900;
-            color: #0f172a;
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #1e293b;
             letter-spacing: -0.02em;
-            line-height: 1.55;
             word-break: keep-all;
         }
-
-        .formula-blue { color: var(--blue); }
-        .formula-emerald { color: var(--emerald); }
-
-        .proof-box {
-            display: none;
-            font-size: 0.98rem;
-            line-height: 1.8;
-            border-radius: 18px;
-            padding: 18px 18px 16px;
-            border: 1px solid;
-        }
-
-        .proof-box.show { display: block; }
-
-        .proof-blue {
-            background: #f8fbff;
-            border-color: #dbeafe;
-            color: #1e3a8a;
-        }
-
-        .proof-indigo {
-            background: #f8faff;
-            border-color: #e0e7ff;
-            color: #3730a3;
-        }
-
-        .proof-inner {
-            background: white;
-            border: 1px solid;
-            border-radius: 14px;
-            padding: 12px 14px;
-            font-size: 0.94rem;
-        }
-
-        .proof-inner.blue { border-color: #bfdbfe; }
-        .proof-inner.indigo { border-color: #c7d2fe; }
-
-        .metric-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-        }
-
-        .metric-card {
-            border-radius: 18px;
-            padding: 16px 18px;
-            border: 1px solid;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 14px;
-        }
-
-        .metric-blue {
-            background: var(--blue-soft);
-            border-color: #bfdbfe;
-        }
-
-        .metric-emerald {
-            background: var(--emerald-soft);
-            border-color: #a7f3d0;
-        }
-
-        .metric-label {
-            font-size: 0.82rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            line-height: 1.5;
-        }
-
-        .metric-label.blue { color: var(--blue); }
-        .metric-label.emerald { color: var(--emerald); }
-
-        .value-badge {
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 800;
-            font-size: clamp(1.2rem, 2.5vw, 1.65rem);
+        
+        .btn-active { background-color: #0f172a !important; color: white !important; scale: 1.05; }
+        
+        .value-badge { 
+            font-family: 'JetBrains Mono', monospace; 
+            font-weight: 800; 
+            font-size: 1.8rem;
             font-variant-numeric: tabular-nums;
-            white-space: nowrap;
         }
-
-        .value-blue { color: #1d4ed8; }
-        .value-emerald { color: #047857; }
+        
+        .proof-box {
+            font-size: 1rem;
+            line-height: 1.8;
+            border-radius: 16px;
+        }
 
         .toggle-switch {
             position: relative;
             display: inline-block;
             width: 52px;
             height: 28px;
-            flex-shrink: 0;
-        }
-
-        .toggle-switch input {
-            position: absolute;
-            opacity: 0;
-            inset: 0;
-            cursor: pointer;
-        }
-
-        .toggle-slider {
-            width: 100%;
-            height: 100%;
-            background: #cbd5e1;
-            border-radius: 999px;
-            transition: 0.25s ease;
-            position: relative;
-        }
-
-        .toggle-slider::after {
-            content: "";
-            position: absolute;
-            top: 4px;
-            left: 4px;
-            width: 20px;
-            height: 20px;
-            background: white;
-            border-radius: 50%;
-            transition: 0.25s ease;
-            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18);
-        }
-
-        .toggle-switch input:checked + .toggle-slider {
-            background: var(--indigo);
-        }
-
-        .toggle-switch input:checked + .toggle-slider::after {
-            transform: translateX(24px);
-        }
-
-        @media (max-width: 1080px) {
-            .section-inner {
-                grid-template-columns: 1fr;
-            }
-            .right-panel {
-                justify-content: flex-start;
-            }
-        }
-
-        @media (max-width: 720px) {
-            .page-wrap {
-                padding: 18px 12px 40px;
-            }
-
-            .section-inner {
-                padding: 18px;
-                gap: 20px;
-            }
-
-            .panel-top {
-                align-items: flex-start;
-            }
-
-            .canvas-wrap {
-                padding: 8px;
-            }
-
-            .action-row {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .btn {
-                width: 100%;
-            }
-
-            .metric-card {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .value-badge {
-                align-self: flex-end;
-            }
         }
     </style>
 </head>
-
-<body>
-    <div class="page-wrap">
-        <header class="hero">
-            <h1>📐 기하학 통합 실험실</h1>
-            <p>정리에서 부등식까지, 실시간 변화 속에서 수학의 구조를 직접 체험해 보세요</p>
+<body class="p-4 md:p-10">
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-10 text-center">
+            <h1 class="text-4xl font-black text-slate-900 mb-3">📐 기하학 통합 마스터 클래스</h1>
+            <p class="text-slate-500 text-lg font-medium">정리에서 부등식까지, 실시간 변화를 직접 체험하세요</p>
         </header>
 
-        <section class="section-card section-accent-blue">
-            <div class="section-inner">
-                <div class="left-panel">
-                    <div class="panel-top">
-                        <h2 class="panel-title blue">01. 중선 정리</h2>
-                        <span class="chip chip-blue">Analysis</span>
+        <!-- 섹션 1: 중선 정리 -->
+        <section class="canvas-container border-t-[10px] border-blue-600">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                <div class="lg:col-span-7 flex flex-col items-center">
+                    <div class="w-full flex justify-between items-center mb-5">
+                        <h2 class="text-2xl font-black text-blue-700">01. 중선 정리 (Pappus's Theorem)</h2>
+                        <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Analysis</span>
                     </div>
-
-                    <div class="canvas-wrap">
-                        <canvas id="canvasPappus"></canvas>
-                    </div>
-
-                    <div class="action-row">
-                        <button id="btn-proof-pappus" onclick="toggleProof('pappus')" class="btn btn-outline">✨ 원리 보기</button>
+                    <canvas id="canvasPappus" width="600" height="400" class="shadow-inner"></canvas>
+                    <div class="mt-6 flex gap-4">
+                        <button id="btn-proof-pappus" onclick="toggleProof('pappus')" class="px-8 py-3 border-2 border-slate-900 rounded-full font-bold hover:bg-slate-900 hover:text-white transition-all transform active:scale-95">✨ 원리 보기</button>
+                        <button onclick="resetPoints('pappus')" class="px-8 py-3 bg-slate-200 text-slate-700 rounded-full font-bold hover:bg-slate-300 transition-all">초기화</button>
                     </div>
                 </div>
-
-                <div class="right-panel">
+                <div class="lg:col-span-5 space-y-8 flex flex-col justify-center">
                     <div class="formula-card">
-                        <p class="main-formula">
-                            <span class="formula-blue">AB² + AC²</span>
-                            =
-                            <span class="formula-emerald">2(AM² + BM²)</span>
+                        <p class="main-formula text-center">
+                            <span class="text-blue-600">AB² + AC²</span> = <span class="text-emerald-600">2(AM² + BM²)</span>
                         </p>
                     </div>
-
-                    <div id="proof-pappus" class="proof-box proof-blue">
-                        <h3>💡 증명 가이드</h3>
-                        <p>
-                            점 A에서 밑변 BC에 내린 수선과, 중점 M과의 관계를 보면
-                            중선이 단순한 연결이 아니라 길이 구조를 드러내는 축임을 알 수 있습니다.
-                        </p>
-                        <div class="proof-inner blue">
-                            \(AB^2 + AC^2 = 2(AM^2 + BM^2)\)
+                    <div id="proof-pappus" class="hidden proof-box bg-blue-50 p-6 text-blue-900 shadow-sm border border-blue-100">
+                        <h3 class="font-black mb-2 text-lg">💡 증명 가이드</h3>
+                        <p class="mb-4">점 $A$에서 밑변 $BC$에 내린 <strong>수선 $h$</strong>와 중점 $M$으로부터의 <strong>거리 $x$</strong>를 이용하여 피타고라스 정리를 적용합니다.</p>
+                        <div class="bg-white p-3 rounded-lg font-mono text-sm border border-blue-200">
+                            $AB^2 = h^2 + (BM + x)^2$<br>
+                            $AC^2 = h^2 + (BM - x)^2$
                         </div>
                     </div>
-
-                    <div class="metric-grid">
-                        <div class="metric-card metric-blue">
-                            <span class="metric-label blue">좌변</span>
-                            <div id="p-left" class="value-badge value-blue">0.00</div>
+                    <div class="grid grid-cols-1 gap-5">
+                        <div class="bg-blue-50 p-6 rounded-2xl border-b-4 border-blue-500 flex justify-between items-center">
+                            <span class="text-sm font-black text-blue-600 uppercase">좌변 합 (AB²+AC²)</span>
+                            <div id="p-left" class="value-badge text-blue-700">0.00</div>
                         </div>
-
-                        <div class="metric-card metric-emerald">
-                            <span class="metric-label emerald">우변</span>
-                            <div id="p-right" class="value-badge value-emerald">0.00</div>
+                        <div class="bg-emerald-50 p-6 rounded-2xl border-b-4 border-emerald-500 flex justify-between items-center">
+                            <span class="text-sm font-black text-emerald-600 uppercase">우변 합 2(AM²+BM²)</span>
+                            <div id="p-right" class="value-badge text-emerald-700">0.00</div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="section-card section-accent-indigo">
-            <div class="section-inner">
-                <div class="left-panel">
-                    <div class="panel-top">
-                        <h2 class="panel-title indigo">02. 프톨레마이오스 정리</h2>
-                        <div class="toggle-box">
-                            <span>자유 모드</span>
+        <!-- 섹션 2: 프톨레마이오스 정리 및 부등식 -->
+        <section class="canvas-container border-t-[10px] border-indigo-600">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                <div class="lg:col-span-7 flex flex-col items-center">
+                    <div class="w-full flex justify-between items-center mb-5">
+                        <h2 class="text-2xl font-black text-indigo-700">02. 프톨레마이오스 정리 (Ptolemy's Theorem)</h2>
+                        <div class="flex items-center gap-3 bg-slate-100 px-4 py-2 rounded-xl">
+                            <span class="text-sm font-bold text-slate-600">자유 모드</span>
                             <label class="toggle-switch">
-                                <input type="checkbox" id="freeModeToggle">
-                                <div class="toggle-slider"></div>
+                                <input type="checkbox" id="freeModeToggle" class="sr-only peer">
+                                <div class="w-full h-full bg-slate-300 rounded-full peer peer-checked:bg-indigo-600 transition-all after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-6"></div>
                             </label>
                         </div>
                     </div>
-
-                    <div class="canvas-wrap">
-                        <canvas id="canvasPtolemy"></canvas>
-                    </div>
-
-                    <div class="action-row">
-                        <button id="btn-proof-ptolemy" onclick="toggleProof('ptolemy')" class="btn btn-outline">✨ 원리 보기</button>
+                    <canvas id="canvasPtolemy" width="600" height="450" class="shadow-inner"></canvas>
+                    <div class="mt-6 flex gap-4">
+                        <button id="btn-proof-ptolemy" onclick="toggleProof('ptolemy')" class="px-8 py-3 border-2 border-slate-900 rounded-full font-bold hover:bg-slate-900 hover:text-white transition-all transform active:scale-95">✨ 원리 보기</button>
+                        <button onclick="resetPoints('ptolemy')" class="px-8 py-3 bg-slate-200 text-slate-700 rounded-full font-bold hover:bg-slate-300 transition-all">초기화</button>
                     </div>
                 </div>
-
-                <div class="right-panel">
-                    <div class="formula-card indigo">
-                        <p class="main-formula">
-                            <span class="formula-blue">AC × BD</span>
-                            =
-                            <span class="formula-emerald">(AB × CD) + (BC × DA)</span>
+                <div class="lg:col-span-5 space-y-8 flex flex-col justify-center">
+                    <div class="formula-card border-indigo-600 relative overflow-hidden">
+                        <div id="equality-status" class="absolute top-0 right-0 px-3 py-1 bg-emerald-500 text-white text-[10px] font-black uppercase">정리 (원 위)</div>
+                        <p class="main-formula text-center mt-2">
+                             <span class="text-blue-600">(AB × CD) + (BC × DA)</span> <span id="comparison-op">≥</span> <span class="text-emerald-600">AC × BD</span>
                         </p>
                     </div>
-
-                    <div id="proof-ptolemy" class="proof-box proof-indigo">
-                        <h3>💡 관찰 포인트</h3>
-                        <p>
-                            점이 원 위에 있을 때 대각선의 곱과 대변 곱의 합 사이에
-                            일정한 관계가 성립합니다.
-                        </p>
-                        <div class="proof-inner indigo">
-                            네 점의 위치를 움직이며 등식이 얼마나 안정적으로 유지되는지 살펴보세요.
+                    <div id="proof-ptolemy" class="hidden proof-box bg-indigo-50 p-6 text-indigo-900 shadow-sm border border-indigo-100">
+                        <h3 class="font-black mb-2 text-lg">💡 증명 핵심: 닮음과 각</h3>
+                        <p class="mb-4">$\triangle ABP \sim \triangle DBC$ 관계를 이용합니다. <br>원주각 성질에 의해 <strong>같은 색상으로 표시된 두 각</strong>의 크기가 같습니다.</p>
+                        <div class="bg-white p-4 rounded-lg font-bold text-sm border border-indigo-200 space-y-2">
+                            <p class="text-rose-500">● $\triangle ABP$와 $\triangle DBC$는 닮음 (배경색 확인)</p>
+                            <p class="text-rose-500">● $\angle BAC = \angle BDC$ (호 $BC$의 원주각)</p>
+                            <p class="text-amber-500">● $\angle ABP = \angle DBC$ (보조점 $P$ 설정)</p>
                         </div>
                     </div>
-
-                    <div class="metric-grid">
-                        <div class="metric-card metric-blue">
-                            <span class="metric-label blue">대각선 곱</span>
-                            <div id="t-left" class="value-badge value-blue">0.00</div>
+                    <div class="space-y-4">
+                        <div class="bg-blue-50 p-6 rounded-2xl border-b-4 border-blue-500 flex justify-between items-center px-8">
+                            <span class="text-sm font-black text-blue-600 uppercase">대변 곱 합 (AB·CD+BC·DA)</span>
+                            <div id="t-left" class="value-badge text-blue-700">0.00</div>
                         </div>
-
-                        <div class="metric-card metric-emerald">
-                            <span class="metric-label emerald">대변 곱의 합</span>
-                            <div id="t-right" class="value-badge value-emerald">0.00</div>
+                        <div class="bg-emerald-50 p-6 rounded-2xl border-b-4 border-emerald-500 flex justify-between items-center px-8">
+                            <span class="text-sm font-black text-emerald-600 uppercase">대각선 곱 (AC×BD)</span>
+                            <div id="t-right" class="value-badge text-emerald-700">0.00</div>
                         </div>
                     </div>
                 </div>
@@ -533,66 +176,40 @@
 
     <script>
         const state = {
-            pappus: {
-                canvas: null,
-                ctx: null,
-                points: [],
-                showProof: false,
-                baseWidth: 600,
-                baseHeight: 400
-            },
-            ptolemy: {
-                canvas: null,
-                ctx: null,
-                points: [],
-                showProof: false,
-                freeMode: false,
-                baseWidth: 600,
-                baseHeight: 450
-            }
+            pappus: { canvas: document.getElementById('canvasPappus'), points: [], showProof: false },
+            ptolemy: { canvas: document.getElementById('canvasPtolemy'), points: [], showProof: false, freeMode: false }
         };
 
         let dragging = { section: null, point: null };
 
-        function debounce(fn, delay) {
-            let t;
-            return (...args) => {
-                clearTimeout(t);
-                t = setTimeout(() => fn(...args), delay);
-            };
-        }
+        function init() {
+            resetPoints('pappus');
+            resetPoints('ptolemy');
 
-        function resizeCanvas(section) {
-            const s = state[section];
-            const canvas = s.canvas;
-            const wrap = canvas.parentElement;
+            [state.pappus, state.ptolemy].forEach(s => {
+                s.ctx = s.canvas.getContext('2d');
+                const id = s === state.pappus ? 'pappus' : 'ptolemy';
+                s.canvas.addEventListener('mousedown', (e) => handleStart(e, id));
+                s.canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleStart(e.touches[0], id); }, { passive: false });
+            });
 
-            const wrapWidth = wrap.clientWidth;
-            const isMobile = window.innerWidth < 768;
+            document.getElementById('freeModeToggle').addEventListener('change', (e) => {
+                state.ptolemy.freeMode = e.target.checked;
+            });
 
-            const displayWidth = Math.min(
-                isMobile ? 420 : 600,
-                Math.max(280, wrapWidth)
-            );
+            window.addEventListener('mousemove', handleMove);
+            window.addEventListener('touchmove', (e) => handleMove(e.touches[0]), { passive: false });
+            window.addEventListener('mouseup', handleEnd);
+            window.addEventListener('touchend', handleEnd);
 
-            const aspect = s.baseHeight / s.baseWidth;
-            const displayHeight = displayWidth * aspect;
-
-            canvas.style.width = displayWidth + "px";
-            canvas.style.height = displayHeight + "px";
-
-            const dpr = window.devicePixelRatio || 1;
-            canvas.width = displayWidth * dpr;
-            canvas.height = displayHeight * dpr;
-
-            const ctx = canvas.getContext("2d");
-            ctx.setTransform(1, 0, 0, 1, 0, 0);
-            ctx.scale(dpr, dpr);
-
-            s.ctx = ctx;
+            requestAnimationFrame(renderLoop);
         }
 
         function resetPoints(section) {
+            state[section].showProof = false;
+            document.getElementById(`btn-proof-${section}`)?.classList.remove('btn-active');
+            document.getElementById(`proof-${section}`)?.classList.add('hidden');
+
             if (section === 'pappus') {
                 state.pappus.points = [
                     { x: 300, y: 80, label: 'A' },
@@ -600,6 +217,8 @@
                     { x: 450, y: 320, label: 'C' }
                 ];
             } else {
+                state.ptolemy.freeMode = false;
+                document.getElementById('freeModeToggle').checked = false;
                 const cx = 300, cy = 225, r = 160;
                 state.ptolemy.points = [
                     { x: cx + r * Math.cos(-2.0), y: cy + r * Math.sin(-2.0), label: 'A' },
@@ -612,152 +231,66 @@
 
         function toggleProof(section) {
             state[section].showProof = !state[section].showProof;
-            document.getElementById(`proof-${section}`).classList.toggle('show');
+            document.getElementById(`btn-proof-${section}`).classList.toggle('btn-active');
+            const proofBox = document.getElementById(`proof-${section}`);
+            proofBox.classList.toggle('hidden');
+            
+            if (!proofBox.classList.contains('hidden') && window.MathJax) {
+                window.MathJax.typesetPromise([proofBox]);
+            }
         }
 
         function handleStart(e, section) {
-            const s = state[section];
-            const rect = s.canvas.getBoundingClientRect();
-
-            const x = (e.clientX - rect.left) * (s.baseWidth / rect.width);
-            const y = (e.clientY - rect.top) * (s.baseHeight / rect.height);
-
-            s.points.forEach(p => {
-                if (Math.hypot(x - p.x, y - p.y) < 24) {
-                    dragging = { section, point: p };
-                }
+            const rect = state[section].canvas.getBoundingClientRect();
+            const pos = {
+                x: (e.clientX - rect.left) * (state[section].canvas.width / rect.width),
+                y: (e.clientY - rect.top) * (state[section].canvas.height / rect.height)
+            };
+            state[section].points.forEach(p => {
+                if (Math.hypot(pos.x - p.x, pos.y - p.y) < 30) dragging = { section, point: p };
             });
         }
 
         function handleMove(e) {
             if (!dragging.point) return;
-
             const s = state[dragging.section];
             const rect = s.canvas.getBoundingClientRect();
+            const pos = {
+                x: (e.clientX - rect.left) * (s.canvas.width / rect.width),
+                y: (e.clientY - rect.top) * (s.canvas.height / rect.height)
+            };
 
-            const x = (e.clientX - rect.left) * (s.baseWidth / rect.width);
-            const y = (e.clientY - rect.top) * (s.baseHeight / rect.height);
-
-            dragging.point.x = x;
-            dragging.point.y = y;
+            if (dragging.section === 'ptolemy' && !s.freeMode) {
+                const cx = 300, cy = 225, r = 160;
+                const angle = Math.atan2(pos.y - cy, pos.x - cx);
+                dragging.point.x = cx + r * Math.cos(angle);
+                dragging.point.y = cy + r * Math.sin(angle);
+            } else {
+                dragging.point.x = Math.max(30, Math.min(s.canvas.width - 30, pos.x));
+                dragging.point.y = Math.max(30, Math.min(s.canvas.height - 30, pos.y));
+            }
         }
 
-        function handleEnd() {
-            dragging = { section: null, point: null };
-        }
+        function handleEnd() { dragging = { section: null, point: null }; }
 
-        function drawNodes(ctx, points) {
-            points.forEach(p => {
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
-                ctx.fillStyle = "#111";
-                ctx.fill();
-
-                if (p.label) {
-                    ctx.fillStyle = "#111";
-                    ctx.font = "bold 16px sans-serif";
-                    ctx.fillText(p.label, p.x + 14, p.y - 14);
-                }
-            });
-        }
-
-        function renderPappus() {
-            const s = state.pappus;
-            const ctx = s.ctx;
-            if (!ctx) return;
-
-            ctx.clearRect(0, 0, s.baseWidth, s.baseHeight);
-
-            const [A, B, C] = s.points;
-            const M = { x: (B.x + C.x) / 2, y: (B.y + C.y) / 2 };
+        function drawAngleArc(ctx, center, p1, p2, radius, color) {
+            const a1 = Math.atan2(p1.y - center.y, p1.x - center.x);
+            const a2 = Math.atan2(p2.y - center.y, p2.x - center.x);
+            let diff = a2 - a1;
+            while (diff < -Math.PI) diff += Math.PI * 2;
+            while (diff > Math.PI) diff -= Math.PI * 2;
 
             ctx.beginPath();
-            ctx.moveTo(B.x, B.y);
-            ctx.lineTo(A.x, A.y);
-            ctx.lineTo(C.x, C.y);
-            ctx.strokeStyle = "#2563eb";
-            ctx.lineWidth = 5;
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.moveTo(B.x, B.y);
-            ctx.lineTo(C.x, C.y);
-            ctx.strokeStyle = "#cbd5e1";
+            ctx.arc(center.x, center.y, radius, a1, a1 + diff, diff < 0);
+            ctx.strokeStyle = color;
             ctx.lineWidth = 3;
             ctx.stroke();
 
+            const mid = a1 + diff / 2;
             ctx.beginPath();
-            ctx.moveTo(A.x, A.y);
-            ctx.lineTo(M.x, M.y);
-            ctx.strokeStyle = "#059669";
-            ctx.setLineDash([10, 5]);
-            ctx.stroke();
-            ctx.setLineDash([]);
-
-            ctx.beginPath();
-            ctx.arc(M.x, M.y, 6, 0, Math.PI * 2);
-            ctx.fillStyle = "#059669";
+            ctx.arc(center.x + Math.cos(mid) * (radius + 8), center.y + Math.sin(mid) * (radius + 8), 4, 0, Math.PI * 2);
+            ctx.fillStyle = color;
             ctx.fill();
-
-            ctx.fillStyle = "#059669";
-            ctx.font = "bold 16px sans-serif";
-            ctx.fillText("M", M.x + 10, M.y + 22);
-
-            drawNodes(ctx, [A, B, C]);
-
-            const d = (p1, p2) => Math.hypot(p1.x - p2.x, p1.y - p2.y);
-            const left = d(A, B) ** 2 + d(A, C) ** 2;
-            const right = 2 * (d(A, M) ** 2 + d(B, M) ** 2);
-
-            document.getElementById("p-left").innerText = (left / 1000).toFixed(2);
-            document.getElementById("p-right").innerText = (right / 1000).toFixed(2);
-        }
-
-        function renderPtolemy() {
-            const s = state.ptolemy;
-            const ctx = s.ctx;
-            if (!ctx) return;
-
-            ctx.clearRect(0, 0, s.baseWidth, s.baseHeight);
-
-            const [A, B, C, D] = s.points;
-            const cx = 300, cy = 225, r = 160;
-
-            ctx.beginPath();
-            ctx.arc(cx, cy, r, 0, Math.PI * 2);
-            ctx.strokeStyle = "#e2e8f0";
-            ctx.lineWidth = 4;
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.moveTo(A.x, A.y);
-            ctx.lineTo(B.x, B.y);
-            ctx.lineTo(C.x, C.y);
-            ctx.lineTo(D.x, D.y);
-            ctx.closePath();
-            ctx.strokeStyle = "#6366f1";
-            ctx.lineWidth = 5;
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.moveTo(A.x, A.y);
-            ctx.lineTo(C.x, C.y);
-            ctx.moveTo(B.x, B.y);
-            ctx.lineTo(D.x, D.y);
-            ctx.strokeStyle = "#10b981";
-            ctx.lineWidth = 3;
-            ctx.setLineDash([10, 6]);
-            ctx.stroke();
-            ctx.setLineDash([]);
-
-            drawNodes(ctx, [A, B, C, D]);
-
-            const dist = (p1, p2) => Math.hypot(p1.x - p2.x, p1.y - p2.y);
-            const left = dist(A, C) * dist(B, D);
-            const right = dist(A, B) * dist(C, D) + dist(B, C) * dist(D, A);
-
-            document.getElementById("t-left").innerText = (left / 1000).toFixed(2);
-            document.getElementById("t-right").innerText = (right / 1000).toFixed(2);
         }
 
         function renderLoop() {
@@ -766,56 +299,157 @@
             requestAnimationFrame(renderLoop);
         }
 
-        function init() {
-            state.pappus.canvas = document.getElementById('canvasPappus');
-            state.ptolemy.canvas = document.getElementById('canvasPtolemy');
+        function renderPappus() {
+            const { ctx, points, showProof } = state.pappus;
+            if (!ctx) return;
+            ctx.clearRect(0, 0, 600, 400);
+            const [A, B, C] = points;
+            const M = { x: (B.x + C.x) / 2, y: (B.y + C.y) / 2 };
 
-            if (!state.pappus.canvas || !state.ptolemy.canvas) {
-                console.error("canvas를 찾지 못했소");
-                return;
+            // 좌변 성분 (AB, AC) - Blue
+            ctx.beginPath(); ctx.moveTo(B.x, B.y); ctx.lineTo(A.x, A.y); ctx.lineTo(C.x, C.y);
+            ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 6; ctx.stroke();
+            
+            // 밑변 (BC) - Grey (기준선)
+            ctx.beginPath(); ctx.moveTo(B.x, B.y); ctx.lineTo(C.x, C.y);
+            ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 3; ctx.stroke();
+
+            // 우변 성분 (AM, BM) - Emerald 점선
+            ctx.setLineDash([10, 5]);
+            ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(M.x, M.y);
+            ctx.strokeStyle = '#059669'; ctx.lineWidth = 5; ctx.stroke();
+            
+            ctx.beginPath(); ctx.moveTo(B.x, B.y); ctx.lineTo(M.x, M.y);
+            ctx.strokeStyle = '#059669'; ctx.lineWidth = 5; ctx.stroke();
+            ctx.setLineDash([]);
+            
+            ctx.beginPath(); ctx.arc(M.x, M.y, 6, 0, Math.PI * 2); ctx.fillStyle = '#059669'; ctx.fill();
+            ctx.font = 'bold 18px sans-serif'; ctx.fillText('M', M.x - 5, M.y + 35);
+
+            if (showProof) {
+                const dx = C.x - B.x, dy = C.y - B.y;
+                const lenSq = dx*dx + dy*dy;
+                const t = ((A.x - B.x)*dx + (A.y - B.y)*dy) / lenSq;
+                const H = { x: B.x + t*dx, y: B.y + t*dy };
+                ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(H.x, H.y);
+                ctx.strokeStyle = '#e11d48'; ctx.lineWidth = 2.5; ctx.setLineDash([5, 5]); ctx.stroke(); ctx.setLineDash([]);
+                ctx.fillStyle = '#e11d48'; ctx.beginPath(); ctx.arc(H.x, H.y, 5, 0, Math.PI*2); ctx.fill();
             }
 
-            resetPoints('pappus');
-            resetPoints('ptolemy');
-
-            resizeCanvas('pappus');
-            resizeCanvas('ptolemy');
-
-            [state.pappus, state.ptolemy].forEach(s => {
-                const id = s === state.pappus ? 'pappus' : 'ptolemy';
-
-                s.canvas.addEventListener('mousedown', (e) => handleStart(e, id));
-                s.canvas.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    handleStart(e.touches[0], id);
-                }, { passive: false });
-            });
-
-            window.addEventListener('resize', debounce(() => {
-                resizeCanvas('pappus');
-                resizeCanvas('ptolemy');
-            }, 100));
-
-            window.addEventListener('mousemove', handleMove);
-            window.addEventListener('mouseup', handleEnd);
-
-            window.addEventListener('touchmove', (e) => {
-                if (e.touches.length > 0) handleMove(e.touches[0]);
-            }, { passive: false });
-
-            window.addEventListener('touchend', handleEnd);
-
-            const toggle = document.getElementById('freeModeToggle');
-            if (toggle) {
-                toggle.addEventListener('change', (e) => {
-                    state.ptolemy.freeMode = e.target.checked;
-                });
-            }
-
-            requestAnimationFrame(renderLoop);
+            drawNodes(ctx, points);
+            const d = (p1, p2) => Math.hypot(p1.x-p2.x, p1.y-p2.y);
+            const left = (d(A,B)**2 + d(A,C)**2)/1000;
+            const right = (2 * (d(A,M)**2 + d(B,M)**2)/1000);
+            document.getElementById('p-left').innerText = left.toFixed(2);
+            document.getElementById('p-right').innerText = right.toFixed(2);
         }
 
-        window.addEventListener("load", init);
+        function renderPtolemy() {
+            const { ctx, points, showProof, freeMode } = state.ptolemy;
+            if (!ctx) return;
+            ctx.clearRect(0, 0, 600, 450);
+            const cx = 300, cy = 225, r = 160;
+            const [A, B, C, D] = points;
+            const dist = (p1, p2) => Math.hypot(p1.x-p2.x, p1.y-p2.y);
+
+            // 원 그리기
+            ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); 
+            ctx.strokeStyle = freeMode ? '#f1f5f9' : '#e2e8f0'; 
+            ctx.lineWidth = freeMode ? 4 : 10; 
+            ctx.stroke();
+
+            // 대변 곱 합 (AB, BC, CD, DA) - Blue 실선
+            ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.lineTo(C.x, C.y); ctx.lineTo(D.x, D.y); ctx.closePath();
+            ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 6; ctx.stroke();
+
+            // 대각선 곱 (AC, BD) - Emerald 실선
+            ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(C.x, C.y); ctx.moveTo(B.x, B.y); ctx.lineTo(D.x, D.y);
+            ctx.strokeStyle = '#10b981'; ctx.lineWidth = 5; ctx.stroke();
+
+            if (showProof) {
+                // 보조점 P 계산
+                const ratio = (dist(A,B) * dist(C,D)) / (dist(A,B) * dist(C,D) + dist(B,C) * dist(D,A));
+                const P = { 
+                    x: A.x + (C.x - A.x) * ratio, 
+                    y: A.y + (C.y - A.y) * ratio 
+                };
+
+                // 1. 닮음 삼각형 DBC 색칠 (원래 도형의 일부) - 연한 빨간색
+                ctx.beginPath(); ctx.moveTo(D.x, D.y); ctx.lineTo(B.x, B.y); ctx.lineTo(C.x, C.y); ctx.closePath();
+                ctx.fillStyle = 'rgba(244, 63, 94, 0.15)'; // Rose-500 with opacity
+                ctx.fill();
+
+                // 2. 보조 삼각형 ABP 색칠 - 연한 초록색
+                ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.lineTo(P.x, P.y); ctx.closePath();
+                ctx.fillStyle = 'rgba(16, 185, 129, 0.15)'; // Emerald-500 with opacity
+                ctx.fill();
+
+                // 보조선 그리기 - 초록색 점선 (Green Dashed)
+                ctx.save();
+                ctx.setLineDash([6, 4]);
+                ctx.strokeStyle = '#10b981'; 
+                ctx.lineWidth = 2.5;
+                ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.lineTo(P.x, P.y); ctx.closePath();
+                ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.lineTo(B.x, B.y); ctx.stroke();
+                ctx.restore();
+
+                // 점 P 표시
+                ctx.beginPath(); ctx.arc(P.x, P.y, 6, 0, Math.PI*2); ctx.fillStyle = '#10b981'; ctx.fill();
+                ctx.font = 'bold 16px sans-serif'; ctx.fillText('P', P.x - 20, P.y + 25);
+                
+                // 각 표시
+                drawAngleArc(ctx, B, A, P, 30, '#f43f5e'); // angle ABP
+                drawAngleArc(ctx, B, D, C, 35, '#f43f5e'); // angle DBC
+                drawAngleArc(ctx, A, B, C, 30, '#f59e0b'); // angle BAC
+                drawAngleArc(ctx, D, B, C, 30, '#f59e0b'); // angle BDC
+            }
+
+            drawNodes(ctx, points, (p) => {
+                if (!freeMode) return '#0f172a';
+                const onCircle = Math.abs(Math.hypot(p.x - cx, p.y - cy) - r) < 5;
+                return onCircle ? '#10b981' : '#f43f5e';
+            });
+
+            const diagProd = (dist(A,C) * dist(B,D))/1000;
+            const sideSum = (((dist(A,B)*dist(C,D)) + (dist(B,C)*dist(D,A)))/1000);
+            const diff = Math.abs(diagProd - sideSum);
+            const isCircle = diff < 0.05;
+
+            document.getElementById('t-left').innerText = sideSum.toFixed(2);
+            document.getElementById('t-right').innerText = diagProd.toFixed(2);
+            
+            const opEl = document.getElementById('comparison-op');
+            const statusEl = document.getElementById('equality-status');
+            
+            if (isCircle) {
+                opEl.innerText = '=';
+                opEl.className = 'text-emerald-600 transition-all font-black';
+                statusEl.innerText = '정리 (원 위)';
+                statusEl.className = 'absolute top-0 right-0 px-3 py-1 bg-emerald-500 text-white text-[10px] font-black uppercase';
+            } else {
+                opEl.innerText = '≥';
+                opEl.className = 'text-blue-600 transition-all font-black';
+                statusEl.innerText = '부등식 (일반)';
+                statusEl.className = 'absolute top-0 right-0 px-3 py-1 bg-rose-500 text-white text-[10px] font-black uppercase';
+            }
+        }
+
+        function drawNodes(ctx, points, colorFn) {
+            points.forEach(p => {
+                const nodeColor = colorFn ? colorFn(p) : '#0f172a';
+                ctx.save();
+                ctx.shadowBlur = 8; ctx.shadowColor = 'rgba(0,0,0,0.15)';
+                ctx.beginPath(); ctx.arc(p.x, p.y, 13, 0, Math.PI * 2);
+                ctx.fillStyle = (dragging.point === p) ? nodeColor : 'white';
+                ctx.fill();
+                ctx.strokeStyle = nodeColor; ctx.lineWidth = 3; ctx.stroke();
+                ctx.restore();
+                ctx.fillStyle = nodeColor; ctx.font = '900 18px sans-serif';
+                ctx.fillText(p.label, p.x + 18, p.y - 18);
+            });
+        }
+        window.onload = init;
     </script>
 </body>
 </html>
