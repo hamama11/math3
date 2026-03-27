@@ -1,0 +1,600 @@
+import React, { useState } from 'react';
+import { Sparkles, Calculator, Layers, Box, Cuboid, MousePointer2 } from 'lucide-react';
+
+export default function App() {
+  return (
+    <div className="min-h-screen bg-slate-50 font-sans pb-10">
+      {/* Header */}
+      <header className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500 text-white p-8 shadow-lg rounded-b-[3rem] text-center mb-12 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9IiNmZmYiLz48L3N2Zz4=')]"></div>
+        <h1 className="text-3xl md:text-5xl font-extrabold flex items-center justify-center gap-3 drop-shadow-md mb-4 relative z-10">
+          <Sparkles className="text-yellow-300 animate-pulse w-8 h-8 md:w-12 md:h-12" />
+          시그마(∑) 마법 놀이터
+          <Sparkles className="text-yellow-300 animate-pulse w-8 h-8 md:w-12 md:h-12" />
+        </h1>
+        <p className="mt-2 text-blue-100 font-medium text-lg md:text-xl relative z-10">
+          자연수의 합(k), 제곱의 합(k²), 세제곱의 합(k³)의 기하학적 비밀을 풀어보세요!
+        </p>
+      </header>
+
+      {/* Main Content Area */}
+      <main className="max-w-5xl mx-auto px-4 flex flex-col gap-16">
+        <SumKActivity />
+        <SumKSquareActivity />
+        <SumKCubeActivity />
+      </main>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------
+// Reusable Math Fraction Component
+// ---------------------------------------------------------
+function MathFraction({ num, den, prefix, suffix, className = "" }) {
+  return (
+    <div className={`inline-flex items-center justify-center gap-1.5 align-middle ${className}`}>
+      {prefix && <span>{prefix}</span>}
+      <div className="flex flex-col items-center justify-center font-serif italic text-center">
+        <span className="border-b-2 border-current px-2 pb-0.5 mb-0.5 leading-none">{num}</span>
+        <span className="leading-none pt-0.5">{den}</span>
+      </div>
+      {suffix && <span>{suffix}</span>}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------
+// Activity 1: 자연수의 합 (Sigma k)
+// ---------------------------------------------------------
+function SumKActivity() {
+  const [n, setN] = useState(5);
+  const [showMagic, setShowMagic] = useState(false);
+  const totalSum = (n * (n + 1)) / 2;
+
+  return (
+    <div className="bg-white rounded-3xl shadow-xl p-6 md:p-10 border-4 border-blue-200 relative overflow-hidden">
+      <div className="absolute top-4 right-4 text-blue-100">
+        <Calculator size={80} opacity={0.5} />
+      </div>
+      
+      <div className="text-center mb-8 relative z-10">
+        <h2 className="text-3xl font-bold text-blue-700 mb-2 flex justify-center items-center gap-2">
+          <span className="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-lg">1</span>
+          자연수의 합 (∑k)
+        </h2>
+        <p className="text-gray-600 text-lg">가우스의 계단! 거꾸로 된 계단을 붙여 직사각형을 만들어 공식을 유도해 보세요.</p>
+      </div>
+
+      <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
+        <div className="w-full md:w-1/3 space-y-6 bg-blue-50 p-6 rounded-2xl">
+          <div>
+            <label className="block text-blue-800 font-bold mb-2">n의 값 (n = {n})</label>
+            <input 
+              type="range" min="1" max="10" value={n} 
+              onChange={(e) => { setN(parseInt(e.target.value)); setShowMagic(false); }}
+              className="w-full accent-blue-600"
+            />
+          </div>
+          
+          <button 
+            onClick={() => setShowMagic(!showMagic)}
+            className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transform transition hover:-translate-y-1"
+          >
+            {showMagic ? '✨ 원상복구' : '✨ 똑같은 계단 붙이기!'}
+          </button>
+
+          <div className="bg-white p-4 rounded-xl border-2 border-blue-100 flex flex-col items-center text-center">
+            <h3 className="text-sm text-gray-500 font-bold mb-3 w-full text-left">공식 및 결과:</h3>
+            
+            <MathFraction 
+              prefix="∑k =" 
+              num="n(n+1)" 
+              den="2" 
+              suffix={`= ${totalSum}`}
+              className="text-2xl font-bold text-blue-700 mb-4" 
+            />
+
+            {showMagic ? (
+              <div className="text-sm text-indigo-700 font-medium animate-fade-in bg-indigo-50 p-3 rounded-lg leading-relaxed w-full">
+                완성된 직사각형의 넓이 (가로 <b>n</b> × 세로 <b>n+1</b>)의 절반!
+              </div>
+            ) : (
+              <div className="text-sm text-gray-400 font-medium p-2 w-full bg-gray-50 rounded-lg">
+                1 + 2 + 3 + ... + {n}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="w-full md:w-2/3 flex flex-col items-center justify-center relative">
+          <div className="flex items-end border-b-4 border-slate-200 pb-2 gap-1 md:gap-2 h-72 relative">
+            
+            {/* Height Label (n+1) */}
+            {showMagic && (
+              <div className="absolute -right-8 bottom-2 flex items-center h-full animate-fade-in">
+                <div className="h-full border-r-2 border-dashed border-purple-400 w-4 relative">
+                  <span className="absolute top-1/2 -right-12 -translate-y-1/2 font-bold text-purple-600 text-sm whitespace-nowrap bg-white px-1 rounded-md shadow-sm">
+                    n+1<br/>({n+1})
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {Array.from({ length: n }).map((_, i) => (
+              <div key={i} className="flex flex-col-reverse items-center w-8 md:w-10 relative group">
+                <div 
+                  className="w-full bg-gradient-to-t from-blue-500 to-cyan-400 rounded-t-md shadow-sm transition-all duration-500 flex items-end justify-center pb-1 text-xs text-white font-bold"
+                  style={{ height: `${(i + 1) * 20}px` }}
+                >
+                  {i + 1}
+                </div>
+                {showMagic && (
+                  <div 
+                    className="w-full bg-gradient-to-b from-purple-400 to-pink-300 rounded-b-md shadow-sm transition-all duration-500 animate-bounce flex items-start justify-center pt-1 text-xs text-white font-bold opacity-80"
+                    style={{ height: `${(n - i) * 20}px`, marginBottom: '2px' }}
+                  >
+                    {n - i}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          
+          {/* Width Label (n) */}
+          <div className="mt-4 border-t-2 border-dashed border-blue-400 pt-2 text-center font-bold text-blue-600 text-sm transition-all w-3/4 max-w-[300px]">
+            가로 길이: n ({n})
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------
+// Activity 2: 제곱수의 합 (Sigma k^2)
+// ---------------------------------------------------------
+function SumKSquareActivity() {
+  const [n, setN] = useState(4);
+  const [mode, setMode] = useState('3d'); // '2d', '3d', 'cuboid'
+  
+  const totalSum = (n * (n + 1) * (2 * n + 1)) / 6;
+
+  const colors = [
+    { base: 'red', hex: '#ef4444', top: '#fca5a5', left: '#ef4444', right: '#b91c1c', border: '#991b1b' },
+    { base: 'orange', hex: '#f97316', top: '#fdba74', left: '#f97316', right: '#c2410c', border: '#9a3412' },
+    { base: 'yellow', hex: '#eab308', top: '#fde047', left: '#eab308', right: '#a16207', border: '#713f12' },
+    { base: 'green', hex: '#22c55e', top: '#86efac', left: '#22c55e', right: '#15803d', border: '#14532d' },
+    { base: 'blue', hex: '#3b82f6', top: '#93c5fd', left: '#3b82f6', right: '#1d4ed8', border: '#1e3a8a' },
+    { base: 'purple', hex: '#a855f7', top: '#d8b4fe', left: '#a855f7', right: '#7e22ce', border: '#581c87' }
+  ];
+
+  return (
+    <div className="bg-white rounded-3xl shadow-xl p-6 md:p-10 border-4 border-orange-200 relative overflow-hidden">
+      <div className="absolute top-4 right-4 text-orange-100">
+        <Layers size={80} opacity={0.5} />
+      </div>
+
+      <div className="text-center mb-8 relative z-10">
+        <h2 className="text-3xl font-bold text-orange-600 mb-2 flex justify-center items-center gap-2">
+          <span className="bg-orange-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-lg">2</span>
+          제곱수의 합 (∑k²)
+        </h2>
+        <p className="text-gray-600 text-lg">
+          3D 피라미드 부피의 마법! 피라미드 6개를 합치면 <b>n × (n+1) × (2n+1)</b> 크기의 직육면체가 됩니다.
+        </p>
+      </div>
+
+      <div className="flex flex-col md:flex-row items-stretch gap-8 relative z-10">
+        <div className="w-full md:w-5/12 space-y-6 bg-orange-50 p-6 rounded-2xl flex flex-col justify-between">
+          <div>
+            <label className="block text-orange-800 font-bold mb-2">n의 값 (n = {n})</label>
+            <input 
+              type="range" min="1" max="6" value={n} 
+              onChange={(e) => setN(parseInt(e.target.value))}
+              className="w-full accent-orange-500"
+            />
+          </div>
+
+          <div className="flex flex-col gap-2 bg-orange-200 p-2 rounded-xl">
+            <div className="flex gap-2">
+              <button onClick={() => setMode('2d')} className={`flex-1 py-2 font-bold text-sm rounded-lg transition-colors ${mode === '2d' ? 'bg-white text-orange-600 shadow-sm' : 'text-orange-700 hover:bg-orange-100'}`}>
+                1. 2D 펼치기
+              </button>
+              <button onClick={() => setMode('3d')} className={`flex-1 py-2 font-bold text-sm rounded-lg transition-colors ${mode === '3d' ? 'bg-white text-orange-600 shadow-sm' : 'text-orange-700 hover:bg-orange-100'}`}>
+                2. 3D 피라미드
+              </button>
+            </div>
+            <button onClick={() => setMode('cuboid')} className={`w-full py-3 font-bold text-base rounded-lg transition-all ${mode === 'cuboid' ? 'bg-orange-600 text-white shadow-md scale-100 ring-2 ring-orange-400 ring-offset-2 ring-offset-orange-200' : 'bg-white text-orange-700 hover:bg-orange-50'}`}>
+              3. 직육면체 (x6 결합)
+            </button>
+          </div>
+
+          <div className="bg-white p-5 rounded-xl border-2 border-orange-100 flex flex-col items-center shadow-inner">
+             <h3 className="text-sm text-gray-500 font-bold mb-4 w-full text-left">공식 및 결과:</h3>
+             
+             <MathFraction 
+               prefix="∑k² =" 
+               num="n(n+1)(2n+1)" 
+               den="6" 
+               suffix={`= ${totalSum}`}
+               className="text-xl md:text-2xl font-bold text-orange-700 mb-4" 
+             />
+
+             {mode === 'cuboid' && (
+               <div className="text-xs md:text-sm text-orange-800 font-medium bg-orange-100 p-3 rounded-lg leading-relaxed w-full animate-fade-in border border-orange-200">
+                 오른쪽 <b>가로(n) × 세로(n+1) × 높이(2n+1)</b> 직육면체의 부피는 {n * (n+1) * (2n+1)}입니다.<br/>
+                 우리가 만든 피라미드({totalSum})가 이 안에 정확히 <b>6개</b> 들어갑니다!
+               </div>
+             )}
+          </div>
+        </div>
+
+        <div className="w-full md:w-7/12 flex justify-center items-center min-h-[360px] p-6 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 overflow-hidden relative">
+          {mode === '2d' && (
+            <div className="flex flex-wrap justify-center items-end gap-6 animate-fade-in">
+              {Array.from({ length: n }).map((_, kIndex) => {
+                const k = kIndex + 1;
+                return (
+                  <div key={k} className="flex flex-col items-center gap-2 hover:-translate-y-2 transition-transform">
+                    <span className="text-xs font-bold text-gray-500">{k}² ({k*k})</span>
+                    <div className="grid gap-[2px] shadow-md bg-white p-1 rounded-md" style={{ gridTemplateColumns: `repeat(${k}, minmax(0, 1fr))` }}>
+                      {Array.from({ length: k * k }).map((_, blockIdx) => (
+                        <div key={blockIdx} className="w-4 h-4 md:w-5 md:h-5 rounded-sm" style={{ backgroundColor: colors[kIndex].hex }}></div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          
+          {mode === '3d' && (
+            <div className="animate-fade-in w-full h-full flex flex-col items-center justify-center">
+              <span className="text-orange-500 font-bold mb-2">블록 총 개수(부피) = {totalSum}</span>
+              <PyramidSVG n={n} colors={colors} unit={20} />
+            </div>
+          )}
+
+          {mode === 'cuboid' && (
+            <div className="animate-fade-in w-full h-full flex items-center justify-center">
+              <CuboidVisualizer n={n} unit={18} />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------
+// Activity 3: 세제곱수의 합 (Sigma k^3)
+// ---------------------------------------------------------
+function SumKCubeActivity() {
+  const [n, setN] = useState(4);
+  const [hoveredK, setHoveredK] = useState(null);
+  
+  const sumOfK = (n * (n + 1)) / 2;
+  const totalSum = sumOfK * sumOfK; // {n(n+1)/2}^2
+
+  const colors = [
+    { base: 'red', hex: '#ef4444', top: '#fca5a5', left: '#ef4444', right: '#b91c1c', border: '#991b1b' },
+    { base: 'orange', hex: '#f97316', top: '#fdba74', left: '#f97316', right: '#c2410c', border: '#9a3412' },
+    { base: 'yellow', hex: '#eab308', top: '#fde047', left: '#eab308', right: '#a16207', border: '#713f12' },
+    { base: 'green', hex: '#22c55e', top: '#86efac', left: '#22c55e', right: '#15803d', border: '#14532d' },
+    { base: 'blue', hex: '#3b82f6', top: '#93c5fd', left: '#3b82f6', right: '#1d4ed8', border: '#1e3a8a' },
+  ];
+
+  const sArray = [0];
+  let currentS = 0;
+  for(let i=1; i<=n; i++) {
+     currentS += i;
+     sArray.push(currentS);
+  }
+
+  return (
+    <div className="bg-white rounded-3xl shadow-xl p-6 md:p-10 border-4 border-pink-200 relative overflow-hidden">
+      <div className="absolute top-4 right-4 text-pink-100">
+        <Cuboid size={80} opacity={0.5} />
+      </div>
+
+      <div className="text-center mb-8 relative z-10">
+        <h2 className="text-3xl font-bold text-pink-600 mb-2 flex justify-center items-center gap-2">
+          <span className="bg-pink-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-lg">3</span>
+          세제곱수의 합 (∑k³)
+        </h2>
+        <p className="text-gray-600 text-lg">
+          3차원 정육면체(k³)들이 거대한 2D 정사각형으로 변신! <br/>오른쪽 <b>그리드에 마우스를 올려</b> 완벽한 분할 마법(L-Shape)을 확인하세요.
+        </p>
+      </div>
+
+      <div className="flex flex-col md:flex-row items-stretch gap-8 relative z-10">
+        <div className="w-full md:w-5/12 space-y-6 flex flex-col">
+          <div className="bg-pink-50 p-6 rounded-2xl">
+            <label className="block text-pink-800 font-bold mb-2">n의 값 (n = {n})</label>
+            <input 
+              type="range" min="1" max="5" value={n} 
+              onChange={(e) => setN(parseInt(e.target.value))}
+              className="w-full accent-pink-500"
+            />
+            
+            <div className="bg-white p-5 rounded-xl border-2 border-pink-100 shadow-inner mt-4 flex flex-col items-center text-center">
+              <h3 className="text-sm text-gray-500 font-bold mb-4 w-full text-left">놀라운 공식의 일치:</h3>
+              <div className="flex items-center gap-4 text-xl md:text-2xl font-bold text-pink-700 mb-2 flex-wrap justify-center">
+                <span>∑k³ =</span>
+                <MathFraction 
+                  prefix="(" 
+                  num="n(n+1)" 
+                  den="2" 
+                  suffix=")²"
+                  className="text-pink-600" 
+                />
+                <span>= {totalSum}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-slate-50 p-6 rounded-2xl border-2 border-slate-200 flex flex-wrap gap-4 items-end justify-center overflow-x-auto flex-1 content-end pb-8">
+             {Array.from({ length: n }).map((_, kIndex) => {
+               const k = kIndex + 1;
+               const isHovered = hoveredK === k;
+               const isDimmed = hoveredK !== null && !isHovered;
+               
+               return (
+                 <div key={`cube-${k}`} className={`flex flex-col items-center gap-2 transition-all duration-300 ${isHovered ? 'scale-110 -translate-y-2' : ''} ${isDimmed ? 'opacity-30 grayscale' : 'opacity-100'}`}>
+                   <SingleCubeSVG k={k} colorSet={colors[kIndex]} unit={12} />
+                   <div className="text-xs font-bold text-gray-500">k={k} (부피: {k*k*k})</div>
+                 </div>
+               );
+             })}
+          </div>
+        </div>
+
+        <div className="w-full md:w-7/12 flex flex-col items-center justify-center bg-pink-50/50 p-8 rounded-2xl border-2 border-pink-100 relative">
+          
+          <div className="mb-4 flex items-center gap-2 text-pink-700 font-bold bg-pink-100 px-4 py-2 rounded-full animate-pulse">
+            <MousePointer2 size={16} /> 정사각형 영역에 마우스를 올려보세요!
+          </div>
+
+          {/* Wrapper for square and side labels */}
+          <div className="relative flex items-center justify-center mt-4">
+             {/* Y-axis label */}
+             <div className="absolute -left-12 md:-left-16 flex items-center justify-center h-full rotate-180" style={{ writingMode: 'vertical-rl' }}>
+               <MathFraction num="n(n+1)" den="2" prefix="세로: " className="text-sm font-bold text-pink-600 rotate-90" />
+             </div>
+
+             <div 
+                className="grid gap-px bg-slate-300 p-px rounded shadow-xl cursor-crosshair transition-all relative z-10"
+                style={{ 
+                  gridTemplateColumns: `repeat(${sumOfK}, minmax(0, 1fr))`,
+                  width: '100%',
+                  maxWidth: '350px',
+                  aspectRatio: '1 / 1'
+                }}
+                onMouseLeave={() => setHoveredK(null)}
+             >
+                {Array.from({ length: totalSum }).map((_, idx) => {
+                  const r = Math.floor(idx / sumOfK);
+                  const c = idx % sumOfK;
+                  const d = Math.max(r, c);
+                  const k = sArray.findIndex(s => d < s); // returns 1, 2, 3...
+                  
+                  const isHovered = hoveredK === k;
+                  const isDimmed = hoveredK !== null && !isHovered;
+                  
+                  return (
+                    <div 
+                      key={`cell-${idx}`} 
+                      onMouseEnter={() => setHoveredK(k)}
+                      className="transition-all duration-200"
+                      style={{ 
+                        backgroundColor: colors[k-1].top,
+                        opacity: isDimmed ? 0.2 : 1,
+                        transform: isHovered ? 'scale(1.05)' : 'scale(1)',
+                        zIndex: isHovered ? 10 : 1
+                      }}
+                    ></div>
+                  );
+                })}
+             </div>
+
+             {/* X-axis label */}
+             <div className="absolute -bottom-12 w-full flex justify-center">
+               <MathFraction num="n(n+1)" den="2" prefix="가로: " className="text-sm font-bold text-pink-600" />
+             </div>
+          </div>
+
+          <div className="mt-16 h-12 flex items-center justify-center">
+            {hoveredK ? (
+              <div className="bg-white px-6 py-2 rounded-xl shadow-md border-2" style={{ borderColor: colors[hoveredK-1].hex }}>
+                <span className="font-bold text-lg" style={{ color: colors[hoveredK-1].border }}>
+                  k = {hoveredK} 영역
+                </span>
+                <span className="text-gray-600 ml-3 font-medium">
+                  블록 수(넓이): {hoveredK}³ = {hoveredK * hoveredK * hoveredK}
+                </span>
+              </div>
+            ) : (
+              <div className="text-gray-400 text-sm font-medium">
+                총 넓이: {sumOfK} × {sumOfK} = {totalSum}
+              </div>
+            )}
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------
+// SVG & Math Components for Isometric Rendering
+// ---------------------------------------------------------
+
+// Core Isometric Box Drawer (returns SVG group <g>)
+function IsometricBox({ kX, kY, height, zOffset, colorSet, unit, opacity = 1 }) {
+  const dxX = -unit * 0.866; const dxY = -unit * 0.5;
+  const dyX = unit * 0.866;  const dyY = -unit * 0.5;
+  const dzY = -unit; 
+
+  const ox = 0;
+  const oy = zOffset * dzY;
+
+  return (
+    <g opacity={opacity}>
+      {/* Left Face */}
+      <path d={`M ${ox} ${oy} L ${ox + kX*dxX} ${oy + kX*dxY} L ${ox + kX*dxX} ${oy + kX*dxY + height*dzY} L ${ox} ${oy + height*dzY} Z`} fill={colorSet.left} stroke={colorSet.border} strokeWidth="0.5" strokeLinejoin="round" />
+      {/* Right Face */}
+      <path d={`M ${ox} ${oy} L ${ox + kY*dyX} ${oy + kY*dyY} L ${ox + kY*dyX} ${oy + kY*dyY + height*dzY} L ${ox} ${oy + height*dzY} Z`} fill={colorSet.right} stroke={colorSet.border} strokeWidth="0.5" strokeLinejoin="round" />
+      {/* Top Face */}
+      <path d={`M ${ox} ${oy + height*dzY} L ${ox + kX*dxX} ${oy + height*dzY + kX*dxY} L ${ox + kX*dxX + kY*dyX} ${oy + height*dzY + kX*dxY + kY*dyY} L ${ox + kY*dyX} ${oy + height*dzY + kY*dyY} Z`} fill={colorSet.top} stroke={colorSet.border} strokeWidth="0.5" strokeLinejoin="round" />
+
+      {/* Grid lines - Left Face */}
+      {Array.from({length: kX-1}).map((_, i) => (
+        <line key={`lv-${i}`} x1={ox + (i+1)*dxX} y1={oy + (i+1)*dxY} x2={ox + (i+1)*dxX} y2={oy + (i+1)*dxY + height*dzY} stroke={colorSet.border} strokeWidth="0.5" strokeOpacity="0.4" />
+      ))}
+      {Array.from({length: height-1}).map((_, i) => (
+        <line key={`lh-${i}`} x1={ox + kX*dxX} y1={oy + kX*dxY + (i+1)*dzY} x2={ox} y2={oy + (i+1)*dzY} stroke={colorSet.border} strokeWidth="0.5" strokeOpacity="0.4" />
+      ))}
+
+      {/* Grid lines - Right Face */}
+      {Array.from({length: kY-1}).map((_, i) => (
+        <line key={`rv-${i}`} x1={ox + (i+1)*dyX} y1={oy + (i+1)*dyY} x2={ox + (i+1)*dyX} y2={oy + (i+1)*dyY + height*dzY} stroke={colorSet.border} strokeWidth="0.5" strokeOpacity="0.4" />
+      ))}
+      {Array.from({length: height-1}).map((_, i) => (
+        <line key={`rh-${i}`} x1={ox + kY*dyX} y1={oy + kY*dyY + (i+1)*dzY} x2={ox} y2={oy + (i+1)*dzY} stroke={colorSet.border} strokeWidth="0.5" strokeOpacity="0.4" />
+      ))}
+
+      {/* Grid lines - Top Face */}
+      {Array.from({length: kX-1}).map((_, i) => (
+        <line key={`th1-${i}`} x1={ox + (i+1)*dxX} y1={oy + height*dzY + (i+1)*dxY} x2={ox + (i+1)*dxX + kY*dyX} y2={oy + height*dzY + (i+1)*dxY + kY*dyY} stroke={colorSet.border} strokeWidth="0.5" strokeOpacity="0.4" />
+      ))}
+      {Array.from({length: kY-1}).map((_, i) => (
+        <line key={`th2-${i}`} x1={ox + (i+1)*dyX} y1={oy + height*dzY + (i+1)*dyY} x2={ox + (i+1)*dyX + kX*dxX} y2={oy + height*dzY + (i+1)*dyY + kX*dxY} stroke={colorSet.border} strokeWidth="0.5" strokeOpacity="0.4" />
+      ))}
+    </g>
+  );
+}
+
+// Wraps IsometricBox into a standalone SVG cube
+function SingleCubeSVG({ k, colorSet, unit }) {
+  const pad = 5;
+  const minX = k * -0.866 * unit;
+  const maxX = k * 0.866 * unit;
+  const minY = -2 * k * unit;
+  const maxY = 0;
+  const width = maxX - minX;
+  const height = maxY - minY;
+  
+  return (
+    <svg 
+      viewBox={`${minX - pad} ${minY - pad} ${width + pad*2} ${height + pad*2}`} 
+      className="overflow-visible drop-shadow-md" 
+      style={{ width: width, height: height }}
+    >
+      <IsometricBox kX={k} kY={k} height={k} zOffset={0} colorSet={colorSet} unit={unit} />
+    </svg>
+  );
+}
+
+// Renders the stacked Pyramid for k^2
+function PyramidSVG({ n, colors, unit }) {
+  const pad = 10;
+  const minX = n * -0.866 * unit;
+  const maxX = n * 0.866 * unit;
+  const width = maxX - minX;
+  const height = (n + 1) * unit;
+  const minY = -height;
+  
+  return (
+    <svg 
+      viewBox={`${minX - pad} ${minY - pad} ${width + pad*2} ${height + pad*2}`} 
+      className="overflow-visible drop-shadow-xl" 
+      style={{ width: '100%', maxHeight: '280px' }}
+    >
+      {/* Draw from bottom layer (k=n) up to top layer (k=1) */}
+      {Array.from({ length: n }).map((_, idx) => {
+        const k = n - idx;       // Size of the layer (n, n-1, ..., 1)
+        const zOffset = n - k;   // Elevation (0, 1, ..., n-1)
+        return (
+          <IsometricBox 
+            key={`layer-${k}`} 
+            kX={k}
+            kY={k} 
+            height={1} 
+            zOffset={zOffset} 
+            colorSet={colors[k-1]} 
+            unit={unit} 
+          />
+        );
+      })}
+    </svg>
+  );
+}
+
+// Renders the big n * (n+1) * (2n+1) Cuboid with dimension labels
+function CuboidVisualizer({ n, unit }) {
+  const kX = n;
+  const kY = n + 1;
+  const hZ = 2 * n + 1;
+  
+  const pad = 40; // extra padding for text labels
+  const minX = kX * -0.866 * unit;
+  const maxX = kY * 0.866 * unit;
+  const minY = -hZ * unit - (kX+kY)*0.5*unit;
+  const maxY = 0;
+  
+  const width = maxX - minX;
+  const height = maxY - minY;
+
+  const colorSet = {
+    left: '#fed7aa', // orange-200
+    right: '#fdba74', // orange-300
+    top: '#ffedd5', // orange-100
+    border: '#c2410c' // orange-700
+  };
+
+  // Label coordinates
+  const labelX_x = (kX / 2) * (-0.866 * unit);
+  const labelX_y = (kX / 2) * (-0.5 * unit) + 20;
+
+  const labelY_x = (kY / 2) * (0.866 * unit);
+  const labelY_y = (kY / 2) * (-0.5 * unit) + 20;
+
+  const labelZ_x = kY * (0.866 * unit) + 15;
+  const labelZ_y = kY * (-0.5 * unit) - (hZ / 2) * unit;
+
+  return (
+    <svg 
+      viewBox={`${minX - pad} ${minY - pad} ${width + pad*2} ${height + pad*2}`} 
+      className="overflow-visible drop-shadow-xl" 
+      style={{ width: '100%', maxHeight: '350px' }}
+    >
+      <IsometricBox kX={kX} kY={kY} height={hZ} zOffset={0} colorSet={colorSet} unit={unit} opacity={0.85} />
+      
+      {/* Edge highlight lines for emphasis */}
+      <path d={`M 0 0 L ${kX * -0.866 * unit} ${kX * -0.5 * unit}`} stroke="#9a3412" strokeWidth="2" strokeDasharray="4 2" />
+      <path d={`M 0 0 L ${kY * 0.866 * unit} ${kY * -0.5 * unit}`} stroke="#9a3412" strokeWidth="2" strokeDasharray="4 2" />
+      <path d={`M ${kY * 0.866 * unit} ${kY * -0.5 * unit} L ${kY * 0.866 * unit} ${kY * -0.5 * unit - hZ * unit}`} stroke="#9a3412" strokeWidth="2" strokeDasharray="4 2" />
+
+      {/* X Axis Label (n) */}
+      <g transform={`translate(${labelX_x}, ${labelX_y})`}>
+        <rect x="-35" y="-12" width="70" height="24" rx="12" fill="white" stroke="#c2410c" strokeWidth="1.5" />
+        <text textAnchor="middle" dy="4" fill="#c2410c" fontSize="14" fontWeight="bold">가로: {n}</text>
+      </g>
+
+      {/* Y Axis Label (n+1) */}
+      <g transform={`translate(${labelY_x}, ${labelY_y})`}>
+        <rect x="-40" y="-12" width="80" height="24" rx="12" fill="white" stroke="#c2410c" strokeWidth="1.5" />
+        <text textAnchor="middle" dy="4" fill="#c2410c" fontSize="14" fontWeight="bold">세로: {n+1}</text>
+      </g>
+
+      {/* Z Axis Label (2n+1) */}
+      <g transform={`translate(${labelZ_x}, ${labelZ_y})`}>
+        <rect x="0" y="-12" width="85" height="24" rx="12" fill="white" stroke="#c2410c" strokeWidth="1.5" />
+        <text textAnchor="middle" x="42.5" dy="4" fill="#c2410c" fontSize="14" fontWeight="bold">높이: {2*n+1}</text>
+      </g>
+    </svg>
+  );
+}
+
+
