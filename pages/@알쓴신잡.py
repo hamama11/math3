@@ -5,7 +5,7 @@ from pathlib import Path
 st.set_page_config(layout="wide")
 
 # 추후 외부 URL
-url1 = "https://gemini.google.com/share/5e531000887d"
+url1 = "https://gemini.google.com/share/e8ed4a3c08d7"
 
 # 제목 + 설명
 st.markdown("""
