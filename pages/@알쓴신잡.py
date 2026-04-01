@@ -27,3 +27,13 @@ with open(html_path, "r", encoding="utf-8") as f:
     html1 = f.read()
 
 components.html(html1, height=1200, scrolling=True)
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+html_path1 = BASE_DIR / "sub_seq.html"
+
+st.markdown("---")
+
+with open(html_path1, "r", encoding="utf-8") as f:
+    html1 = f.read()
+
+components.html(html1, height=1200, scrolling=True)
