@@ -29,7 +29,7 @@
             border-left: 4px solid #6366f1; /* Indigo 500 */
         }
 
-        /* 스크롤바 커스텀 (우측 증명 패널용) */
+        /* 스크롤바 커스텀 (좌측 증명 패널용) */
         .styled-scrollbar::-webkit-scrollbar { width: 8px; }
         .styled-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .styled-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -42,13 +42,12 @@
         input[type=range] { accent-color: #6366f1; }
     </style>
 </head>
-<body class="antialiased lg:h-screen flex flex-col">
+<body class="antialiased h-screen flex flex-col overflow-hidden">
 
     <!-- Global Header -->
     <header class="bg-white border-b border-slate-200 shadow-sm flex-shrink-0 z-50">
         <div class="max-w-[1600px] mx-auto px-6 py-4 flex items-center justify-between">
             <div>
-                <!-- 타이틀 크기 확대 -->
                 <h1 class="text-3xl font-black text-slate-900 tracking-tight">
                     <span class="math text-indigo-600 mr-2">S<sub>n</sub></span> 대칭성 증명 랩
                 </h1>
@@ -59,22 +58,156 @@
         </div>
     </header>
 
-    <!-- Main Layout -->
-    <main class="flex-1 max-w-[1600px] w-full mx-auto p-4 flex flex-col lg:flex-row gap-6 lg:min-h-0">
+    <!-- Main Layout: Theory on Left, Simulator on Right -->
+    <main class="flex-1 max-w-[1600px] w-full mx-auto p-4 flex flex-col lg:flex-row gap-6 min-h-0">
         
         <!-- ==========================================
-             LEFT: Interactive Simulator 
+             LEFT: Theory, Formula & Proof (Scrollable) 
              ========================================== -->
-        <section class="flex flex-col lg:w-3/5 xl:w-2/3 bg-white rounded-2xl shadow-sm border border-slate-200 min-h-[600px] lg:min-h-0 flex-shrink-0 lg:flex-shrink">
+        <section class="flex flex-col lg:w-[45%] gap-6 overflow-y-auto styled-scrollbar pr-2 pb-6">
+            
+            <!-- 1단계: Sn 식 전개 및 대칭축 (새로 추가됨) -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex-shrink-0">
+                <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center">
+                    <span class="bg-slate-800 text-white w-8 h-8 flex items-center justify-center rounded-lg text-sm mr-3 shadow-sm">1</span>
+                    <span class="math mr-2 font-normal">S<sub>n</sub></span> 식의 이차함수적 해석
+                </h2>
+                
+                <div class="space-y-5">
+                    <div class="flex items-start">
+                        <div class="flex-1">
+                            <p class="font-bold text-slate-700 text-lg">기본 합 공식 &rarr; <span class="math">n</span>에 대한 내림차순 정리</p>
+                            <div class="math-block py-3 px-4 text-[22px] mt-2 flex flex-col gap-3">
+                                <div class="text-slate-500 text-xl">S<sub>n</sub> = <span class="math">n{2a + (n-1)d} / 2</span></div>
+                                <div class="border-t border-slate-200 pt-3">
+                                    S<sub>n</sub> = (<span class="text-rose-500 font-bold">d</span>/2)n<sup>2</sup> + (<span class="text-indigo-500 font-bold">a</span> - <span class="text-rose-500 font-bold">d</span>/2)n
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <div class="flex-1">
+                            <p class="font-bold text-slate-700 text-lg flex justify-between items-center">
+                                <span>현재 파라미터 적용 식</span>
+                                <span class="text-xs font-normal text-slate-400 bg-slate-100 px-2 py-1 rounded">실시간 연동</span>
+                            </p>
+                            <!-- 26px 수식 블록 -->
+                            <div class="math-block py-4 px-4 text-[26px] mt-2 font-black text-indigo-700 bg-indigo-50 border-indigo-400 shadow-inner">
+                                S<sub>n</sub> = <span id="dyn-A">1</span>n<sup>2</sup> + (<span id="dyn-B">-10</span>)n
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start">
+                        <div class="flex-1">
+                            <p class="font-bold text-slate-700 text-lg">이차함수 대칭축 공식 <span class="math text-slate-500 font-normal">(x = -b / 2a)</span></p>
+                            <!-- 26px 강조 수식 블록 -->
+                            <div class="math-block py-4 px-4 text-[26px] mt-2 font-black text-emerald-600 bg-emerald-50 border-emerald-400 shadow-inner flex flex-col gap-2">
+                                <div class="text-xl text-emerald-500/80 font-normal">축 x = 1/2 - a/d</div>
+                                <div>x = <span id="dyn-axis">5.00</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2단계: 대칭 조건 요약 -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex-shrink-0">
+                <h2 class="text-2xl font-bold text-slate-800 mb-5 flex items-center">
+                    <span class="bg-slate-800 text-white w-8 h-8 flex items-center justify-center rounded-lg text-sm mr-3 shadow-sm">2</span>
+                    대칭 쌍이 성립할 조건
+                </h2>
+                <div class="space-y-4">
+                    <div class="bg-indigo-50/50 p-4 rounded-xl border-l-4 border-indigo-500">
+                        <h3 class="font-bold text-indigo-900 text-xl flex items-center"><span class="w-2 h-2 bg-indigo-500 rounded-full mr-2"></span>축이 정수일 때</h3>
+                        <p class="text-lg text-slate-700 mt-1 leading-relaxed">자연수인 하나의 항을 중심으로 완벽한 좌우 대칭을 이룹니다.</p>
+                    </div>
+                    <div class="bg-emerald-50/50 p-4 rounded-xl border-l-4 border-emerald-500">
+                        <h3 class="font-bold text-emerald-900 text-xl flex items-center"><span class="w-2 h-2 bg-emerald-500 rounded-full mr-2"></span>축이 .5 형태일 때</h3>
+                        <p class="text-lg text-slate-700 mt-1 leading-relaxed">이웃한 두 정수 항의 값이 같아지며 대칭을 이룹니다.</p>
+                    </div>
+                    <div class="bg-rose-50 p-4 rounded-xl border border-rose-100 flex items-start">
+                        <span class="text-rose-500 text-2xl mr-3 leading-none mt-1">⚠️</span>
+                        <div>
+                            <p class="text-lg font-bold text-rose-800">축이 복잡한 소수점이라면?</p>
+                            <p class="text-base text-rose-700 mt-1 leading-relaxed break-keep">이차함수 곡선은 대칭이어도, 정수 위치의 항들은 높이가 모두 엇갈려 대칭 쌍이 절대 성립하지 않습니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3단계: 대수적 증명 -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex-shrink-0">
+                <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center">
+                    <span class="bg-slate-800 text-white w-8 h-8 flex items-center justify-center rounded-lg text-sm mr-3 shadow-sm">3</span>
+                    대수적 증명: <span class="math ml-2 font-normal text-slate-600">S<sub>p</sub> = S<sub>q</sub></span>
+                </h2>
+                <div class="space-y-4">
+                    
+                    <!-- 추가된 식 전개 과정 -->
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 text-sm md:text-base space-y-3">
+                        <div class="flex items-center text-slate-600">
+                            <span class="w-6 text-center text-slate-400 font-bold mr-2 text-xs">1</span>
+                            <span class="math flex-1">S<sub>p</sub> - S<sub>q</sub> = 0</span>
+                        </div>
+                        <div class="flex items-center text-slate-600">
+                            <span class="w-6 text-center text-slate-400 font-bold mr-2 text-xs">2</span>
+                            <span class="math flex-1">p{2a + (p-1)d} - q{2a + (q-1)d} = 0</span>
+                        </div>
+                        <div class="flex items-center text-slate-600">
+                            <span class="w-6 text-center text-slate-400 font-bold mr-2 text-xs">3</span>
+                            <span class="math flex-1">2a(p-q) + d(p<sup>2</sup> - q<sup>2</sup>) - d(p-q) = 0</span>
+                        </div>
+                        <div class="flex items-center font-bold text-indigo-700 bg-indigo-50 py-2 px-3 rounded-lg border border-indigo-100">
+                            <span class="w-6 text-center text-indigo-400 mr-2 text-xs">4</span>
+                            <span class="math flex-1 text-lg">(p-q) { 2a + d(p+q-1) } = 0</span>
+                        </div>
+                    </div>
+
+                    <p class="text-center text-slate-500 text-sm py-1 font-bold tracking-tight">서로 다른 두 항 (<span class="math">p ≠ q</span>) 이므로 중괄호 안이 0이 되어야 합니다.</p>
+                    
+                    <div class="math-block py-3 px-4 text-[26px] font-black text-indigo-700 border-indigo-500 bg-indigo-50 mt-2 shadow-inner">2a + d(p+q-1) = 0</div>
+                    
+                    <div class="mt-6 bg-slate-900 rounded-xl p-5 text-white shadow-lg">
+                        <h3 class="text-lg font-bold text-amber-400 mb-4 flex items-center tracking-tight">
+                            <span class="mr-2 text-xl">🔗</span> 대칭축 <span class="math text-amber-200 mx-1.5 font-normal">x = 1/2 - a/d</span> 와의 관계
+                        </h3>
+                        <div class="font-mono text-sm md:text-base space-y-3 bg-slate-800 p-4 rounded-lg border border-slate-700">
+                            <p class="text-slate-300 flex justify-between items-center">
+                                <span>위 식을 <span class="math text-white">a/d</span> 로 정리:</span> 
+                                <span class="math text-white font-bold text-lg">-(p+q-1) / 2</span>
+                            </p>
+                            <div class="h-px bg-slate-700 w-full my-2"></div>
+                            <p class="text-slate-300 flex justify-between items-center">
+                                <span>대칭축 식에 대입:</span> 
+                                <span class="math text-white text-lg">x = 1/2 - { -(p+q-1)/2 }</span>
+                            </p>
+                            <div class="border-t-2 border-slate-600 mt-4 pt-4">
+                                <p class="text-emerald-400 font-black text-center math text-[30px] drop-shadow-md">x = (p+q) / 2</p>
+                                <p class="text-center text-slate-400 text-sm mt-3 font-sans leading-relaxed">
+                                    결과적으로 대칭축 <span class="math">x</span>는 두 항 <span class="math">p, q</span>의 <br><span class="text-white font-bold border-b border-emerald-400/50 pb-0.5">정확한 평균(중점)</span>임이 증명됩니다.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ==========================================
+             RIGHT: Interactive Simulator (Sticky/Fixed)
+             ========================================== -->
+        <section class="flex flex-col lg:w-[55%] bg-white rounded-2xl shadow-sm border border-slate-200 flex-shrink-0 h-full max-h-full overflow-hidden">
             
             <!-- 상단 컨트롤 패널 -->
-            <div class="p-6 border-b border-slate-100 flex-shrink-0">
+            <div class="p-6 border-b border-slate-100 flex-shrink-0 bg-slate-50/50">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-slate-800 flex items-center">
                         <span class="bg-indigo-600 text-white w-8 h-8 flex items-center justify-center rounded-lg text-base mr-3 shadow-sm">🎯</span>
                         "줄줄이 대칭" 시뮬레이터
                     </h2>
-                    <button onclick="resetSandbox()" class="text-base font-bold text-indigo-600 bg-indigo-50 px-4 py-2 rounded-lg hover:bg-indigo-100 transition-colors">초기화</button>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 xl:gap-8">
@@ -99,29 +232,24 @@
                     </div>
                     
                     <!-- 상태 요약 영역 -->
-                    <div class="flex flex-col justify-center space-y-4">
-                        <div class="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-inner">
-                            <span class="text-sm font-bold text-slate-500 uppercase tracking-wide">현재 대칭축 <span class="math lowercase text-slate-400 font-normal ml-1">x = 1/2 - a/d</span></span>
-                            <!-- 축 결과 26px 고정 -->
-                            <span id="stat-axis" class="font-black text-indigo-600 math text-[26px]">n = 5.00</span>
-                        </div>
-                        <div id="stat-message" class="p-3 rounded-xl border text-lg">
+                    <div class="flex flex-col justify-center space-y-3">
+                        <div id="stat-message" class="p-4 rounded-xl border text-lg h-full flex flex-col justify-center">
                             <!-- JS Populated -->
                         </div>
                     </div>
                 </div>
 
                 <!-- 퀵 프리셋 버튼 -->
-                <div class="mt-6 pt-5 border-t border-slate-100 flex items-center gap-3">
-                    <span class="text-base font-bold text-slate-400 flex items-center mr-2 whitespace-nowrap">빠른 설정:</span>
-                    <button onclick="applyPreset(-9, 2)" class="flex-1 py-2.5 px-3 bg-indigo-50 text-indigo-700 text-base font-bold rounded-xl border border-indigo-100 hover:bg-indigo-100 transition-colors shadow-sm">🎯 정수 대칭</button>
-                    <button onclick="applyPreset(-10, 2.5)" class="flex-1 py-2.5 px-3 bg-emerald-50 text-emerald-700 text-base font-bold rounded-xl border border-emerald-100 hover:bg-emerald-100 transition-colors shadow-sm">⚖️ .5 대칭</button>
-                    <button onclick="applyPreset(-10, 3.17)" class="flex-1 py-2.5 px-3 bg-rose-50 text-rose-700 text-base font-bold rounded-xl border border-rose-100 hover:bg-rose-100 transition-colors shadow-sm">🚫 비대칭</button>
+                <div class="mt-5 pt-4 border-t border-slate-200/60 flex items-center gap-2">
+                    <span class="text-sm font-bold text-slate-400 flex items-center mr-1 whitespace-nowrap">빠른 설정:</span>
+                    <button onclick="applyPreset(-9, 2)" class="flex-1 py-2 px-2 bg-indigo-50 text-indigo-700 text-sm font-bold rounded-lg border border-indigo-100 hover:bg-indigo-100 transition-colors shadow-sm">🎯 정수 대칭</button>
+                    <button onclick="applyPreset(-10, 2.5)" class="flex-1 py-2 px-2 bg-emerald-50 text-emerald-700 text-sm font-bold rounded-lg border border-emerald-100 hover:bg-emerald-100 transition-colors shadow-sm">⚖️ .5 대칭</button>
+                    <button onclick="applyPreset(-10, 3.17)" class="flex-1 py-2 px-2 bg-rose-50 text-rose-700 text-sm font-bold rounded-lg border border-rose-100 hover:bg-rose-100 transition-colors shadow-sm">🚫 비대칭</button>
                 </div>
             </div>
 
-            <!-- 하단 차트 영역 -->
-            <div class="flex-1 p-6 relative min-h-[300px]">
+            <!-- 하단 차트 영역 (남은 공간 모두 차지) -->
+            <div class="flex-1 p-6 relative min-h-[200px]">
                 <canvas id="symmetryChart"></canvas>
             </div>
             
@@ -133,95 +261,6 @@
                 </div>
             </div>
         </section>
-
-        <!-- ==========================================
-             RIGHT: Proof & Theory 
-             ========================================== -->
-        <section class="flex flex-col lg:w-2/5 xl:w-1/3 gap-6 lg:overflow-y-auto styled-scrollbar lg:pr-2 pb-6 lg:pb-0">
-            
-            <!-- 증명 카드 -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex-shrink-0">
-                <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center">
-                    <span class="bg-slate-800 text-white w-8 h-8 flex items-center justify-center rounded-lg text-sm mr-3 shadow-sm">1</span>
-                    대수적 증명: <span class="math ml-2 font-normal text-slate-600">S<sub>p</sub> = S<sub>q</sub></span>
-                </h2>
-                
-                <div class="space-y-6">
-                    <div class="flex items-start">
-                        <div class="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-base font-black mt-1 mr-3 flex-shrink-0">A</div>
-                        <div class="flex-1">
-                            <p class="font-bold text-slate-800 text-xl">합 공식 등식 세우기</p>
-                            <!-- 26px 수식 블록 -->
-                            <div class="math-block py-3 px-4 text-[26px] mt-2">p{2a + (p-1)d} = q{2a + (q-1)d}</div>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-start">
-                        <div class="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-base font-black mt-1 mr-3 flex-shrink-0">B</div>
-                        <div class="flex-1">
-                            <p class="font-bold text-slate-800 text-xl">전개 및 이항, (p-q) 묶기</p>
-                            <!-- 26px 수식 블록 -->
-                            <div class="math-block py-3 px-4 text-[26px] mt-2">(p-q) { 2a + d(p+q-1) } = 0</div>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-start">
-                        <div class="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-base font-black mt-1 mr-3 flex-shrink-0">C</div>
-                        <div class="flex-1">
-                            <p class="font-bold text-slate-800 text-xl">구속 조건 도출 (p ≠ q)</p>
-                            <!-- 26px 강조 수식 블록 -->
-                            <div class="math-block py-4 px-4 text-[26px] font-bold text-indigo-700 border-indigo-500 bg-indigo-50 mt-2 shadow-inner">2a + d(p+q-1) = 0</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 핵심 연결 고리 -->
-                <div class="mt-8 bg-slate-900 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
-                    <div class="absolute -right-6 -top-6 w-24 h-24 bg-indigo-500 rounded-full opacity-30 blur-2xl"></div>
-                    <h3 class="text-xl font-bold text-amber-400 mb-4 flex items-center">
-                        <span class="mr-2 text-2xl">🔗</span> 대칭축 공식과 결합
-                    </h3>
-                    <div class="font-mono text-xl space-y-3 bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-inner">
-                        <p class="text-slate-400 flex justify-between items-center"><span>1. <span class="math">a/d</span> 추출:</span> <span class="math text-white">-(p+q-1) / 2</span></p>
-                        <p class="text-slate-400 flex justify-between items-center"><span>2. 축 <span class="math">x</span> 대입:</span> <span class="math text-white">1/2 - (a/d)</span></p>
-                        <div class="border-t border-slate-600 mt-4 pt-4">
-                            <!-- 핵심 결론 26px -->
-                            <p class="text-emerald-400 font-bold text-center math text-[26px]">x = (p+q) / 2</p>
-                        </div>
-                    </div>
-                    <p class="text-base text-slate-300 mt-4 text-center break-keep leading-relaxed">결론: 등차가 성립하려면 대칭축이 두 자연수의 산술평균에 위치해야 합니다.</p>
-                </div>
-            </div>
-
-            <!-- 규칙 정리 카드 -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex-shrink-0">
-                <h2 class="text-2xl font-bold text-slate-800 mb-5 flex items-center">
-                    <span class="bg-slate-800 text-white w-8 h-8 flex items-center justify-center rounded-lg text-sm mr-3 shadow-sm">2</span>
-                    대칭축 발생 조건 요약
-                </h2>
-                
-                <div class="space-y-4">
-                    <div class="bg-indigo-50/50 p-4 rounded-xl border-l-4 border-indigo-500">
-                        <h3 class="font-bold text-indigo-900 text-xl flex items-center"><span class="w-2 h-2 bg-indigo-500 rounded-full mr-2"></span>축이 정수일 때</h3>
-                        <p class="text-lg text-slate-700 mt-2 leading-relaxed"><span class="math mr-1 font-bold text-indigo-600">p+q</span>가 짝수이면 축은 정수입니다.<br>(예: <span class="math">p=2, q=8 &rarr; 축=5</span>)</p>
-                    </div>
-                    
-                    <div class="bg-emerald-50/50 p-4 rounded-xl border-l-4 border-emerald-500">
-                        <h3 class="font-bold text-emerald-900 text-xl flex items-center"><span class="w-2 h-2 bg-emerald-500 rounded-full mr-2"></span>축이 .5 형태일 때</h3>
-                        <p class="text-lg text-slate-700 mt-2 leading-relaxed"><span class="math mr-1 font-bold text-emerald-600">p+q</span>가 홀수이면 축은 .5로 끝납니다.<br>(예: <span class="math">p=1, q=8 &rarr; 축=4.5</span>)</p>
-                    </div>
-                    
-                    <div class="bg-rose-50 p-4 rounded-xl border border-rose-100 flex items-start">
-                        <span class="text-rose-500 text-2xl mr-3 leading-none mt-1">⚠️</span>
-                        <div>
-                            <p class="text-lg font-bold text-rose-800">4.2 같은 소수점은?</p>
-                            <p class="text-base text-rose-700 mt-1 leading-relaxed break-keep">자연수의 평균으로 만들어질 수 없는 위치이므로 이산적인 수열 내에서는 대칭 쌍이 절대 성립하지 않습니다.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </section>
     </main>
 
     <!-- Core JavaScript Logic -->
@@ -230,7 +269,12 @@
         const sliderD = document.getElementById('slider-d');
         const valA = document.getElementById('val-a');
         const valD = document.getElementById('val-d');
-        const statAxis = document.getElementById('stat-axis');
+        
+        // 동적 수식 업데이트용 DOM
+        const dynA = document.getElementById('dyn-A');
+        const dynB = document.getElementById('dyn-B');
+        const dynAxis = document.getElementById('dyn-axis');
+
         const statMessage = document.getElementById('stat-message');
         const pairList = document.getElementById('pair-list');
         const pairCount = document.getElementById('pair-count');
@@ -239,14 +283,31 @@
         let chartInstance = null;
         const maxN = 16; 
 
+        // 소수를 분수 HTML로 변환하는 헬퍼 함수
+        function formatFractionHTML(num) {
+            num = Math.round(num * 10000) / 10000; 
+            if (Number.isInteger(num)) return num.toString();
+            
+            const str = num.toString();
+            const len = str.includes('.') ? str.split('.')[1].length : 0;
+            const den = Math.pow(10, len);
+            const numInt = Math.round(num * den);
+            
+            const gcd = (a, b) => b ? gcd(b, a % b) : Math.abs(a);
+            const g = gcd(numInt, den);
+            
+            const n = Math.abs(numInt / g);
+            const d = den / g;
+            const sign = numInt < 0 ? '-' : '';
+            
+            return `${sign}<span class="inline-block align-middle text-center text-[0.75em] mx-[3px] leading-tight -translate-y-[0.15em]">
+                <span class="block border-b-[2px] border-current pb-[2px]">${n}</span>
+                <span class="block pt-[1px]">${d}</span>
+            </span>`;
+        }
+
         window.onload = () => {
             initChart();
-            updateApp();
-        };
-
-        window.resetSandbox = () => {
-            sliderA.value = -9;
-            sliderD.value = 2;
             updateApp();
         };
 
@@ -266,8 +327,15 @@
             valA.textContent = a.toFixed(1);
             valD.textContent = d.toFixed(2);
 
+            // 이차함수 계수 및 축 계산
+            const coefA = d / 2;
+            const coefB = a - (d / 2);
             const axisValue = 0.5 - (a / d);
-            statAxis.innerHTML = `n = ${axisValue.toFixed(2)}`;
+            
+            // 좌측 이론 패널 수식 동적 업데이트 (분수꼴 렌더링 적용)
+            dynA.innerHTML = formatFractionHTML(coefA);
+            dynB.innerHTML = formatFractionHTML(coefB);
+            dynAxis.innerHTML = formatFractionHTML(axisValue);
 
             const curveData = []; 
             const pointsData = []; 
@@ -289,26 +357,28 @@
                 }
             }
 
-            updateStatusPanel(axisValue, pairs.length);
+            updateStatusPanel(axisValue);
             updatePairListUI(pairs);
             updateChart(curveData, pointsData, axisValue, pairs);
         }
 
-        function updateStatusPanel(axis, pairQty) {
+        function updateStatusPanel(axis) {
             const isInteger = Math.abs(axis - Math.round(axis)) < 0.01;
             const isHalf = Math.abs((axis % 1) - 0.5) < 0.01 || Math.abs((axis % 1) + 0.5) < 0.01;
+            
+            const axisStr = formatFractionHTML(axis);
 
-            statMessage.className = "p-4 rounded-xl border text-lg transition-all duration-300 ";
+            statMessage.className = "p-4 rounded-xl border text-lg transition-all duration-300 h-full flex flex-col justify-center ";
 
             if (isInteger) {
                 statMessage.classList.add("bg-indigo-50", "border-indigo-200");
-                statMessage.innerHTML = `<span class="font-bold text-indigo-800">정수 대칭 활성:</span> <span class="text-indigo-700">축을 기준으로 완벽한 대칭 쌍 형성</span>`;
+                statMessage.innerHTML = `<span class="font-bold text-indigo-800 mb-1">정수 대칭 활성 (축: ${axisStr})</span> <span class="text-indigo-700 text-base leading-snug">축을 기준으로 완벽한 대칭 쌍 형성</span>`;
             } else if (isHalf) {
                 statMessage.classList.add("bg-emerald-50", "border-emerald-200");
-                statMessage.innerHTML = `<span class="font-bold text-emerald-800">.5 대칭 활성:</span> <span class="text-emerald-700">인접한 정수들이 짝을 이루며 대칭 형성</span>`;
+                statMessage.innerHTML = `<span class="font-bold text-emerald-800 mb-1">.5 대칭 활성 (축: ${axisStr})</span> <span class="text-emerald-700 text-base leading-snug">인접한 정수들이 짝을 이루며 대칭 형성</span>`;
             } else {
                 statMessage.classList.add("bg-rose-50", "border-rose-200");
-                statMessage.innerHTML = `<span class="font-bold text-rose-800">비대칭 상태:</span> <span class="text-rose-700">애매한 축 위치로 대칭 쌍이 성립하지 않음</span>`;
+                statMessage.innerHTML = `<span class="font-bold text-rose-800 mb-1">비대칭 상태 (축: ${axisStr})</span> <span class="text-rose-700 text-base leading-snug">애매한 축 위치로 대칭 쌍이 성립하지 않음</span>`;
             }
         }
 
