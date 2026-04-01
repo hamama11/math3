@@ -37,3 +37,12 @@ with open(html_path1, "r", encoding="utf-8") as f:
     html1 = f.read()
 
 components.html(html1, height=1200, scrolling=True)
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+html_path2 = BASE_DIR / "seq_qes.html"
+st.markdown("---")
+
+with open(html_path2, "r", encoding="utf-8") as f:
+    html2 = f.read()
+
+components.html(html2, height=1200, scrolling=True)
