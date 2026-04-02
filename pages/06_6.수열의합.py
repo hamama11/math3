@@ -20,7 +20,7 @@ st.markdown(
 
 st.markdown("---")
 
-st.markdown(
+#st.markdown(
     dedent("""
     <div style="display:flex; align-items:center; gap:12px; margin:10px 0;">
         <h3 style="margin:0;">① 수열의 흐름을 따라</h3>
