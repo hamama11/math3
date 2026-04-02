@@ -1,398 +1,555 @@
-import React, { useState, useEffect } from 'react';
-import { Play, RotateCcw, Combine, Minus, Plus, History, Trash2, Zap, Star } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>천재 소년 가우스의 등차수열 마법!</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 
-export default function App() {
-  return (
-    <div className="min-h-screen bg-yellow-400 font-sans pb-16 selection:bg-black selection:text-white"
-         style={{ backgroundImage: 'radial-gradient(#eab308 2px, transparent 2px)', backgroundSize: '20px 20px' }}>
-      
-      {/* Comic Book Title */}
-      <header className="pt-12 pb-8 px-4 text-center">
-        <div className="inline-block bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transform -rotate-2 p-6 rounded-2xl">
-          <h1 className="text-4xl md:text-6xl font-black tracking-tight text-black uppercase">
-            <span className="text-red-500">천재 소년</span> 가우스의<br/>
-            <span className="inline-block transform rotate-3 mt-2 text-blue-600 bg-yellow-300 px-4 border-4 border-black">등차수열 마법!</span>
-          </h1>
-        </div>
-      </header>
+  <style>
+    /* Custom CSS for Animations and Neo-brutalism */
+    body {
+      background-image: radial-gradient(#eab308 2px, transparent 2px);
+      background-size: 20px 20px;
+    }
+    
+    @keyframes bounce-drop {
+      0% { transform: translateY(-50px); opacity: 0; }
+      60% { transform: translateY(5px); opacity: 1; }
+      80% { transform: translateY(-2px); }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+    .animate-bounce-drop {
+      animation: bounce-drop 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+    }
+    
+    .comic-shadow { box-shadow: 8px 8px 0px 0px rgba(0,0,0,1); }
+    .comic-shadow-sm { box-shadow: 4px 4px 0px 0px rgba(0,0,0,1); }
+    
+    .comic-btn {
+      transition: all 0.2s ease;
+    }
+    .comic-btn:not(:disabled):hover {
+      box-shadow: 2px 2px 0px 0px rgba(0,0,0,1);
+      transform: translate(2px, 2px);
+    }
+    .comic-btn:not(:disabled):active {
+      box-shadow: none;
+      transform: translate(4px, 4px);
+    }
+    
+    .comic-disabled {
+      background-color: #e5e7eb !important; /* gray-200 */
+      color: #6b7280 !important; /* gray-500 */
+      cursor: not-allowed;
+      box-shadow: none !important;
+      transform: translate(2px, 2px);
+    }
 
-      {/* Webtoon Content */}
-      <main className="max-w-4xl mx-auto px-4 flex flex-col gap-10">
-        <ComicStoryBoard />
-        <ComicActivityPanel />
-      </main>
+    /* Speech Bubble Tails */
+    .tail-bottom { bottom: -15px; left: 50%; transform: translateX(-50%); border-top: 15px solid white; border-left: 15px solid transparent; border-right: 15px solid transparent; }
+    .tail-bottom-border { bottom: -21px; left: 50%; transform: translateX(-50%); border-top: 20px solid black; border-left: 20px solid transparent; border-right: 20px solid transparent; }
+    
+    .tail-bottom-right { bottom: -15px; right: 2rem; transform: rotate(12deg); border-top: 15px solid #fee2e2; border-left: 15px solid transparent; border-right: 15px solid transparent; }
+    .tail-bottom-right-border { bottom: -21px; right: 27px; transform: rotate(12deg); border-top: 20px solid black; border-left: 20px solid transparent; border-right: 20px solid transparent; }
+    
+    .tail-left { left: -15px; top: 50%; transform: translateY(-50%); border-right: 15px solid white; border-top: 15px solid transparent; border-bottom: 15px solid transparent; }
+    .tail-left-border { left: -21px; top: 50%; transform: translateY(-50%); border-right: 20px solid black; border-top: 20px solid transparent; border-bottom: 20px solid transparent; }
+  </style>
+</head>
+<body class="min-h-screen bg-yellow-400 font-sans pb-16 selection:bg-black selection:text-white">
+
+  <!-- Comic Book Title -->
+  <header class="pt-12 pb-8 px-4 text-center">
+    <div class="inline-block bg-white border-4 border-black comic-shadow transform -rotate-2 p-6 rounded-2xl">
+      <h1 class="text-4xl md:text-6xl font-black tracking-tight text-black uppercase">
+        <span class="text-red-500">천재 소년</span> 가우스의<br/>
+        <span class="inline-block transform rotate-3 mt-2 text-blue-600 bg-yellow-300 px-4 border-4 border-black">등차수열 마법!</span>
+      </h1>
     </div>
-  );
-}
+  </header>
 
-// ---------------------------------------------------------
-// Component: Comic Story Board (Webtoon style)
-// ---------------------------------------------------------
-function ComicStoryBoard() {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+  <!-- Webtoon Content -->
+  <main class="max-w-4xl mx-auto px-4 flex flex-col gap-10">
+    
+    <!-- Comic Story Board -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
       
-      {/* Panel 1 */}
-      <ComicPanel className="bg-blue-50">
-        <div className="absolute top-2 left-2 bg-yellow-300 border-2 border-black px-2 py-1 font-bold text-sm transform -rotate-3">1780년대, 독일의 한 교실</div>
-        <div className="flex flex-col items-center mt-6">
-          <SpeechBubble tail="bottom">
-            <span className="text-xl font-bold">"얘들아, 조용히 하고<br/>1부터 100까지 전부 더해봐라!"</span>
-          </SpeechBubble>
-          <div className="text-8xl mt-4">👨‍🏫</div>
-          <div className="font-black text-2xl mt-2">선생님</div>
+      <!-- Panel 1 -->
+      <div class="border-4 border-black p-6 rounded-xl comic-shadow relative bg-blue-50">
+        <div class="absolute top-2 left-2 bg-yellow-300 border-2 border-black px-2 py-1 font-bold text-sm transform -rotate-3 z-20">1780년대, 독일의 한 교실</div>
+        <div class="flex flex-col items-center mt-6">
+          <div class="relative bg-white border-4 border-black rounded-3xl p-4 inline-block text-center z-10">
+            <div class="absolute w-0 h-0 tail-bottom-border"></div>
+            <div class="absolute w-0 h-0 z-10 tail-bottom"></div>
+            <span class="text-xl font-bold">"얘들아, 조용히 하고<br/>1부터 100까지 전부 더해봐라!"</span>
+          </div>
+          <div class="text-8xl mt-4">👨‍🏫</div>
+          <div class="font-black text-2xl mt-2">선생님</div>
         </div>
-      </ComicPanel>
+      </div>
 
-      {/* Panel 2 */}
-      <ComicPanel className="bg-gray-100">
-        <div className="flex flex-col items-center mt-8">
-          <SpeechBubble tail="bottom-right" className="bg-red-100">
-            <span className="text-lg font-bold">"헉... 1+2=3, 3+3=6...<br/>언제 다 더해?!" 💦</span>
-          </SpeechBubble>
-          <div className="flex gap-4 mt-4 text-6xl">
+      <!-- Panel 2 -->
+      <div class="border-4 border-black p-6 rounded-xl comic-shadow relative bg-gray-100">
+        <div class="flex flex-col items-center mt-8">
+          <div class="relative bg-red-100 border-4 border-black rounded-3xl p-4 inline-block text-center z-10">
+            <div class="absolute w-0 h-0 tail-bottom-right-border"></div>
+            <div class="absolute w-0 h-0 z-10 tail-bottom-right"></div>
+            <span class="text-lg font-bold">"헉... 1+2=3, 3+3=6...<br/>언제 다 더해?!" 💦</span>
+          </div>
+          <div class="flex gap-4 mt-4 text-6xl">
             <div>👦</div>
             <div>👧</div>
           </div>
-          <div className="font-black text-2xl mt-2 text-gray-500">멘붕에 빠진 학생들</div>
+          <div class="font-black text-2xl mt-2 text-gray-500">멘붕에 빠진 학생들</div>
         </div>
-      </ComicPanel>
+      </div>
 
-      {/* Panel 3 */}
-      <ComicPanel className="bg-yellow-100 md:col-span-2 flex flex-col md:flex-row items-center justify-center gap-8 relative overflow-hidden">
-        <div className="absolute -top-10 -right-10 text-yellow-300 opacity-50"><Zap size={200} fill="currentColor" /></div>
+      <!-- Panel 3 -->
+      <div class="border-4 border-black p-6 rounded-xl comic-shadow relative bg-yellow-100 md:col-span-2 flex flex-col md:flex-row items-center justify-center gap-8 overflow-hidden">
+        <div class="absolute -top-10 -right-10 text-yellow-300 opacity-50"><i data-lucide="zap" class="w-48 h-48 fill-current"></i></div>
         
-        <div className="text-8xl z-10 animate-bounce">👦🏻</div>
+        <div class="text-8xl z-10 animate-bounce">👦🏻</div>
         
-        <div className="z-10 flex flex-col items-start">
-          <SpeechBubble tail="left" className="bg-white transform md:-rotate-2 border-4 border-black shadow-[4px_4px_0_0_#000]">
-            <span className="text-3xl font-black text-red-600">"정답은 5050 입니다!"</span>
-          </SpeechBubble>
-          <div className="mt-4 bg-black text-white px-4 py-2 font-bold transform rotate-2">단 10초 만에 정답을 외친 10살 가우스!</div>
+        <div class="z-10 flex flex-col items-start">
+          <div class="relative bg-white border-4 border-black rounded-3xl p-4 inline-block text-center comic-shadow-sm transform md:-rotate-2">
+            <div class="absolute w-0 h-0 tail-left-border hidden md:block"></div>
+            <div class="absolute w-0 h-0 z-10 tail-left hidden md:block"></div>
+            <span class="text-3xl font-black text-red-600">"정답은 5050 입니다!"</span>
+          </div>
+          <div class="mt-4 bg-black text-white px-4 py-2 font-bold transform rotate-2">단 10초 만에 정답을 외친 10살 가우스!</div>
         </div>
-      </ComicPanel>
+      </div>
 
-      {/* Panel 4 */}
-      <ComicPanel className="bg-green-50 md:col-span-2">
-         <div className="absolute top-2 left-2 bg-red-400 text-white border-2 border-black px-2 py-1 font-bold text-sm">가우스의 비밀 노트</div>
+      <!-- Panel 4 -->
+      <div class="border-4 border-black p-6 rounded-xl comic-shadow relative bg-green-50 md:col-span-2">
+         <div class="absolute top-2 left-2 bg-red-400 text-white border-2 border-black px-2 py-1 font-bold text-sm z-20">가우스의 비밀 노트</div>
          
-         <div className="mt-8 flex flex-col md:flex-row items-center gap-8">
-           <div className="flex-1 bg-white border-4 border-black p-6 shadow-[6px_6px_0_0_#000] font-mono font-bold text-lg md:text-xl">
-             <div className="text-gray-500">  1 +   2 +   3 + ... + 100</div>
-             <div className="text-gray-500">+ 100 +  99 +  98 + ... +   1</div>
-             <div className="border-t-4 border-black my-2"></div>
-             <div className="text-blue-600"> 101 + 101 + 101 + ... + 101</div>
-             <div className="mt-4 text-center bg-yellow-200 p-2 border-2 border-black">
-               101이 100개! <br/>근데 2번 더했으니까 ÷2 = <span className="text-red-600 text-2xl">5050!</span>
+         <div class="mt-8 flex flex-col md:flex-row items-center gap-8">
+           <div class="flex-1 bg-white border-4 border-black p-6 comic-shadow-sm font-mono font-bold text-lg md:text-xl w-full">
+             <div class="text-gray-500">  1 +   2 +   3 + ... + 100</div>
+             <div class="text-gray-500">+ 100 +  99 +  98 + ... +   1</div>
+             <div class="border-t-4 border-black my-2"></div>
+             <div class="text-blue-600"> 101 + 101 + 101 + ... + 101</div>
+             <div class="mt-4 text-center bg-yellow-200 p-2 border-2 border-black w-full text-base md:text-lg">
+               101이 100개! <br/>근데 2번 더했으니까 ÷2 = <span class="text-red-600 text-2xl">5050!</span>
              </div>
            </div>
            
-           <div className="flex-1 flex flex-col items-center text-center">
-             <SpeechBubble tail="left">
-               <span className="font-bold text-lg">"수열을 <b>거꾸로 뒤집어서</b> 짝을 맞추면<br/>항상 똑같은 직사각형이 만들어져!"</span>
-             </SpeechBubble>
-             <div className="text-7xl mt-4">👦🏻💡</div>
+           <div class="flex-1 flex flex-col items-center text-center">
+             <div class="relative bg-white border-4 border-black rounded-3xl p-4 inline-block text-center z-10">
+               <div class="absolute w-0 h-0 tail-left-border hidden md:block"></div>
+               <div class="absolute w-0 h-0 z-10 tail-left hidden md:block"></div>
+               <span class="font-bold text-lg">"수열을 <b>거꾸로 뒤집어서</b> 짝을 맞추면<br/>항상 똑같은 직사각형이 만들어져!"</span>
+             </div>
+             <div class="text-7xl mt-4">👦🏻💡</div>
            </div>
          </div>
-      </ComicPanel>
-
-    </div>
-  );
-}
-
-// ---------------------------------------------------------
-// Reusable Comic Panel Component
-// ---------------------------------------------------------
-function ComicPanel({ children, className = "" }) {
-  return (
-    <div className={`border-4 border-black p-6 rounded-xl shadow-[8px_8px_0_0_rgba(0,0,0,1)] relative ${className}`}>
-      {children}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------
-// Reusable Speech Bubble
-// ---------------------------------------------------------
-function SpeechBubble({ children, tail = "bottom", className = "" }) {
-  const tailStyles = {
-    "bottom": "bottom-[-15px] left-1/2 -translate-x-1/2 border-t-[15px] border-t-white border-x-[15px] border-x-transparent",
-    "bottom-right": "bottom-[-15px] right-8 border-t-[15px] border-t-red-100 border-x-[15px] border-x-transparent transform rotate-12",
-    "left": "left-[-15px] top-1/2 -translate-y-1/2 border-r-[15px] border-r-white border-y-[15px] border-y-transparent",
-  };
-  
-  const tailBorderStyles = {
-    "bottom": "bottom-[-21px] left-1/2 -translate-x-1/2 border-t-[20px] border-t-black border-x-[20px] border-x-transparent",
-    "bottom-right": "bottom-[-21px] right-[27px] border-t-[20px] border-t-black border-x-[20px] border-x-transparent transform rotate-12",
-    "left": "left-[-21px] top-1/2 -translate-y-1/2 border-r-[20px] border-r-black border-y-[20px] border-y-transparent",
-  };
-
-  return (
-    <div className={`relative bg-white border-4 border-black rounded-3xl p-4 inline-block text-center ${className}`}>
-      <div className={`absolute w-0 h-0 ${tailBorderStyles[tail]}`}></div>
-      <div className={`absolute w-0 h-0 z-10 ${tailStyles[tail]}`}></div>
-      {children}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------
-// Reusable Math Fraction Component (Comic Bold Version)
-// ---------------------------------------------------------
-function MathFraction({ num, den, prefix, suffix, className = "" }) {
-  return (
-    <div className={`inline-flex items-center justify-center gap-2 align-middle font-black ${className}`}>
-      {prefix && <span>{prefix}</span>}
-      <div className="flex flex-col items-center justify-center text-center mx-1">
-        <span className="border-b-4 border-current px-2 pb-0.5 mb-0.5 leading-none">{num}</span>
-        <span className="leading-none pt-1">{den}</span>
       </div>
-      {suffix && <span>{suffix}</span>}
-    </div>
-  );
-}
+    </div> <!-- End of Story Board -->
 
-// ---------------------------------------------------------
-// Interactive Comic Panel: Arithmetic Sequence Activity
-// ---------------------------------------------------------
-function ComicActivityPanel() {
-  const [n, setN] = useState(6);
-  const [a, setA] = useState(1);
-  const [d, setD] = useState(2);
-  
-  const [step, setStep] = useState(0);
-  const [visibleCount, setVisibleCount] = useState(0);
-  const [history, setHistory] = useState([]);
+    <!-- Interactive Panel 5 -->
+    <div class="border-4 border-black rounded-xl comic-shadow relative bg-white md:p-10 p-6 mt-4">
+      <div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-black text-white px-6 py-2 font-black text-xl md:text-2xl transform -rotate-2 whitespace-nowrap z-30">
+        👉 직접 해보는 마법 놀이터! 👈
+      </div>
 
-  const l = a + (n - 1) * d;
-  const totalSum = (n * (a + l)) / 2;
-
-  const maxH = 220; 
-  const unitH = Math.min(25, maxH / (a + l));
-
-  useEffect(() => {
-    if (step === 1 && visibleCount < n) {
-      const timer = setTimeout(() => {
-        setVisibleCount(prev => prev + 1);
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [step, visibleCount, n]);
-
-  const handlePlay = () => {
-    setStep(1);
-    setVisibleCount(0);
-  };
-
-  const handleCalculateSum = () => {
-    setStep(2);
-    setHistory(prev => [{ a, d, n, l, totalSum, id: Date.now() }, ...prev]);
-  };
-
-  const handleReset = () => {
-    setStep(0);
-    setVisibleCount(0);
-  };
-
-  return (
-    <div className="flex flex-col gap-10">
-      
-      {/* Panel 5: The Interactive Playground */}
-      <ComicPanel className="bg-white md:p-10">
-        <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-black text-white px-6 py-2 font-black text-2xl transform -rotate-2 whitespace-nowrap">
-          👉 직접 해보는 마법 놀이터! 👈
-        </div>
-
-        <div className="flex flex-col md:flex-row items-stretch gap-8 relative z-10 mt-6">
-          
-          {/* Controls (Comic Style) */}
-          <div className="w-full md:w-1/3 flex flex-col gap-6">
-            <div className={`bg-blue-100 border-4 border-black p-5 shadow-[4px_4px_0_0_#000] transition-opacity duration-300 ${step !== 0 ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
-              <h3 className="text-black font-black mb-4 text-xl border-b-4 border-black pb-2">1. 조건 셋팅!</h3>
-              
-              <ComicControl label="첫째항 (a)" value={a} min={1} max={5} onChange={setA} />
-              <ComicControl label="공차 (d)" value={d} min={1} max={5} onChange={setD} />
-              <ComicControl label="항의 개수 (n)" value={n} min={2} max={12} onChange={setN} />
-            </div>
+      <div class="flex flex-col md:flex-row items-stretch gap-8 relative z-10 mt-6">
+        
+        <!-- Controls -->
+        <div class="w-full md:w-1/3 flex flex-col gap-6">
+          <div id="control-panel" class="bg-blue-100 border-4 border-black p-5 comic-shadow-sm transition-opacity duration-300">
+            <h3 class="text-black font-black mb-4 text-xl border-b-4 border-black pb-2">1. 조건 셋팅!</h3>
             
-            <div className="flex-1 flex flex-col gap-4 justify-end">
-              {step === 0 && (
-                <button onClick={handlePlay} className="comic-btn bg-yellow-400 text-black border-4 border-black shadow-[4px_4px_0_0_#000] hover:shadow-[2px_2px_0_0_#000] hover:translate-x-[2px] hover:translate-y-[2px] transition-all p-4 font-black text-xl flex items-center justify-center gap-2">
-                  <Play fill="currentColor" size={24} /> 시작! (재생)
-                </button>
-              )}
-
-              {step === 1 && (
-                <button 
-                  onClick={handleCalculateSum}
-                  disabled={visibleCount < n}
-                  className={`comic-btn border-4 border-black p-4 font-black text-xl flex items-center justify-center gap-2 transition-all ${
-                    visibleCount < n 
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed shadow-none translate-x-[2px] translate-y-[2px]' 
-                      : 'bg-red-500 text-white shadow-[4px_4px_0_0_#000] hover:shadow-[2px_2px_0_0_#000] hover:translate-x-[2px] hover:translate-y-[2px]'
-                  }`}
-                >
-                  <Combine size={24} /> 
-                  {visibleCount < n ? '블록 생성중...' : '✨ 합체 마법!'}
-                </button>
-              )}
-
-              {step === 2 && (
-                <button onClick={handleReset} className="comic-btn bg-gray-200 text-black border-4 border-black shadow-[4px_4px_0_0_#000] hover:shadow-[2px_2px_0_0_#000] hover:translate-x-[2px] hover:translate-y-[2px] transition-all p-4 font-black text-lg flex items-center justify-center gap-2">
-                  <RotateCcw size={20} /> 한 번 더 할래!
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Visualization Panel */}
-          <div className="w-full md:w-2/3 flex flex-col items-center justify-between relative bg-white border-4 border-black shadow-inner p-6 min-h-[400px]">
-            
-            {/* Status Text (Comic Action Text) */}
-            <div className="h-14 w-full flex items-center justify-center mb-2">
-               {step === 0 && <span className="text-gray-400 font-bold text-lg">왼쪽에서 숫자를 맞추고 시작을 눌러봐!</span>}
-               {step === 1 && visibleCount < n && <span className="text-blue-600 font-black text-2xl animate-pulse tracking-widest">드르륵... 쿵!</span>}
-               {step === 1 && visibleCount === n && <span className="text-blue-600 font-black text-xl">완성! 이제 합체 버튼을 눌러!</span>}
-               {step === 2 && <span className="text-red-600 font-black text-3xl tracking-wider transform -rotate-1">짜잔~! 완벽한 직사각형!</span>}
-            </div>
-
-            {/* Blocks */}
-            <div className="flex items-end border-b-8 border-black pb-1 gap-1 md:gap-2 relative w-full justify-center h-full min-h-[240px]">
-              
-              {/* Vertical Label */}
-              {step === 2 && (
-                <div className="absolute -right-2 md:-right-6 bottom-1 flex items-center animate-fade-in" style={{ height: `${(a + l) * unitH}px` }}>
-                  <div className="h-full border-r-4 border-dashed border-red-500 w-4 relative">
-                    <span className="absolute top-1/2 -right-16 -translate-y-1/2 font-black text-red-600 text-sm md:text-base whitespace-nowrap bg-yellow-200 px-2 py-1 border-2 border-black transform rotate-2">
-                      높이: {a+l}
-                    </span>
-                  </div>
+            <!-- A -->
+            <div class="flex flex-col mb-3">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-black text-black">첫째항 (a)</span>
+                <div class="flex items-center gap-1">
+                  <button id="btn-a-dec" onclick="updateVal('a', -1)" class="w-8 h-8 flex items-center justify-center bg-white border-2 border-black font-black comic-shadow-sm comic-btn"><i data-lucide="minus" class="w-4 h-4"></i></button>
+                  <span id="txt-a" class="font-black text-xl w-8 text-center">1</span>
+                  <button id="btn-a-inc" onclick="updateVal('a', 1)" class="w-8 h-8 flex items-center justify-center bg-white border-2 border-black font-black comic-shadow-sm comic-btn"><i data-lucide="plus" class="w-4 h-4"></i></button>
                 </div>
-              )}
-
-              {Array.from({ length: n }).map((_, i) => {
-                const termValue = a + i * d;
-                const invertedValue = l - i * d;
-                const isVisible = i < visibleCount;
-                
-                return (
-                  <div key={i} className="flex flex-col-reverse items-center w-10 md:w-12 relative group">
-                    {/* Base Block */}
-                    <div 
-                      className={`w-full bg-blue-400 border-2 border-black flex items-end justify-center pb-1 text-xs md:text-sm text-black font-black transition-all duration-500 ${isVisible ? 'opacity-100 scale-y-100' : 'opacity-0 scale-y-0'}`}
-                      style={{ height: `${termValue * unitH}px`, transformOrigin: 'bottom' }}
-                    >
-                      {termValue}
-                    </div>
-                    
-                    {/* Inverted Block */}
-                    {step === 2 && (
-                      <div 
-                        className="w-full bg-red-400 border-2 border-black flex items-start justify-center pt-1 text-xs md:text-sm text-black font-black animate-bounce-drop"
-                        style={{ height: `${invertedValue * unitH}px`, marginBottom: '-2px', animationFillMode: 'both', animationDelay: `${i * 0.05}s` }}
-                      >
-                        {invertedValue}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            
-            {/* Horizontal Label */}
-            <div className="mt-4 border-t-4 border-dashed border-black pt-2 text-center font-black text-black text-lg transition-all w-3/4">
-              가로 길이: {n}개
-            </div>
-
-            {/* Formula Result */}
-            <div className={`absolute bottom-6 bg-yellow-300 p-4 border-4 border-black shadow-[4px_4px_0_0_#000] transform -rotate-1 transition-all duration-700 ${step === 2 ? 'opacity-100 scale-100' : 'opacity-0 scale-50 pointer-events-none'}`}>
-              <div className="text-xl md:text-3xl text-black flex justify-center">
-                <MathFraction prefix="합계 =" num={`${n} × ${a+l}`} den="2" suffix={`= ${totalSum}`} />
               </div>
+              <input type="range" id="slider-a" min="1" max="5" value="1" oninput="setVal('a', this.value)" class="w-full h-3 bg-gray-200 border-2 border-black rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-red-500 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-black [&::-webkit-slider-thumb]:rounded-full cursor-pointer mt-2" />
             </div>
 
+            <!-- D -->
+            <div class="flex flex-col mb-3">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-black text-black">공차 (d)</span>
+                <div class="flex items-center gap-1">
+                  <button id="btn-d-dec" onclick="updateVal('d', -1)" class="w-8 h-8 flex items-center justify-center bg-white border-2 border-black font-black comic-shadow-sm comic-btn"><i data-lucide="minus" class="w-4 h-4"></i></button>
+                  <span id="txt-d" class="font-black text-xl w-8 text-center">2</span>
+                  <button id="btn-d-inc" onclick="updateVal('d', 1)" class="w-8 h-8 flex items-center justify-center bg-white border-2 border-black font-black comic-shadow-sm comic-btn"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                </div>
+              </div>
+              <input type="range" id="slider-d" min="1" max="5" value="2" oninput="setVal('d', this.value)" class="w-full h-3 bg-gray-200 border-2 border-black rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-red-500 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-black [&::-webkit-slider-thumb]:rounded-full cursor-pointer mt-2" />
+            </div>
+
+            <!-- N -->
+            <div class="flex flex-col mb-3">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-black text-black">항의 개수 (n)</span>
+                <div class="flex items-center gap-1">
+                  <button id="btn-n-dec" onclick="updateVal('n', -1)" class="w-8 h-8 flex items-center justify-center bg-white border-2 border-black font-black comic-shadow-sm comic-btn"><i data-lucide="minus" class="w-4 h-4"></i></button>
+                  <span id="txt-n" class="font-black text-xl w-8 text-center">6</span>
+                  <button id="btn-n-inc" onclick="updateVal('n', 1)" class="w-8 h-8 flex items-center justify-center bg-white border-2 border-black font-black comic-shadow-sm comic-btn"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                </div>
+              </div>
+              <input type="range" id="slider-n" min="2" max="12" value="6" oninput="setVal('n', this.value)" class="w-full h-3 bg-gray-200 border-2 border-black rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-red-500 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-black [&::-webkit-slider-thumb]:rounded-full cursor-pointer mt-2" />
+            </div>
+          </div>
+          
+          <div class="flex-1 flex flex-col gap-4 justify-end">
+            <!-- Play Button -->
+            <button id="btn-play" onclick="playAnim()" class="comic-btn bg-yellow-400 text-black border-4 border-black comic-shadow-sm p-4 font-black text-xl flex items-center justify-center gap-2">
+              <i data-lucide="play" class="fill-current"></i> 시작! (재생)
+            </button>
+
+            <!-- Combine Button -->
+            <button id="btn-combine" onclick="combineAnim()" class="hidden comic-btn border-4 border-black p-4 font-black text-xl flex items-center justify-center gap-2 bg-red-500 text-white comic-shadow-sm">
+              <i data-lucide="combine"></i> ✨ 합체 마법!
+            </button>
+
+            <!-- Reset Button -->
+            <button id="btn-reset" onclick="resetAnim()" class="hidden comic-btn bg-gray-200 text-black border-4 border-black comic-shadow-sm p-4 font-black text-lg flex items-center justify-center gap-2">
+              <i data-lucide="rotate-ccw"></i> 한 번 더 할래!
+            </button>
           </div>
         </div>
-      </ComicPanel>
 
-      {/* Panel 6: History / Gauss's Note */}
-      {history.length > 0 && (
-        <ComicPanel className="bg-purple-100 border-dashed border-8 border-black">
-          <div className="absolute -top-6 -right-6 text-yellow-400 rotate-12"><Star size={64} fill="currentColor" className="drop-shadow-md"/></div>
+        <!-- Visualization Panel -->
+        <div class="w-full md:w-2/3 flex flex-col items-center justify-between relative bg-white border-4 border-black shadow-inner p-6 min-h-[400px]">
           
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-            <h3 className="text-2xl md:text-3xl font-black text-black flex items-center gap-2">
-              <History strokeWidth={3} /> 가우스의 연구 일지
-            </h3>
-            <div className="flex items-center gap-4">
-              <div className="bg-white px-4 py-2 border-4 border-black shadow-[4px_4px_0_0_#000] font-black text-lg">
-                총 누적 스코어: <span className="text-red-600 text-2xl">{history.reduce((sum, item) => sum + item.totalSum, 0)}</span>
+          <!-- Status Text -->
+          <div id="status-container" class="h-14 w-full flex items-center justify-center mb-2">
+             <span class="text-gray-400 font-bold text-lg">왼쪽에서 숫자를 맞추고 시작을 눌러봐!</span>
+          </div>
+
+          <!-- Blocks Container -->
+          <div id="blocks-container" class="flex items-end border-b-8 border-black pb-1 gap-1 md:gap-2 relative w-full justify-center h-full min-h-[240px]">
+            <!-- Blocks will be injected here via JS -->
+          </div>
+          
+          <!-- Horizontal Label -->
+          <div id="h-label" class="mt-4 border-t-4 border-dashed border-black pt-2 text-center font-black text-black text-lg transition-all w-3/4">
+            가로 길이: 6개
+          </div>
+
+          <!-- Formula Result -->
+          <div id="formula-result" class="absolute bottom-6 bg-yellow-300 p-4 border-4 border-black comic-shadow-sm transform -rotate-1 transition-all duration-700 opacity-0 scale-50 pointer-events-none z-20">
+            <div class="text-xl md:text-3xl text-black flex justify-center items-center font-black gap-2">
+              <span>합계 =</span>
+              <div class="flex flex-col items-center justify-center text-center mx-1">
+                <span id="form-num" class="border-b-4 border-black px-2 pb-0.5 mb-0.5 leading-none">6 × 12</span>
+                <span class="leading-none pt-1">2</span>
               </div>
-              <button onClick={() => setHistory([])} className="flex items-center gap-1 bg-gray-200 border-2 border-black font-bold px-3 py-2 hover:bg-gray-300 transition-colors">
-                <Trash2 size={16} /> 일지 찢기
-              </button>
+              <span id="form-ans">= 36</span>
             </div>
           </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {history.map((item, idx) => (
-              <div key={item.id} className="bg-white p-4 border-4 border-black shadow-[4px_4px_0_0_#000] flex flex-col relative transform transition-transform hover:-translate-y-1 hover:rotate-1 animate-fade-in">
-                 <div className="absolute top-0 right-0 bg-black text-white text-xs font-bold px-2 py-1">
-                   #{history.length - idx}
-                 </div>
-                 <div className="text-sm font-black text-gray-500 mb-2 border-b-2 border-gray-200 pb-1">
-                   a={item.a}, d={item.d}, n={item.n}
-                 </div>
-                 <div className="text-xs text-black font-mono font-bold truncate">
-                   {item.a} + {item.a + item.d} + ... + {item.l}
-                 </div>
-                 <div className="mt-auto pt-2 text-red-600 font-black text-2xl">
-                   = {item.totalSum}
-                 </div>
-              </div>
-            ))}
-          </div>
-        </ComicPanel>
-      )}
 
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes bounce-drop {
-          0% { transform: translateY(-50px); opacity: 0; }
-          60% { transform: translateY(5px); opacity: 1; }
-          80% { transform: translateY(-2px); }
-          100% { transform: translateY(0); opacity: 1; }
-        }
-        .animate-bounce-drop {
-          animation: bounce-drop 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-      `}} />
+        </div>
+      </div>
     </div>
-  );
-}
 
-// ---------------------------------------------------------
-// Comic UI Control Component
-// ---------------------------------------------------------
-function ComicControl({ label, value, min, max, onChange }) {
-  return (
-    <div className="flex flex-col mb-3">
-      <div className="flex items-center justify-between mb-1">
-        <span className="font-black text-black">{label}</span>
-        <div className="flex items-center gap-1">
-          <button onClick={() => onChange(Math.max(min, value - 1))} disabled={value <= min} className="w-8 h-8 flex items-center justify-center bg-white border-2 border-black font-black hover:bg-gray-200 disabled:opacity-40 shadow-[2px_2px_0_0_#000] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all">
-            <Minus size={16} strokeWidth={4}/>
-          </button>
-          <span className="font-black text-xl w-8 text-center">{value}</span>
-          <button onClick={() => onChange(Math.min(max, value + 1))} disabled={value >= max} className="w-8 h-8 flex items-center justify-center bg-white border-2 border-black font-black hover:bg-gray-200 disabled:opacity-40 shadow-[2px_2px_0_0_#000] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all">
-            <Plus size={16} strokeWidth={4}/>
+    <!-- Panel 6: History / Gauss's Note -->
+    <div id="history-panel" class="hidden border-4 border-black p-6 rounded-xl comic-shadow relative bg-purple-100 border-dashed border-8 border-black">
+      <div class="absolute -top-6 -right-6 text-yellow-400 rotate-12"><i data-lucide="star" class="w-16 h-16 fill-current drop-shadow-md"></i></div>
+      
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <h3 class="text-2xl md:text-3xl font-black text-black flex items-center gap-2">
+          <i data-lucide="history" stroke-width="3"></i> 가우스의 연구 일지
+        </h3>
+        <div class="flex items-center gap-4">
+          <div class="bg-white px-4 py-2 border-4 border-black comic-shadow-sm font-black text-lg">
+            총 누적 스코어: <span id="total-score" class="text-red-600 text-2xl">0</span>
+          </div>
+          <button onclick="clearHistory()" class="flex items-center gap-1 bg-gray-200 border-2 border-black font-bold px-3 py-2 hover:bg-gray-300 transition-colors comic-btn">
+            <i data-lucide="trash-2" class="w-4 h-4"></i> 일지 찢기
           </button>
         </div>
       </div>
-      <input 
-        type="range" min={min} max={max} value={value} 
-        onChange={(e) => onChange(parseInt(e.target.value))}
-        className="w-full h-3 bg-gray-200 border-2 border-black rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-red-500 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-black [&::-webkit-slider-thumb]:rounded-full cursor-pointer mt-2"
-      />
+      
+      <div id="history-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <!-- History cards injected here -->
+      </div>
     </div>
-  );
-}
+
+  </main>
+
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // State
+    const state = {
+      a: 1, d: 2, n: 6,
+      step: 0, // 0: setup, 1: animating/ready, 2: combined
+      visibleCount: 0,
+      history: [],
+      interval: null
+    };
+
+    const constraints = {
+      a: { min: 1, max: 5 },
+      d: { min: 1, max: 5 },
+      n: { min: 2, max: 12 }
+    };
+
+    // DOM Elements
+    const els = {
+      txt_a: document.getElementById('txt-a'),
+      slider_a: document.getElementById('slider-a'),
+      btn_a_dec: document.getElementById('btn-a-dec'),
+      btn_a_inc: document.getElementById('btn-a-inc'),
+      
+      txt_d: document.getElementById('txt-d'),
+      slider_d: document.getElementById('slider-d'),
+      btn_d_dec: document.getElementById('btn-d-dec'),
+      btn_d_inc: document.getElementById('btn-d-inc'),
+      
+      txt_n: document.getElementById('txt-n'),
+      slider_n: document.getElementById('slider-n'),
+      btn_n_dec: document.getElementById('btn-n-dec'),
+      btn_n_inc: document.getElementById('btn-n-inc'),
+
+      control_panel: document.getElementById('control-panel'),
+      btn_play: document.getElementById('btn-play'),
+      btn_combine: document.getElementById('btn-combine'),
+      btn_reset: document.getElementById('btn-reset'),
+      
+      status_container: document.getElementById('status-container'),
+      blocks_container: document.getElementById('blocks-container'),
+      h_label: document.getElementById('h-label'),
+      
+      formula_result: document.getElementById('formula-result'),
+      form_num: document.getElementById('form-num'),
+      form_ans: document.getElementById('form-ans'),
+
+      history_panel: document.getElementById('history-panel'),
+      total_score: document.getElementById('total-score'),
+      history_list: document.getElementById('history-list')
+    };
+
+    // Values Updater
+    function updateVal(key, delta) {
+      const newVal = state[key] + delta;
+      setVal(key, newVal);
+    }
+
+    function setVal(key, val) {
+      val = parseInt(val);
+      if (val >= constraints[key].min && val <= constraints[key].max) {
+        state[key] = val;
+        
+        // Reset animation states if changed
+        if (state.step !== 0) {
+          state.step = 0;
+          state.visibleCount = 0;
+          clearInterval(state.interval);
+        }
+        renderUI();
+      }
+    }
+
+    // Main Actions
+    function playAnim() {
+      state.step = 1;
+      state.visibleCount = 0;
+      renderUI();
+      
+      clearInterval(state.interval);
+      state.interval = setInterval(() => {
+        if (state.visibleCount < state.n) {
+          state.visibleCount++;
+          renderUI();
+        } else {
+          clearInterval(state.interval);
+        }
+      }, 300);
+    }
+
+    function combineAnim() {
+      state.step = 2;
+      
+      const l = state.a + (state.n - 1) * state.d;
+      const totalSum = (state.n * (state.a + l)) / 2;
+      
+      // Add to history
+      state.history.unshift({
+        a: state.a, d: state.d, n: state.n, l: l, totalSum: totalSum, id: Date.now()
+      });
+      
+      renderUI();
+      renderHistory();
+    }
+
+    function resetAnim() {
+      state.step = 0;
+      state.visibleCount = 0;
+      renderUI();
+    }
+
+    function clearHistory() {
+      state.history = [];
+      renderHistory();
+    }
+
+    // Rendering Engine
+    function renderUI() {
+      // 1. Update Controls
+      ['a', 'd', 'n'].forEach(key => {
+        els[`txt_${key}`].innerText = state[key];
+        els[`slider_${key}`].value = state[key];
+        
+        const decBtn = els[`btn_${key}_dec`];
+        const incBtn = els[`btn_${key}_inc`];
+        
+        decBtn.disabled = state[key] <= constraints[key].min;
+        if(decBtn.disabled) decBtn.classList.add('opacity-40'); else decBtn.classList.remove('opacity-40');
+        
+        incBtn.disabled = state[key] >= constraints[key].max;
+        if(incBtn.disabled) incBtn.classList.add('opacity-40'); else incBtn.classList.remove('opacity-40');
+      });
+
+      // Disable panel opacity
+      if (state.step !== 0) {
+        els.control_panel.classList.add('opacity-50', 'pointer-events-none');
+      } else {
+        els.control_panel.classList.remove('opacity-50', 'pointer-events-none');
+      }
+
+      // 2. Update Buttons
+      els.btn_play.classList.toggle('hidden', state.step !== 0);
+      els.btn_combine.classList.toggle('hidden', state.step !== 1);
+      els.btn_reset.classList.toggle('hidden', state.step !== 2);
+
+      if (state.step === 1) {
+        if (state.visibleCount < state.n) {
+          els.btn_combine.classList.remove('bg-red-500', 'text-white', 'comic-shadow-sm');
+          els.btn_combine.classList.add('comic-disabled');
+          els.btn_combine.innerHTML = '<i data-lucide="combine"></i> 블록 생성중...';
+        } else {
+          els.btn_combine.classList.remove('comic-disabled');
+          els.btn_combine.classList.add('bg-red-500', 'text-white', 'comic-shadow-sm');
+          els.btn_combine.innerHTML = '<i data-lucide="combine"></i> ✨ 합체 마법!';
+        }
+        lucide.createIcons(); // re-init icons for innerHTML replacements
+      }
+
+      // 3. Update Status Text
+      let statusHTML = '';
+      if (state.step === 0) statusHTML = '<span class="text-gray-400 font-bold text-lg">왼쪽에서 숫자를 맞추고 시작을 눌러봐!</span>';
+      else if (state.step === 1 && state.visibleCount < state.n) statusHTML = '<span class="text-blue-600 font-black text-2xl animate-pulse tracking-widest">드르륵... 쿵!</span>';
+      else if (state.step === 1 && state.visibleCount === state.n) statusHTML = '<span class="text-blue-600 font-black text-xl">완성! 이제 합체 버튼을 눌러!</span>';
+      else if (state.step === 2) statusHTML = '<span class="text-red-600 font-black text-3xl tracking-wider transform -rotate-1">짜잔~! 완벽한 직사각형!</span>';
+      els.status_container.innerHTML = statusHTML;
+
+      // 4. Update Blocks
+      const l = state.a + (state.n - 1) * state.d;
+      const totalSum = (state.n * (state.a + l)) / 2;
+      const maxH = 220;
+      const unitH = Math.min(25, maxH / (state.a + l));
+
+      let blocksHTML = '';
+
+      // Vertical Label for Step 2
+      if (state.step === 2) {
+        blocksHTML += `
+          <div class="absolute -right-2 md:-right-6 bottom-1 flex items-center animate-pulse" style="height: ${(state.a + l) * unitH}px">
+            <div class="h-full border-r-4 border-dashed border-red-500 w-4 relative">
+              <span class="absolute top-1/2 -right-16 -translate-y-1/2 font-black text-red-600 text-sm md:text-base whitespace-nowrap bg-yellow-200 px-2 py-1 border-2 border-black transform rotate-2 z-30">
+                높이: ${state.a + l}
+              </span>
+            </div>
+          </div>
+        `;
+      }
+
+      for (let i = 0; i < state.n; i++) {
+        const termValue = state.a + i * state.d;
+        const invertedValue = l - i * state.d;
+        const isVisible = i < state.visibleCount;
+        
+        let colHTML = `<div class="flex flex-col-reverse items-center w-10 md:w-12 relative group">`;
+        
+        // Base Block
+        const baseClass = isVisible ? 'opacity-100 scale-y-100' : 'opacity-0 scale-y-0';
+        colHTML += `<div class="w-full bg-blue-400 border-2 border-black flex items-end justify-center pb-1 text-xs md:text-sm text-black font-black transition-all duration-500 ${baseClass}" style="height: ${termValue * unitH}px; transform-origin: bottom;">${termValue}</div>`;
+        
+        // Inverted Block
+        if (state.step === 2) {
+          colHTML += `<div class="w-full bg-red-400 border-2 border-black flex items-start justify-center pt-1 text-xs md:text-sm text-black font-black animate-bounce-drop" style="height: ${invertedValue * unitH}px; margin-bottom: -2px; animation-delay: ${i * 0.05}s;">${invertedValue}</div>`;
+        }
+        
+        colHTML += `</div>`;
+        blocksHTML += colHTML;
+      }
+      
+      els.blocks_container.innerHTML = blocksHTML;
+      els.h_label.innerText = `가로 길이: ${state.n}개`;
+
+      // 5. Update Formula Result
+      if (state.step === 2) {
+        els.form_num.innerText = `${state.n} × ${state.a + l}`;
+        els.form_ans.innerText = `= ${totalSum}`;
+        els.formula_result.classList.remove('opacity-0', 'scale-50', 'pointer-events-none');
+        els.formula_result.classList.add('opacity-100', 'scale-100');
+      } else {
+        els.formula_result.classList.remove('opacity-100', 'scale-100');
+        els.formula_result.classList.add('opacity-0', 'scale-50', 'pointer-events-none');
+      }
+    }
+
+    function renderHistory() {
+      if (state.history.length === 0) {
+        els.history_panel.classList.add('hidden');
+        return;
+      }
+      
+      els.history_panel.classList.remove('hidden');
+      
+      let total = 0;
+      let listHTML = '';
+      
+      state.history.forEach((item, idx) => {
+        total += item.totalSum;
+        const indexNum = state.history.length - idx;
+        
+        let seqPreview = `${item.a} + ${item.a + item.d}`;
+        if (item.n > 2) seqPreview += ` + ... + ${item.l}`;
+        
+        listHTML += `
+          <div class="bg-white p-4 border-4 border-black comic-shadow-sm flex flex-col relative transform transition-transform hover:-translate-y-1 hover:rotate-1">
+             <div class="absolute top-0 right-0 bg-black text-white text-xs font-bold px-2 py-1">
+               #${indexNum}
+             </div>
+             <div class="text-sm font-black text-gray-500 mb-2 border-b-2 border-gray-200 pb-1">
+               a=${item.a}, d=${item.d}, n=${item.n}
+             </div>
+             <div class="text-xs text-black font-mono font-bold truncate">
+               ${seqPreview}
+             </div>
+             <div class="mt-auto pt-2 text-red-600 font-black text-2xl">
+               = ${item.totalSum}
+             </div>
+          </div>
+        `;
+      });
+      
+      els.total_score.innerText = total;
+      els.history_list.innerHTML = listHTML;
+    }
+
+    // Initial render
+    renderUI();
+
+  </script>
+</body>
+</html>
