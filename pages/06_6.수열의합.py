@@ -20,11 +20,11 @@ st.markdown(
 
 st.markdown("---")
 
-#st.markdown(
+st.markdown(
     dedent("""
     <div style="display:flex; align-items:center; gap:12px; margin:10px 0;">
         <h3 style="margin:0;">① 수열의 흐름을 따라</h3>
-        <a href="https://gemini.google.com/share/461584169a61" target="_blank"
+        <a href="" target="_blank"
            style="font-size:14px; text-decoration:none; padding:7px 14px; border-radius:999px; background:#111; color:white;">
            👉전체 화면으로 보기 click
         </a>
