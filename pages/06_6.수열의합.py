@@ -39,14 +39,14 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-with open(BASE_DIR / "seq_sum.html", encoding="utf-8") as f:
+with open(BASE_DIR / "6.seq_sum.html", encoding="utf-8") as f:
     html1 = f.read()
 
 components.html(html1, height=700, scrolling=True)
 
 st.markdown("### ② 수열의 합과 대칭에 대한 의문")
 
-with open(BASE_DIR / "seq_qes.html", encoding="utf-8") as f:
+with open(BASE_DIR / "6.seq_qes.html", encoding="utf-8") as f:
     html2 = f.read()
 
 components.html(html2, height=700, scrolling=True)
