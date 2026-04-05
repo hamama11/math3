@@ -28,10 +28,6 @@ st.markdown(
     dedent("""
     <div style="display:flex; align-items:center; gap:12px; margin:10px 0; flex-wrap:wrap;">
         <h3 style="margin:0;">① 수열의 합과 귀납법</h3>
-        <a href="" target="_blank"
-           style="font-size:14px; text-decoration:none; padding:7px 14px; border-radius:999px; background:#111; color:white;">
-           👉 전체 화면으로 보기
-        </a>
     </div>
     """),
     unsafe_allow_html=True
