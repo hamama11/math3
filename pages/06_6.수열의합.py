@@ -20,13 +20,17 @@ st.markdown(
 
 st.markdown("---")
 
+
+# -------------------------------
+# 🔢 ① 수열의 합과 귀납법
+# -------------------------------
 st.markdown(
     dedent("""
-    <div style="display:flex; align-items:center; gap:12px; margin:10px 0;">
-        <h3 style="margin:0;">① 수열의 흐름을 따라</h3>
+    <div style="display:flex; align-items:center; gap:12px; margin:10px 0; flex-wrap:wrap;">
+        <h3 style="margin:0;">① 수열의 합과 귀납법</h3>
         <a href="" target="_blank"
            style="font-size:14px; text-decoration:none; padding:7px 14px; border-radius:999px; background:#111; color:white;">
-           👉전체 화면으로 보기 click
+           👉 전체 화면으로 보기
         </a>
     </div>
     """),
@@ -38,3 +42,9 @@ with open(BASE_DIR / "seq_sum.html", encoding="utf-8") as f:
 
 components.html(html1, height=700, scrolling=True)
 
+st.markdown("### ② 수열의 합과 대칭에 대한 의문")
+
+with open(BASE_DIR / "seq_qes.html", encoding="utf-8") as f:
+    html2 = f.read()
+
+components.html(html2, height=700, scrolling=True)
