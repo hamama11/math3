@@ -49,4 +49,4 @@ st.markdown("### ② 수열의 합과 대칭에 대한 의문")
 with open(BASE_DIR / "6.seq_qes.html", encoding="utf-8") as f:
     html2 = f.read()
 
-components.html(html2, height=1000, scrolling=True)
+components.html(html2, height=800, scrolling=True)
