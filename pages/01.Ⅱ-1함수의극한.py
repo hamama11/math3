@@ -55,8 +55,8 @@ with right:
 
 st.markdown("---")
 
-# 슬라이드 5~6
-for i in range(5, 7):
+# 슬라이드 4~6
+for i in range(4, 7):
     st.image(
         f"assets/함수의극한/images/슬라이드{i}.PNG",
         use_container_width=True
