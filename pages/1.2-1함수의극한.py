@@ -36,7 +36,7 @@ wrapped_html = f"""
 st.markdown("---")
 
 # 슬라이드3 + HTML 좌우 배치
-left, right = st.columns([1, 1])
+left, right = st.columns([1, 1.2])
 
 with left:
     st.image(
@@ -45,11 +45,13 @@ with left:
     )
 
 with right:
-    components.html(
-        wrapped_html,
-        height=650,
-        scrolling=True
-    )
+    with st.expander("🌐 인터랙션 열기", expanded=False):
+
+        components.html(
+            wrapped_html,
+            height=650,
+            scrolling=True
+        )
 
 st.markdown("---")
 
