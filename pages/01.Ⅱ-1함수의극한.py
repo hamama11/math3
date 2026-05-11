@@ -45,7 +45,7 @@ with left:
     )
 
 with right:
-    with st.expander("🌐 인터랙션 열기", expanded=False):
+    with st.expander("🔍 직접 탐구해보기", expanded=False):
 
         components.html(
             wrapped_html,
