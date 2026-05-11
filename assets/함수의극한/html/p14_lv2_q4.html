@@ -1,324 +1,290 @@
-import React, { useState, useEffect, useRef } from 'react';
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>g(x) 분석 시뮬레이터</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        canvas { touch-action: none; }
+        .no-select { user-select: none; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4 md:p-8">
 
-const App = () => {
-  const [p, setP] = useState(4);
-  const [q, setQ] = useState(4);
-  const [a, setA] = useState(1); // 1 or -1
-  const [t, setT] = useState(15); // Constant y = t
-  const [dragTarget, setDragTarget] = useState(null); // 'vertex' or 'lineT'
-  
-  const canvasRef = useRef(null);
-  const containerRef = useRef(null);
-
-  const PADDING = 60;
-  const X_MIN = -5, X_MAX = 20; 
-  const Y_MIN = -20, Y_MAX = 60; 
-
-  const toCanvasX = (x, width) => PADDING + (x - X_MIN) * (width - 2 * PADDING) / (X_MAX - X_MIN);
-  const toCanvasY = (y, height) => height - PADDING - (y - Y_MIN) * (height - 2 * PADDING) / (Y_MAX - Y_MIN);
-  const fromCanvasX = (cx, width) => X_MIN + (cx - PADDING) * (X_MAX - X_MIN) / (width - 2 * PADDING);
-  const fromCanvasY = (cy, height) => Y_MIN + (height - PADDING - cy) * (Y_MAX - Y_MIN) / (height - 2 * PADDING);
-
-  const f = (x) => a * Math.pow(x - p, 2) + q;
-  const line = (x) => 4 * x;
-  const g = (x) => Math.min(f(x), line(x));
-
-  // Find intersection points for y = t and g(x)
-  const getIntersections = () => {
-    const points = [];
-    const step = 0.05;
-    for (let x = X_MIN; x <= X_MAX; x += step) {
-      const val1 = g(x);
-      const val2 = g(x + step);
-      if ((val1 <= t && val2 >= t) || (val1 >= t && val2 <= t)) {
-        points.push(x + step / 2);
-      }
-    }
-    // Filter nearby points
-    return points.filter((v, i, a) => i === 0 || Math.abs(v - a[i - 1]) > 0.5);
-  };
-
-  const intersections = getIntersections();
-
-  const draw = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const width = canvas.width;
-    const height = canvas.height;
-
-    ctx.clearRect(0, 0, width, height);
-
-    // Draw Grid
-    ctx.strokeStyle = '#f1f5f9';
-    ctx.lineWidth = 1.5;
-    for (let x = Math.floor(X_MIN); x <= X_MAX; x += 2) {
-      ctx.beginPath();
-      ctx.moveTo(toCanvasX(x, width), toCanvasY(Y_MIN, height));
-      ctx.lineTo(toCanvasX(x, width), toCanvasY(Y_MAX, height));
-      ctx.stroke();
-    }
-    for (let y = Math.floor(Y_MIN / 10) * 10; y <= Y_MAX; y += 10) {
-      ctx.beginPath();
-      ctx.moveTo(toCanvasX(X_MIN, width), toCanvasY(y, height));
-      ctx.lineTo(toCanvasX(X_MAX, width), toCanvasY(y, height));
-      ctx.stroke();
-    }
-
-    // Draw Axes
-    ctx.strokeStyle = '#64748b';
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.moveTo(toCanvasX(X_MIN, width), toCanvasY(0, height));
-    ctx.lineTo(toCanvasX(X_MAX, width), toCanvasY(0, height));
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(toCanvasX(0, width), toCanvasY(Y_MIN, height));
-    ctx.lineTo(toCanvasX(0, width), toCanvasY(Y_MAX, height));
-    ctx.stroke();
-
-    // 1. Line y = 4x
-    ctx.setLineDash([8, 6]);
-    ctx.strokeStyle = '#3b82f6';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(toCanvasX(X_MIN, width), toCanvasY(line(X_MIN), height));
-    ctx.lineTo(toCanvasX(X_MAX, width), toCanvasY(line(X_MAX), height));
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // 2. f(x)
-    ctx.setLineDash([5, 5]);
-    ctx.strokeStyle = '#ef4444';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    let first = true;
-    for (let x = X_MIN; x <= X_MAX; x += 0.2) {
-      const cx = toCanvasX(x, width);
-      const cy = toCanvasY(f(x), height);
-      if (first) ctx.moveTo(cx, cy);
-      else ctx.lineTo(cx, cy);
-      first = false;
-    }
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // 3. g(x) = min(f(x), 4x)
-    ctx.strokeStyle = '#059669';
-    ctx.lineWidth = 7;
-    ctx.beginPath();
-    first = true;
-    for (let x = X_MIN; x <= X_MAX; x += 0.1) {
-      const cx = toCanvasX(x, width);
-      const cy = toCanvasY(g(x), height);
-      if (first) ctx.moveTo(cx, cy);
-      else ctx.lineTo(cx, cy);
-      first = false;
-    }
-    ctx.stroke();
-
-    // 4. Constant Line y = t
-    ctx.strokeStyle = '#f59e0b';
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.moveTo(toCanvasX(X_MIN, width), toCanvasY(t, height));
-    ctx.lineTo(toCanvasX(X_MAX, width), toCanvasY(t, height));
-    ctx.stroke();
-
-    // 5. Intersection Highlights
-    intersections.forEach(ix => {
-      ctx.fillStyle = '#f59e0b';
-      ctx.beginPath();
-      ctx.arc(toCanvasX(ix, width), toCanvasY(t, height), 8, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = 'white';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-    });
-
-    // 6. Vertex Handle
-    ctx.fillStyle = '#ef4444';
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = 'rgba(239, 68, 68, 0.5)';
-    ctx.beginPath();
-    ctx.arc(toCanvasX(p, width), toCanvasY(q, height), 15, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.shadowBlur = 0;
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 4;
-    ctx.stroke();
-  };
-
-  useEffect(() => {
-    const resizeCanvas = () => {
-      const canvas = canvasRef.current;
-      if (canvas && containerRef.current) {
-        canvas.width = containerRef.current.clientWidth;
-        canvas.height = containerRef.current.clientHeight;
-        draw();
-      }
-    };
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    return () => window.removeEventListener('resize', resizeCanvas);
-  }, [p, q, a, t, intersections.length]);
-
-  const handlePointerDown = (e) => {
-    const rect = canvasRef.current.getBoundingClientRect();
-    const cx = (e.clientX || e.touches?.[0].clientX) - rect.left;
-    const cy = (e.clientY || e.touches?.[0].clientY) - rect.top;
-    const { width, height } = canvasRef.current;
-    
-    // Check vertex hit
-    const distVertex = Math.sqrt(Math.pow(toCanvasX(p, width) - cx, 2) + Math.pow(toCanvasY(q, height) - cy, 2));
-    if (distVertex < 50) {
-      setDragTarget('vertex');
-      return;
-    }
-
-    // Check line y=t hit
-    const lineY = toCanvasY(t, height);
-    if (Math.abs(cy - lineY) < 30) {
-      setDragTarget('lineT');
-    }
-  };
-
-  const handlePointerMove = (e) => {
-    if (!dragTarget) return;
-    const rect = canvasRef.current.getBoundingClientRect();
-    const cx = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
-    const cy = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
-    if (isNaN(cx) || isNaN(cy)) return;
-    const { width, height } = canvasRef.current;
-
-    if (dragTarget === 'vertex') {
-      setP(fromCanvasX(cx, width));
-      setQ(fromCanvasY(cy, height));
-    } else if (dragTarget === 'lineT') {
-      setT(fromCanvasY(cy, height));
-    }
-  };
-
-  const stopDragging = () => setDragTarget(null);
-
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-slate-100 p-8 font-sans">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-7xl flex flex-col md:flex-row overflow-hidden border border-slate-200 h-[850px]">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-7xl flex flex-col md:flex-row overflow-hidden border border-slate-200 h-[auto] md:h-[850px]">
         
-        {/* Left: Pure Graph Area */}
-        <div className="flex-[3] bg-slate-50 relative p-4 border-r border-slate-100 h-full" ref={containerRef}>
-          <canvas
-            ref={canvasRef}
-            className={`w-full h-full touch-none ${dragTarget ? 'cursor-grabbing' : 'cursor-crosshair'}`}
-            onMouseDown={handlePointerDown}
-            onMouseMove={handlePointerMove}
-            onMouseUp={stopDragging}
-            onMouseLeave={stopDragging}
-            onTouchStart={handlePointerDown}
-            onTouchMove={handlePointerMove}
-            onTouchEnd={stopDragging}
-          />
-          <div className="absolute bottom-6 left-6 flex flex-wrap gap-4 pointer-events-none">
-            <div className="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-lg border border-slate-200 text-xs font-bold text-slate-500 shadow-sm">
-              <span className="text-red-500 mr-2">●</span> f(x) Vertex (Drag)
+        <!-- 왼쪽: 그래프 영역 -->
+        <div id="container" class="flex-[3] bg-slate-50 relative p-4 border-r border-slate-100 min-h-[500px] h-full">
+            <canvas id="graphCanvas" class="w-full h-full cursor-crosshair"></canvas>
+            
+            <!-- 하단 범례 -->
+            <div class="absolute bottom-6 left-6 flex flex-wrap gap-4 pointer-events-none no-select">
+                <div class="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-lg border border-slate-200 text-xs font-bold text-slate-500 shadow-sm">
+                    <span class="text-red-500 mr-2">●</span> f(x) 꼭짓점 (드래그)
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-lg border border-slate-200 text-xs font-bold text-slate-500 shadow-sm">
+                    <span class="text-amber-500 mr-2">━</span> y = t (상하 드래그)
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-lg border border-slate-200 text-xs font-bold text-slate-500 shadow-sm">
+                    <span class="text-emerald-500 mr-2">━</span> g(x) 결과
+                </div>
             </div>
-            <div className="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-lg border border-slate-200 text-xs font-bold text-slate-500 shadow-sm">
-              <span className="text-amber-500 mr-2">━</span> y = t (Drag Vertical)
-            </div>
-            <div className="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-lg border border-slate-200 text-xs font-bold text-slate-500 shadow-sm">
-              <span className="text-emerald-500 mr-2">━</span> g(x) Result
-            </div>
-          </div>
         </div>
 
-        {/* Right: Detailed Info Panel */}
-        <div className="flex-[2] p-10 flex flex-col bg-white overflow-y-auto">
-          <header className="mb-6">
-            <h1 className="text-4xl font-black text-slate-900 tracking-tighter leading-none mb-3 italic">g(x) & y=t Analysis</h1>
-            <p className="text-slate-500 font-bold">방정식 g(x) = t 의 실근 개수 파악</p>
-          </header>
+        <!-- 오른쪽: 정보 및 컨트롤 패널 -->
+        <div class="flex-[2] p-8 md:p-10 flex flex-col bg-white overflow-y-auto">
+            <header class="mb-6">
+                <h1 class="text-4xl font-black text-slate-900 tracking-tighter leading-none mb-3 italic">g(x) Analysis</h1>
+                <p class="text-slate-500 font-bold">방정식 g(x) = t 의 실근 개수 분석</p>
+            </header>
 
-          <div className="space-y-6">
-            {/* Intersection Counter Panel */}
-            <section className="bg-amber-50 p-6 rounded-2xl border-2 border-amber-200 shadow-sm relative overflow-hidden">
-               <div className="absolute top-0 right-0 p-2 opacity-10 font-black text-6xl text-amber-500">
-                {intersections.length}
-               </div>
-               <h3 className="text-xs font-black text-amber-600 uppercase tracking-widest mb-2">실근(교점) 분석</h3>
-               <div className="flex items-center gap-4">
-                 <div className="text-4xl font-black text-amber-700">
-                    {intersections.length}개
-                 </div>
-                 <div className="text-sm font-bold text-amber-800/70 leading-tight">
-                    방정식 g(x) = {t.toFixed(1)} <br/>만족하는 실근의 개수
-                 </div>
-               </div>
-            </section>
+            <div class="space-y-6">
+                <!-- 실근 개수 패널 -->
+                <section class="bg-amber-50 p-6 rounded-2xl border-2 border-amber-200 shadow-sm relative overflow-hidden">
+                    <div id="countBadge" class="absolute top-0 right-0 p-2 opacity-10 font-black text-6xl text-amber-500 no-select">0</div>
+                    <h3 class="text-xs font-black text-amber-600 uppercase tracking-widest mb-2">실근(교점) 분석</h3>
+                    <div class="flex items-center gap-4">
+                        <div id="intersectionCount" class="text-4xl font-black text-amber-700">0개</div>
+                        <div class="text-sm font-bold text-amber-800/70 leading-tight">
+                            방정식 g(x) = <span id="valTText">0.0</span> <br>만족하는 실근의 개수
+                        </div>
+                    </div>
+                </section>
 
-            {/* Dynamic Formula Section */}
-            <section className="bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-inner">
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">현재 함수 상태</h3>
-              <div className="space-y-3">
-                <div className="p-3 bg-white rounded-xl border border-red-100">
-                  <span className="text-[10px] font-black text-red-400 block mb-1">f(x)</span>
-                  <code className="text-xl font-bold text-red-600 block leading-tight">
-                    f(x) = {a === -1 ? '-' : ''}(x - {p.toFixed(1)})<sup>2</sup> + {q.toFixed(1)}
-                  </code>
-                </div>
-                <div className="p-3 bg-white rounded-xl border border-amber-100">
-                  <span className="text-[10px] font-black text-amber-500 block mb-1">Target Value (t)</span>
-                  <code className="text-xl font-bold text-amber-600 block leading-tight">
-                    y = {t.toFixed(1)}
-                  </code>
-                </div>
-              </div>
-            </section>
+                <!-- 수식 정보 패널 -->
+                <section class="bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-inner">
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">현재 함수 상태</h3>
+                    <div class="space-y-3">
+                        <div class="p-3 bg-white rounded-xl border border-red-100">
+                            <span class="text-[10px] font-black text-red-400 block mb-1">f(x)</span>
+                            <code id="formulaF" class="text-xl font-bold text-red-600 block leading-tight"></code>
+                        </div>
+                        <div class="p-3 bg-white rounded-xl border border-amber-100">
+                            <span class="text-[10px] font-black text-amber-500 block mb-1">Target Value (t)</span>
+                            <code id="formulaT" class="text-xl font-bold text-amber-600 block leading-tight">y = 0.0</code>
+                        </div>
+                    </div>
+                </section>
 
-            {/* Controls Section */}
-            <section>
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">개형 설정</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <button 
-                  onClick={() => setA(1)}
-                  className={`py-3 rounded-xl font-black transition-all border-2 ${a === 1 ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg' : 'bg-white border-slate-200 text-slate-500'}`}
-                >
-                  아래로 볼록
-                </button>
-                <button 
-                  onClick={() => setA(-1)}
-                  className={`py-3 rounded-xl font-black transition-all border-2 ${a === -1 ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg' : 'bg-white border-slate-200 text-slate-500'}`}
-                >
-                  위로 볼록
-                </button>
-              </div>
-            </section>
+                <!-- 개형 설정 버튼 -->
+                <section>
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">개형 설정</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button id="btnConvUp" class="py-3 rounded-xl font-black transition-all border-2 bg-indigo-600 border-indigo-600 text-white shadow-lg">아래로 볼록</button>
+                        <button id="btnConvDown" class="py-3 rounded-xl font-black transition-all border-2 bg-white border-slate-200 text-slate-500 hover:border-indigo-300">위로 볼록</button>
+                    </div>
+                </section>
 
-            {/* Mathematical Insight Section */}
-            <section className="bg-emerald-50 p-6 rounded-2xl border border-emerald-100">
-              <h3 className="text-md font-black text-emerald-800 mb-3 italic">Geometric Insight</h3>
-              <div className="space-y-3 text-emerald-900/80 font-bold leading-relaxed text-sm">
-                <p>
-                  상수 $y=t$가 이동함에 따라 <span className="text-emerald-700">교점의 개수가 불연속적으로 변하는 지점</span>을 찾아보세요.
+                <!-- 수학적 통찰 -->
+                <section class="bg-emerald-50 p-6 rounded-2xl border border-emerald-100">
+                    <h3 class="text-md font-black text-emerald-800 mb-3 italic">Geometric Insight</h3>
+                    <div class="space-y-3 text-emerald-900/80 font-bold leading-relaxed text-sm">
+                        <p>g(x)는 f(x)와 y=4x 중 작은 값을 선택한 '하단 껍질' 함수입니다.</p>
+                        <ul class="list-disc pl-5 space-y-1 text-xs">
+                            <li>오렌지색 선을 드래그하여 교점 변화를 관찰하세요.</li>
+                            <li>교점 개수가 불연속적으로 변하는 지점이 핵심 포인트입니다.</li>
+                        </ul>
+                    </div>
+                </section>
+            </div>
+
+            <footer class="mt-auto pt-4 border-t border-slate-100">
+                <p class="text-[11px] font-black text-slate-400 uppercase tracking-tighter">
+                    Created for Mathematical Visualization
                 </p>
-                <ul className="list-disc pl-5 space-y-1 text-xs">
-                  <li>이차함수의 꼭짓점을 지날 때</li>
-                  <li>이차함수와 직선의 교점을 지날 때</li>
-                  <li>곡선의 접선을 형성할 때</li>
-                </ul>
-              </div>
-            </section>
-          </div>
-
-          <footer className="mt-auto pt-4 border-t border-slate-100">
-            <p className="text-[11px] font-black text-slate-400 uppercase tracking-tighter">
-              Tip: 오렌지색 수평선을 위아래로 드래그하여 교점 개수의 변화를 관찰하세요.
-            </p>
-          </footer>
+            </footer>
         </div>
-
-      </div>
     </div>
-  );
-};
 
-export default App;
+    <script>
+        // State
+        let p = 4, q = 4, a = 1, t = 15;
+        let dragTarget = null;
+
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+        const container = document.getElementById('container');
+
+        // Coordinate constants
+        const PADDING = 60;
+        const X_MIN = -5, X_MAX = 20;
+        const Y_MIN = -20, Y_MAX = 60;
+
+        const toCanvasX = (x) => PADDING + (x - X_MIN) * (canvas.width - 2 * PADDING) / (X_MAX - X_MIN);
+        const toCanvasY = (y) => canvas.height - PADDING - (y - Y_MIN) * (canvas.height - 2 * PADDING) / (Y_MAX - Y_MIN);
+        const fromCanvasX = (cx) => X_MIN + (cx - PADDING) * (X_MAX - X_MIN) / (canvas.width - 2 * PADDING);
+        const fromCanvasY = (cy) => Y_MIN + (canvas.height - PADDING - cy) * (Y_MAX - Y_MIN) / (canvas.height - 2 * PADDING);
+
+        const f = (x) => a * Math.pow(x - p, 2) + q;
+        const line = (x) => 4 * x;
+        const g = (x) => Math.min(f(x), line(x));
+
+        function getIntersections() {
+            const points = [];
+            const step = 0.05;
+            for (let x = X_MIN; x <= X_MAX; x += step) {
+                const val1 = g(x);
+                const val2 = g(x + step);
+                if ((val1 <= t && val2 >= t) || (val1 >= t && val2 <= t)) {
+                    points.push(x + step / 2);
+                }
+            }
+            return points.filter((v, i, arr) => i === 0 || Math.abs(v - arr[i - 1]) > 0.5);
+        }
+
+        function updateUI() {
+            const intersects = getIntersections();
+            document.getElementById('intersectionCount').innerText = intersects.length + '개';
+            document.getElementById('countBadge').innerText = intersects.length;
+            document.getElementById('valTText').innerText = t.toFixed(1);
+            document.getElementById('formulaF').innerHTML = `f(x) = ${a === -1 ? '-' : ''}(x - ${p.toFixed(1)})² + ${q.toFixed(1)}`;
+            document.getElementById('formulaT').innerText = `y = ${t.toFixed(1)}`;
+
+            const btnUp = document.getElementById('btnConvUp');
+            const btnDown = document.getElementById('btnConvDown');
+            if(a === 1) {
+                btnUp.className = "py-3 rounded-xl font-black transition-all border-2 bg-indigo-600 border-indigo-600 text-white shadow-lg";
+                btnDown.className = "py-3 rounded-xl font-black transition-all border-2 bg-white border-slate-200 text-slate-500 hover:border-indigo-300";
+            } else {
+                btnDown.className = "py-3 rounded-xl font-black transition-all border-2 bg-indigo-600 border-indigo-600 text-white shadow-lg";
+                btnUp.className = "py-3 rounded-xl font-black transition-all border-2 bg-white border-slate-200 text-slate-500 hover:border-indigo-300";
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Grid
+            ctx.strokeStyle = '#f1f5f9';
+            ctx.lineWidth = 1.5;
+            for (let x = Math.floor(X_MIN); x <= X_MAX; x += 2) {
+                ctx.beginPath(); ctx.moveTo(toCanvasX(x), toCanvasY(Y_MIN)); ctx.lineTo(toCanvasX(x), toCanvasY(Y_MAX)); ctx.stroke();
+            }
+            for (let y = Math.floor(Y_MIN / 10) * 10; y <= Y_MAX; y += 10) {
+                ctx.beginPath(); ctx.moveTo(toCanvasX(X_MIN), toCanvasY(y)); ctx.lineTo(toCanvasX(X_MAX), toCanvasY(y)); ctx.stroke();
+            }
+
+            // Axes
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath(); ctx.moveTo(toCanvasX(X_MIN), toCanvasY(0)); ctx.lineTo(toCanvasX(X_MAX), toCanvasY(0)); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(toCanvasX(0), toCanvasY(Y_MIN)); ctx.lineTo(toCanvasX(0), toCanvasY(Y_MAX)); ctx.stroke();
+
+            // Line y = 4x
+            ctx.setLineDash([8, 6]);
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(toCanvasX(X_MIN), toCanvasY(line(X_MIN)));
+            ctx.lineTo(toCanvasX(X_MAX), toCanvasY(line(X_MAX)));
+            ctx.stroke();
+
+            // f(x)
+            ctx.setLineDash([5, 5]);
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let x = X_MIN; x <= X_MAX; x += 0.2) {
+                const cx = toCanvasX(x), cy = toCanvasY(f(x));
+                if (x === X_MIN) ctx.moveTo(cx, cy); else ctx.lineTo(cx, cy);
+            }
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // g(x) = min(f, line)
+            ctx.strokeStyle = '#059669';
+            ctx.lineWidth = 7;
+            ctx.beginPath();
+            for (let x = X_MIN; x <= X_MAX; x += 0.1) {
+                const cx = toCanvasX(x), cy = toCanvasY(g(x));
+                if (x === X_MIN) ctx.moveTo(cx, cy); else ctx.lineTo(cx, cy);
+            }
+            ctx.stroke();
+
+            // y = t
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(toCanvasX(X_MIN), toCanvasY(t));
+            ctx.lineTo(toCanvasX(X_MAX), toCanvasY(t));
+            ctx.stroke();
+
+            // Intersections
+            const intersects = getIntersections();
+            intersects.forEach(ix => {
+                ctx.fillStyle = '#f59e0b';
+                ctx.beginPath(); ctx.arc(toCanvasX(ix), toCanvasY(t), 8, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.stroke();
+            });
+
+            // Vertex
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath(); ctx.arc(toCanvasX(p), toCanvasY(q), 15, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = 'white'; ctx.lineWidth = 4; ctx.stroke();
+
+            updateUI();
+        }
+
+        function resize() {
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            draw();
+        }
+
+        // Events
+        function getCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: (e.clientX || e.touches?.[0].clientX) - rect.left,
+                y: (e.clientY || e.touches?.[0].clientY) - rect.top
+            };
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            const {x, y} = getCoords(e);
+            const distVertex = Math.sqrt(Math.pow(toCanvasX(p) - x, 2) + Math.pow(toCanvasY(q) - y, 2));
+            if (distVertex < 50) dragTarget = 'vertex';
+            else if (Math.abs(y - toCanvasY(t)) < 30) dragTarget = 'lineT';
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!dragTarget) return;
+            const {x, y} = getCoords(e);
+            if (dragTarget === 'vertex') { p = fromCanvasX(x); q = fromCanvasY(y); }
+            else if (dragTarget === 'lineT') { t = fromCanvasY(y); }
+            draw();
+        });
+
+        window.addEventListener('mouseup', () => dragTarget = null);
+        
+        // Touch Support
+        canvas.addEventListener('touchstart', (e) => {
+            const {x, y} = getCoords(e);
+            const distVertex = Math.sqrt(Math.pow(toCanvasX(p) - x, 2) + Math.pow(toCanvasY(q) - y, 2));
+            if (distVertex < 50) dragTarget = 'vertex';
+            else if (Math.abs(y - toCanvasY(t)) < 30) dragTarget = 'lineT';
+            if(dragTarget) e.preventDefault();
+        }, {passive: false});
+
+        canvas.addEventListener('touchmove', (e) => {
+            if (!dragTarget) return;
+            const {x, y} = getCoords(e);
+            if (dragTarget === 'vertex') { p = fromCanvasX(x); q = fromCanvasY(y); }
+            else if (dragTarget === 'lineT') { t = fromCanvasY(y); }
+            draw();
+            e.preventDefault();
+        }, {passive: false});
+
+        canvas.addEventListener('touchend', () => dragTarget = null);
+
+        document.getElementById('btnConvUp').onclick = () => { a = 1; draw(); };
+        document.getElementById('btnConvDown').onclick = () => { a = -1; draw(); };
+
+        window.addEventListener('resize', resize);
+        window.onload = resize;
+    </script>
+</body>
+</html>
