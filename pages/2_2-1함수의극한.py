@@ -34,7 +34,7 @@ for i in range(1, 4):
 # =========================
 
 with open(
-    "assets/함수의극한/html/p14_lv2_4번.html",
+    "assets/함수의극한/html/p14_lv2_q4.html",
     "r",
     encoding="utf-8"
 ) as f:
