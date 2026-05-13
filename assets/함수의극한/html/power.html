@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polynomial Structural Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Fira+Code:wght@400;500&display=swap');
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f1f5f9; overflow: hidden; }
+        .math-font { font-family: 'Times New Roman', Times, serif; font-style: italic; }
+        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        .term-container { transition: all 0.3s ease; }
+        .term-off { opacity: 0.15; filter: grayscale(1); text-decoration: line-through; transform: scale(0.95); }
+        .btn-active { background-color: #2563eb !important; color: white !important; border-color: #1e40af !important; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+        canvas { max-height: 100% !important; }
+        
+        .large-text { font-size: 28px !important; line-height: 1.2; }
+        .large-math { font-size: 32px !important; }
+        .xl-math { font-size: 38px !important; }
+    </style>
+</head>
+<body class="h-screen w-screen p-3 flex flex-col gap-3">
+
+    <!-- Top Bar -->
+    <header class="flex justify-between items-center px-6 py-2 glass rounded-2xl shadow-sm">
+        <h1 class="text-xl font-bold text-slate-800 tracking-tight">다항함수 구조 분석 <span class="text-slate-400 font-normal text-base ml-2">Taylor & Factors Integration</span></h1>
+        <div class="text-sm font-bold text-blue-600 bg-blue-50 px-4 py-1 rounded-full uppercase tracking-widest">Interactive Analysis</div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <div class="flex-grow grid grid-cols-12 gap-3 overflow-hidden">
+        
+        <!-- Left: All Controls (4/12) -->
+        <div class="col-span-4 flex flex-col gap-3 overflow-y-auto">
+            
+            <!-- 1. Action Buttons -->
+            <div class="glass p-5 rounded-3xl shadow-sm space-y-3">
+                <h2 class="text-sm font-bold text-slate-400 uppercase italic tracking-widest">1. Operations</h2>
+                <div class="flex gap-2">
+                    <button id="btn-rand" class="flex-grow bg-slate-800 hover:bg-slate-700 text-white py-4 rounded-2xl text-xl font-bold transition-all active:scale-95 shadow-lg">
+                        🎲 새로운 계수
+                    </button>
+                    <button id="btn-reset" class="px-6 bg-white hover:bg-red-50 text-red-500 border-2 border-red-100 py-4 rounded-2xl text-xl font-bold transition-all active:scale-95">
+                        🔄 초기화
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2. Constraint Buttons -->
+            <div class="glass p-5 rounded-3xl shadow-sm space-y-3">
+                <h2 class="text-sm font-bold text-slate-400 uppercase italic tracking-widest">2. Constraints (at x=2)</h2>
+                <div class="grid gap-3">
+                    <button id="t-f2" class="w-full py-5 px-6 rounded-2xl border-2 border-slate-100 bg-white text-slate-600 font-bold transition-all text-left flex justify-between items-center large-text">
+                        <span class="math-font">f(2) = 0</span>
+                        <div class="w-6 h-6 rounded-full border-4 border-slate-100"></div>
+                    </button>
+                    <button id="t-fp2" class="w-full py-5 px-6 rounded-2xl border-2 border-slate-100 bg-white text-slate-600 font-bold transition-all text-left flex justify-between items-center large-text">
+                        <span class="math-font">f'(2) = 0</span>
+                        <div class="w-6 h-6 rounded-full border-4 border-slate-100"></div>
+                    </button>
+                    <button id="t-fpp2" class="w-full py-5 px-6 rounded-2xl border-2 border-slate-100 bg-white text-slate-600 font-bold transition-all text-left flex justify-between items-center large-text">
+                        <span class="math-font">f''(2) = 0</span>
+                        <div class="w-6 h-6 rounded-full border-4 border-slate-100"></div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. Status Info -->
+            <div class="glass p-6 rounded-3xl shadow-sm border-l-8 border-l-blue-500 flex-grow">
+                <h2 class="text-sm font-bold text-blue-500 mb-4 uppercase italic tracking-widest">3. Analysis Message</h2>
+                <div id="summary" class="space-y-4">
+                    <p id="msg-root" class="font-bold text-slate-700 large-text">임의의 상태</p>
+                    <p id="msg-detail" class="text-xl text-slate-500 leading-relaxed">버튼을 눌러 하위 차수의 항을 소거하고 인수를 확보하세요.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Visualization & Unified Equations (8/12) -->
+        <div class="col-span-8 flex flex-col gap-3 overflow-hidden">
+            
+            <div class="glass p-6 rounded-3xl shadow-md space-y-6 text-center">
+                <div class="flex flex-col items-center gap-4">
+                    <div class="px-8 py-3 rounded-2xl bg-green-50 border-2 border-green-200 inline-block">
+                        <span class="math-font xl-math text-slate-700">f(x) = (x - 2)<sup id="n-val" class="text-green-600 font-bold">0</sup> g(x)</span>
+                    </div>
+                    <div class="text-slate-300 text-2xl">▼</div>
+                    <div class="flex flex-wrap justify-center items-center gap-2 math-font xl-math text-slate-800">
+                        <span class="text-slate-400 mr-2">=</span>
+                        <span id="box-A" class="term-container px-1"><span id="v-A">1</span>(x-2)³</span>
+                        <span id="box-B" class="term-container px-1"><span id="s-B">+</span> <span id="v-B">2</span>(x-2)²</span>
+                        <span id="box-C" class="term-container px-1"><span id="s-C">+</span> <span id="v-C">3</span>(x-2)¹</span>
+                        <span id="box-D" class="term-container px-1"><span id="s-D">+</span> <span id="v-D">4</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass p-4 rounded-3xl shadow-sm flex-grow relative flex flex-col">
+                <div class="flex-grow relative">
+                    <canvas id="mainChart"></canvas>
+                </div>
+                <div class="mt-2 flex justify-center gap-8 text-sm font-bold text-slate-400 uppercase tracking-widest">
+                    <span class="flex items-center gap-2"><span class="w-4 h-4 rounded-full bg-blue-600"></span> Active</span>
+                    <span class="flex items-center gap-2"><span class="w-4 h-4 rounded-full bg-slate-300"></span> Original</span>
+                    <span class="flex items-center gap-2"><span class="w-4 h-4 rounded-full bg-red-500"></span> Extrema</span>
+                    <span class="flex items-center gap-2"><span class="w-4 h-4 rounded-full bg-green-500"></span> Inflection</span>
+                    <span class="flex items-center gap-2"><span class="w-4 h-4 rounded-full bg-amber-500"></span> Center (x=2)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const INITIAL_COEFFS = { a: 1, b: 2, c: -3, d: 2 };
+        const state = { f2: false, fp2: false, fpp2: false, coeffs: { ...INITIAL_COEFFS } };
+        let chart = null;
+
+        const calcY = (x, c) => {
+            const dx = x - 2;
+            return c.a * Math.pow(dx, 3) + c.b * Math.pow(dx, 2) + c.c * dx + c.d;
+        };
+
+        const update = () => {
+            const curr = { ...state.coeffs };
+            let n = 0;
+
+            if (state.f2) { curr.d = 0; n = 1; 
+                if (state.fp2) { curr.c = 0; n = 2; 
+                    if (state.fpp2) { curr.b = 0; n = 3; }
+                }
+            } else {
+                if (state.fp2) curr.c = 0;
+                if (state.fpp2) curr.b = 0;
+            }
+
+            const setBtnStyle = (id, active) => {
+                const el = document.getElementById(id);
+                el.className = `w-full py-5 px-6 rounded-2xl border-2 bg-white text-slate-600 font-bold transition-all text-left flex justify-between items-center large-text ${active ? 'btn-active' : 'border-slate-100'}`;
+            };
+            setBtnStyle('t-f2', state.f2);
+            setBtnStyle('t-fp2', state.fp2);
+            setBtnStyle('t-fpp2', state.fpp2);
+
+            document.getElementById('n-val').textContent = n;
+            document.getElementById('v-A').textContent = curr.a;
+            const termUpdate = (id, val, forced, sId) => {
+                const el = document.getElementById(`box-${id}`);
+                const vEl = document.getElementById(`v-${id}`);
+                if(forced || val === 0) { 
+                    el.classList.add('term-off'); vEl.textContent = '0'; 
+                    if(sId) document.getElementById(sId).textContent = '+'; 
+                } else { 
+                    el.classList.remove('term-off'); vEl.textContent = Math.abs(val); 
+                    if(sId) document.getElementById(sId).textContent = val > 0 ? '+' : '-'; 
+                }
+            };
+            termUpdate('B', curr.b, state.fpp2, 's-B');
+            termUpdate('C', curr.c, state.fp2, 's-C');
+            termUpdate('D', curr.d, state.f2, 's-D');
+
+            const r = document.getElementById('msg-root'), d = document.getElementById('msg-detail');
+            if(n === 3) { r.innerHTML = "🎯 3중근 (x-2)³"; d.textContent = "변곡점과 근이 일치하여 x축을 관통하는 접선이 형성됩니다."; }
+            else if(n === 2) { r.innerHTML = "🎯 2중근 (x-2)²"; d.textContent = "함수가 x=2에서 x축에 접하며 튀어오릅니다."; }
+            else if(n === 1) { r.innerHTML = "🎯 실근 (x-2)¹"; d.textContent = "단순히 지점을 지나는 상태입니다."; }
+            else { r.textContent = "조건 분석 중..."; d.textContent = "f(2)=0 부터 활성화하여 인수를 확보하세요."; }
+
+            const d1 = [], d2 = [];
+            for(let x=-0.5; x<=4.5; x+=0.05) { d1.push({x, y:calcY(x, state.coeffs)}); d2.push({x, y:calcY(x, curr)}); }
+            chart.data.datasets[0].data = d1;
+            chart.data.datasets[1].data = d2;
+            chart.data.datasets[2].data = [{x:2, y:curr.d}];
+            
+            const A=3*curr.a, B=2*curr.b, C=curr.c, det=B*B-4*A*C;
+            const ext = [];
+            if(A!==0 && det>=0) { 
+                ext.push({x:2+(-B+Math.sqrt(det))/(2*A), y:calcY(2+(-B+Math.sqrt(det))/(2*A), curr)});
+                if(det>0) ext.push({x:2+(-B-Math.sqrt(det))/(2*A), y:calcY(2+(-B-Math.sqrt(det))/(2*A), curr)});
+            }
+            chart.data.datasets[3].data = ext;
+            chart.data.datasets[4].data = curr.a!==0 ? [{x:2-curr.b/(3*curr.a), y:calcY(2-curr.b/(3*curr.a), curr)}] : [];
+            chart.update('none');
+        };
+
+        window.onload = () => {
+            chart = new Chart(document.getElementById('mainChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    datasets: [
+                        { label: 'O', data: [], borderColor: '#cbd5e1', borderDash: [5, 5], borderWidth: 2, pointRadius: 0, tension: 0.4 },
+                        { label: 'A', data: [], borderColor: '#2563eb', borderWidth: 5, pointRadius: 0, tension: 0.4 },
+                        { label: 'B', data: [], pointRadius: 16, pointBackgroundColor: '#f59e0b', borderColor: '#fff', borderWidth: 4, showLine: false },
+                        { label: 'E', data: [], pointRadius: 14, pointBackgroundColor: '#ef4444', borderColor: '#fff', borderWidth: 3, showLine: false },
+                        { label: 'I', data: [], pointRadius: 14, pointBackgroundColor: '#10b981', borderColor: '#fff', borderWidth: 3, showLine: false }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        x: { type: 'linear', min: -0.5, max: 4.5, grid: { color: c => c.tick.value === 2 ? '#64748b' : '#f1f5f9', lineWidth: c => c.tick.value === 2 ? 3 : 1 }, ticks: { font: { size: 16, weight: 'bold' } } },
+                        y: { min: -15, max: 15, grid: { color: c => c.tick.value === 0 ? '#64748b' : '#f1f5f9', lineWidth: c => c.tick.value === 0 ? 3 : 1 }, ticks: { font: { size: 16, weight: 'bold' } } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            document.getElementById('t-f2').onclick = () => { state.f2 = !state.f2; update(); };
+            document.getElementById('t-fp2').onclick = () => { state.fp2 = !state.fp2; update(); };
+            document.getElementById('t-fpp2').onclick = () => { state.fpp2 = !state.fpp2; update(); };
+            
+            document.getElementById('btn-rand').onclick = () => {
+                state.coeffs = { 
+                    a: Math.floor(Math.random()*3)-1 || 1, 
+                    b: Math.floor(Math.random()*11)-5, 
+                    c: Math.floor(Math.random()*11)-5, 
+                    d: Math.floor(Math.random()*11)-5 
+                };
+                update();
+            };
+
+            document.getElementById('btn-reset').onclick = () => {
+                state.f2 = false;
+                state.fp2 = false;
+                state.fpp2 = false;
+                state.coeffs = { ...INITIAL_COEFFS };
+                update();
+            };
+
+            update();
+        };
+    </script>
+</body>
+</html>
