@@ -80,7 +80,7 @@ wrapped_html = f"""
 st.markdown("---")
 
 # 슬라이드6 + HTML 좌우 배치
-left, right = st.columns([1, 0.8])
+left, right = st.columns([1, 1])
 
 with left:
     st.image(
