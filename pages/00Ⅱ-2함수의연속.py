@@ -26,8 +26,8 @@ st.markdown("""
 
 st.markdown("---")
 
-# 🖼 슬라이드 1~4
-for i in range(1, 5):
+# 🖼 슬라이드 1~5
+for i in range(1, 6):
     st.image(
         f"assets/함수의연속/images/슬라이드{i}.PNG",
         use_container_width=True
@@ -47,8 +47,8 @@ st.markdown("""
 
 st.markdown("---")
 
-# 🖼 슬라이드 5~8
-for i in range(5, 9):
+# 🖼 슬라이드 6~8
+for i in range(6, 9):
     st.image(
         f"assets/함수의연속/images/슬라이드{i}.PNG",
         use_container_width=True
