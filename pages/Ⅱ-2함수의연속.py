@@ -6,12 +6,19 @@ st.set_page_config(layout="wide")
 st.title("🌊 함수의 연속 : 미시와 거시의 시선")
 
 st.markdown("""
-<p style='font-size:18px; font-weight:500; line-height:2; margin-bottom:10px;'>
-함수의 극한은 한 점을 향해 아주 가까이 다가가는 <b>미시적 관찰</b>에서 시작됩니다.<br>
-그러나 그 작은 움직임을 따라가다 보면, 그래프 전체의 흐름과 구조를 바라보는 <b>거시적 이해</b>로 이어집니다.
+<p style='font-size:19px; line-height:2;'>
+🌌 <b>연속이란 무엇인고?</b><br><br>
+
+사람의 마음도,<br>
+어제의 나와 오늘의 내가 이어져 있기에 같은 삶이라 부르는 것이 아니더냐.<br><br>
+
+작은 흔들림과 변화가 있어도,<br>
+그 흐름이 완전히 끊어지지 않는다면 우리는 계속 앞으로 나아갈 수 있도다.<br><br>
+
+세상 모든 것은 조금씩 변하고 흔들리나,<br>
+그 안에서도 이어지는 무언가가 있기에 관계와 삶은 유지되는 것이 아니겠느냐.
 </p>
 """, unsafe_allow_html=True)
-
 # 슬라이드 1~8
 for i in range(1, 9):
     st.image(
