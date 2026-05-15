@@ -3,10 +3,13 @@ import streamlit.components.v1 as components
 
 st.set_page_config(layout="wide")
 
+# 🌊 제목
 st.title("🌊 함수의 연속 : 미시와 거시의 시선")
 
+# 🌌 머리말
 st.markdown("""
 <p style='font-size:19px; line-height:2;'>
+
 🌌 <b>연속이란 무엇인고?</b><br><br>
 
 사람의 마음도,<br>
@@ -17,10 +20,35 @@ st.markdown("""
 
 세상 모든 것은 조금씩 변하고 흔들리나,<br>
 그 안에서도 이어지는 무언가가 있기에 관계와 삶은 유지되는 것이 아니겠느냐.
+
 </p>
 """, unsafe_allow_html=True)
-# 슬라이드 1~8
-for i in range(1, 9):
+
+st.markdown("---")
+
+# 🖼 슬라이드 1~4
+for i in range(1, 5):
+    st.image(
+        f"assets/함수의연속/images/슬라이드{i}.PNG",
+        use_container_width=True
+    )
+
+# 🔍 중간 질문
+st.markdown("""
+<p style='font-size:18px; line-height:1.9;'>
+
+🔍 <b>정말 끊어졌다고 말할 수 있는가?</b><br><br>
+
+아주 작은 틈이 존재한다 하여,<br>
+그 흐름 전체가 사라졌다고 말할 수 있겠는가.
+
+</p>
+""", unsafe_allow_html=True)
+
+st.markdown("---")
+
+# 🖼 슬라이드 5~8
+for i in range(5, 9):
     st.image(
         f"assets/함수의연속/images/슬라이드{i}.PNG",
         use_container_width=True
