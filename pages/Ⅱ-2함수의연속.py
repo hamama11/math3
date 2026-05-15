@@ -12,52 +12,9 @@ st.markdown("""
 </p>
 """, unsafe_allow_html=True)
 
-# 슬라이드 1~9
-for i in range(1, 10):
+# 슬라이드 1~8
+for i in range(1, 9):
     st.image(
         f"assets/함수의연속/images/슬라이드{i}.PNG",
-        use_container_width=True
-    )
-
-
-# HTML 읽기
-with open(
-    "assets/함수의극한/html/power.html",
-    "r",
-    encoding="utf-8"
-) as f:
-    html = f.read()
-
-wrapped_html = f"""
-<div style="width: 100%; margin: 0; padding: 0;">
-    {html}
-</div>
-"""
-
-st.markdown("---")
-
-# 슬라이드6 + HTML 좌우 배치
-left, right = st.columns([1, 1])
-
-with left:
-    st.image(
-        "assets/함수의극한/images/슬라이드6.PNG",
-        use_container_width=True
-    )
-
-with right:
-    with st.expander("🔍 직접 탐구해보기", expanded=False):
-
-        components.html(
-            wrapped_html,
-            height=650,
-            scrolling=True
-        )
-
-st.markdown("---")
-# 슬라이드 7
-for i in range(7, 8):
-    st.image(
-        f"assets/함수의극한/images/슬라이드{i}.PNG",
         use_container_width=True
     )
