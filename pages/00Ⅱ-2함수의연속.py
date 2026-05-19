@@ -48,7 +48,7 @@ st.markdown("""
 st.markdown("---")
 
 # 외부 URL
-url1 = "https://gemini.google.com/share/5b78976476f1"
+url1 = "https://gemini.google.com/share/d835a7cc5d36"
 
 components.html(
     f"""
