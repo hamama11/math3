@@ -46,12 +46,22 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown("---")
+
 # 외부 URL
 url1 = "https://gemini.google.com/share/5b78976476f1"
 
-# HTML 1
-with open("cos_thm.html", "r", encoding="utf-8") as f:
-    html1 = f.read()
+components.html(
+    f"""
+    <iframe
+        src="{url1}"
+        width="100%"
+        height="900"
+        style="border:none; border-radius:12px;"
+        allowfullscreen>
+    </iframe>
+    """,
+    height=920
+)
     
 # 🖼 슬라이드 6~8
 for i in range(6, 9):
