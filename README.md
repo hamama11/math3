@@ -14,6 +14,25 @@ components.html(
     height=920
 )
 
+# HTML 불러오기
+html_path = "assets/함수의연속/html/your_file.html"
+
+with open(html_path, "r", encoding="utf-8") as f:
+    html_content = f.read()
+
+wrapped_html = f"""
+<div style="width: 100%; margin: 0; padding: 0;">
+    {html_content}
+</div>
+"""
+
+with st.expander("🔍 인터랙션 열기", expanded=False):
+    components.html(
+        wrapped_html,
+        height=900,
+        scrolling=True
+    )
+    
 # math3
 궤적 더 길게: TRAIL_FADE = 0.06 → 0.04
 별 흐름 더 빠르게: OMEGA = 0.018 → 0.024
