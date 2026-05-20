@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>실전 기출 분석 - 쌍둥이 논리 판서 도구</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- MathJax for rendering LaTeX formulas -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@300;400;700;900&family=Caveat:wght@700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* 기본 배경: 깔끔한 화이트 격자 종이 테마 (기본 활성화) */
+    .theme-paper {
+      background-color: #ffffff;
+      background-image: 
+        linear-gradient(#f1f5f9 1px, transparent 1px),
+        linear-gradient(90deg, #f1f5f9 1px, transparent 1px);
+      background-size: 24px 24px;
+      color: #0f172a;
+    }
+    .theme-paper .text-main { color: #1d4ed8; } /* 파란 볼펜 느낌 */
+    .theme-paper .text-alert { color: #dc2626; } /* 빨간 볼펜 느낌 */
+    .theme-paper .panel-bg { background-color: rgba(248, 250, 252, 0.95); border-color: #cbd5e1; }
+
+    /* 초록색 칠판 (Blackboard) 스타일 */
+    .theme-blackboard {
+      background-color: #1b3b2b;
+      background-image: radial-gradient(circle, #224a36 20%, #152d21 100%);
+      color: #f8fafc;
+    }
+    .theme-blackboard .text-main { color: #fed7aa; } /* 노란 분필 */
+    .theme-blackboard .text-alert { color: #fca5a5; } /* 분홍 분필 */
+    .theme-blackboard .panel-bg { background-color: rgba(21, 45, 33, 0.9); border-color: #2e5a44; }
+    
+    /* ==========================================
+       교실/전자칠판용 최소 26px 보장 글자 스케일링
+       ========================================== */
+    
+    /* 1. 보통 크기 모드 (최소 26px 보장) */
+    .font-size-normal {
+      font-size: 26px !important;
+    }
+    .font-size-normal p, 
+    .font-size-normal span, 
+    .font-size-normal div, 
+    .font-size-normal li {
+      font-size: 26px !important;
+      line-height: 1.6 !important;
+    }
+    .font-size-normal h4, 
+    .font-size-normal h3, 
+    .font-size-normal h2, 
+    .font-size-normal .text-lg, 
+    .font-size-normal .text-xl, 
+    .font-size-normal .text-2xl, 
+    .font-size-normal .text-3xl {
+      font-size: 32px !important;
+      line-height: 1.4 !important;
+    }
+
+    /* 2. 크게 판서 모드 (최소 32px 보장) */
+    .font-size-large {
+      font-size: 32px !important;
+    }
+    .font-size-large p, 
+    .font-size-large span, 
+    .font-size-large div, 
+    .font-size-large li {
+      font-size: 32px !important;
+      line-height: 1.6 !important;
+    }
+    .font-size-large h4, 
+    .font-size-large h3, 
+    .font-size-large h2, 
+    .font-size-large .text-lg, 
+    .font-size-large .text-xl, 
+    .font-size-large .text-2xl, 
+    .font-size-large .text-3xl {
+      font-size: 40px !important;
+      line-height: 1.4 !important;
+    }
+
+    /* 3. 매우 크게 모드 (최소 40px 보장) */
+    .font-size-xl {
+      font-size: 40px !important;
+    }
+    .font-size-xl p, 
+    .font-size-xl span, 
+    .font-size-xl div, 
+    .font-size-xl li {
+      font-size: 40px !important;
+      line-height: 1.6 !important;
+    }
+    .font-size-xl h4, 
+    .font-size-xl h3, 
+    .font-size-xl h2, 
+    .font-size-xl .text-lg, 
+    .font-size-xl .text-xl, 
+    .font-size-xl .text-2xl, 
+    .font-size-xl .text-3xl {
+      font-size: 48px !important;
+      line-height: 1.4 !important;
+    }
+
+    /* 수식 크기도 큼직하게 유지 */
+    .mjx-chtml, .MathJax, mjx-container {
+      font-size: 1.15em !important;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+
+    /* 블라인드/가리개 효과 */
+    .blind-overlay {
+      background: repeating-linear-gradient(45deg, #475569, #475569 10px, #334155 10px, #334155 20px);
+      opacity: 0.98;
+    }
+    .theme-blackboard .blind-overlay {
+      background: repeating-linear-gradient(45deg, #1e293b, #1e293b 10px, #0f172a 10px, #0f172a 20px);
+    }
+
+    /* ==========================================
+       직관적 영인자 시각화 전용 폰트 스타일링 (텍스트 크기 변조)
+       ========================================== */
+    .text-zero-giant {
+      font-size: 52px !important;
+      font-weight: 900 !important;
+      line-height: 1 !important;
+      display: inline-block;
+    }
+    .text-zero-small {
+      font-size: 18px !important;
+      font-weight: 300 !important;
+      line-height: 1 !important;
+      opacity: 0.65;
+      display: inline-block;
+    }
+    .text-zero-equal {
+      font-size: 32px !important;
+      font-weight: 700 !important;
+      line-height: 1 !important;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen transition-colors duration-300">
+
+  <!-- TOP TEACHING CONTROLLER BAR -->
+  <div class="bg-slate-800 border-b border-slate-700 sticky top-0 z-50 px-4 py-3 shadow-md text-slate-100">
+    <div class="max-w-7xl mx-auto flex flex-col xl:flex-row items-center justify-between gap-4">
+      
+      <!-- Title -->
+      <div class="flex items-center gap-3">
+        <div class="p-2 bg-indigo-600 rounded-lg text-white">
+          <i data-lucide="presentation" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h1 class="text-md font-black tracking-wide text-white">실전 기출 분석 & 대형 판서 보드</h1>
+          <p class="text-[10px] text-slate-400">GitHub Pages 배포 지원 및 동기화된 일괄 공개 모드</p>
+        </div>
+      </div>
+
+      <!-- Live Controls -->
+      <div class="flex flex-wrap items-center gap-2 md:gap-4">
+        
+        <!-- Theme Toggle -->
+        <div class="bg-slate-900 p-1 rounded-lg border border-slate-700 flex items-center gap-1">
+          <button onclick="setTheme('paper')" id="btn-theme-paper" class="px-3 py-1 text-xs font-bold rounded-md bg-amber-800 text-white flex items-center gap-1 transition-all">
+            <i data-lucide="notebook" class="w-3.5 h-3.5"></i> 화이트 모드
+          </button>
+          <button onclick="setTheme('blackboard')" id="btn-theme-blackboard" class="px-3 py-1 text-xs font-bold rounded-md text-slate-400 hover:text-white flex items-center gap-1 transition-all">
+            <i data-lucide="palette" class="w-3.5 h-3.5"></i> 칠판 모드
+          </button>
+        </div>
+
+        <!-- Zoom Controls -->
+        <div class="bg-slate-900 p-1 rounded-lg border border-slate-700 flex items-center gap-1">
+          <button onclick="adjustFontSize(-1)" class="w-7 h-7 flex items-center justify-center text-xs font-bold bg-slate-800 rounded text-slate-300 hover:bg-slate-700">-A</button>
+          <span class="text-xs px-2 text-slate-400 font-mono" id="size-label">최소 26px (보통)</span>
+          <button onclick="adjustFontSize(1)" class="w-7 h-7 flex items-center justify-center text-xs font-bold bg-slate-800 rounded text-slate-300 hover:bg-slate-700">+A</button>
+        </div>
+
+        <!-- Layout Selector (Focus View) -->
+        <div class="bg-slate-900 p-1 rounded-lg border border-slate-700 flex items-center gap-1">
+          <button onclick="setLayout('split')" id="btn-layout-split" class="px-2 py-1 text-xs font-bold rounded bg-slate-700 text-white flex items-center gap-1">
+            <i data-lucide="columns-2" class="w-3.5 h-3.5"></i> 병렬 보기
+          </button>
+          <button onclick="setLayout('c1')" id="btn-layout-c1" class="px-2 py-1 text-xs font-bold rounded text-slate-400 hover:text-white flex items-center gap-1">
+            [p16 Lv3 2번] 집중
+          </button>
+          <button onclick="setLayout('c2')" id="btn-layout-c2" class="px-2 py-1 text-xs font-bold rounded text-slate-400 hover:text-white flex items-center gap-1">
+            [p30 Lv3 1번] 집중
+          </button>
+        </div>
+
+        <!-- General Curtain Reveal -->
+        <button onclick="toggleAllCurtains()" class="bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg text-xs font-bold text-white flex items-center gap-1 shadow">
+          <i data-lucide="eye" class="w-3.5 h-3.5" id="btn-all-curtains-icon"></i> <span id="btn-all-curtains-text">전체 공개</span>
+        </button>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CANVAS CONTAINER (기본값 theme-paper로 흰색 배경 제공) -->
+  <div id="canvas-root" class="theme-paper transition-all duration-300 min-h-screen p-4 md:p-8 font-sans">
+    
+    <div class="max-w-7xl mx-auto space-y-8" id="content-container">
+      
+      <!-- CORE META CONCEPT (인터랙티브 클릭 아코디언 개편) -->
+      <div onclick="toggleCoreDetails()" class="panel-bg border-2 rounded-2xl p-5 shadow-md relative transition-all duration-200 cursor-pointer hover:border-indigo-500 hover:shadow-lg">
+        <div class="absolute top-3 right-4 bg-indigo-600 text-white font-mono text-[11px] px-2.5 py-1 rounded-full uppercase font-bold tracking-wider flex items-center gap-1">
+          <span>이론 터치 분석기</span>
+          <i id="core-chevron" data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-200"></i>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+          <!-- 좌측: 대전제 -->
+          <div>
+            <span class="text-xs font-bold uppercase tracking-widest text-indigo-600 font-mono block mb-1">[클릭시 핵심 전개 이론 노출]</span>
+            <h2 class="font-extrabold text-2xl tracking-tight leading-tight">
+              $\lim \frac{A(x)}{B(x)}$ 의 수렴성 판단 조건 분기
+            </h2>
+          </div>
+          <!-- 우측: 명확한 논리 구조 대칭 뱃지 -->
+          <div class="flex flex-col sm:flex-row gap-3">
+            <div class="flex-1 bg-blue-500/10 border border-blue-500/30 rounded-xl p-3 text-center">
+              <span class="text-xs font-bold text-blue-700 block mb-1">① 분모가 0이 아닐 때</span>
+              <span class="font-bold text-lg text-blue-800">확정 대입연산</span>
+            </div>
+            <div class="flex-1 bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3 text-center">
+              <span class="text-xs font-bold text-emerald-700 block mb-1">② 분모가 0일 때</span>
+              <span class="font-bold text-lg text-emerald-800">$\frac{0}{0}$ 부정형 영인자</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 펼쳐지는 상세 수학 이론 (hidden-core-details) -->
+        <div id="core-details" class="hidden mt-6 pt-5 border-t border-slate-200 space-y-4 text-[26px]">
+          
+          <!-- 1) 분모 0 아닐 때 (image_a034eb 분기 시각 구조 구현) -->
+          <div class="p-4 bg-blue-500/5 rounded-xl border border-blue-200 flex flex-col md:flex-row items-start md:items-center gap-6 justify-between">
+            <div class="flex-1">
+              <h3 class="font-bold text-blue-900 mb-1 flex items-center gap-2">
+                <span class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center text-xs">1</span>
+                분모가 0이 아닐 때 $\implies$ 극한의 성질 + 연속성 바탕 대입
+              </h3>
+              <p class="text-slate-600 font-normal">
+                분모가 $0$으로 가지 않으므로 극한의 성질에 의거하여 분리 수렴 연산 처리됩니다.
+              </p>
+            </div>
+            
+            <!-- SVG 극한 분기 흐름 그래픽 (image_a034eb 복원 디자인) -->
+            <div class="bg-white/80 p-3 rounded-lg border border-blue-200/80 flex items-center justify-center min-w-[220px] shadow-sm select-none">
+              <svg width="200" height="90" viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" class="font-bold">
+                <!-- lim 텍스트 -->
+                <text x="10" y="52" fill="#1e293b" font-size="28" font-family="serif" font-style="italic">lim</text>
+                
+                <!-- 파란색 분기 화살표 기호 -->
+                <path d="M60 45H100" stroke="#2563eb" stroke-width="4" stroke-linecap="round"/>
+                <path d="M100 45L115 25M100 45L115 65" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/>
+                <path d="M115 25H125M115 65H125" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/>
+                <path d="M125 25L120 21M125 25L120 29M125 65L120 61M125 65L120 69" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+
+                <!-- 분기된 lim / lim 텍스트 -->
+                <text x="135" y="32" fill="#1e3a8a" font-size="21" font-family="serif" font-style="italic">lim</text>
+                <text x="135" y="72" fill="#1e3a8a" font-size="21" font-family="serif" font-style="italic">lim</text>
+              </svg>
+            </div>
+          </div>
+
+          <!-- 2) 분모 0 일 때 (영인자 수식 렌더 패널 개편 - image_a0400f 기반 설계 + 수학적 예시 추가) -->
+          <div class="p-4 bg-emerald-500/5 rounded-xl border border-emerald-200">
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-4 border-b border-emerald-100 pb-3">
+              <h3 class="font-bold text-emerald-900 flex items-center gap-2">
+                <span class="w-6 h-6 rounded-md bg-emerald-600 text-white flex items-center justify-center text-xs">2</span>
+                분모가 0일 때 $\implies$ 영인자 개수 비교 분석 및 수학적 예시
+              </h3>
+            </div>
+
+            <!-- 3가지 경우의 수 렌더 가독성 강화 카드 (상황에 따른 수식 예시 통합 배치) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-slate-700">
+              
+              <!-- 2-A: 분자 영인자가 더 많을 때 -->
+              <div class="bg-white p-4 rounded-xl border border-emerald-100 shadow-sm flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-black text-emerald-600 block mb-2">① 분자 영인자가 더 많을 때</span>
+                  <p class="text-slate-500 text-sm leading-relaxed mb-3">분자가 강력하게 누르며 0으로 수렴하는 상태</p>
+                </div>
+                <!-- 시각화 수식 렌더 패널 -->
+                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 flex flex-col items-center justify-center min-h-[140px] mb-3">
+                  <div class="flex items-center justify-center select-none">
+                    <svg width="60" height="85" viewBox="0 0 60 85" xmlns="http://www.w3.org/2000/svg">
+                      <!-- 분자 거대한 영 -->
+                      <text x="30" y="36" text-anchor="middle" fill="#059669" font-size="44" font-family="sans-serif" font-weight="900">영</text>
+                      <!-- 분수선 -->
+                      <line x1="8" y1="46" x2="52" y2="46" stroke="#475569" stroke-width="3.5"/>
+                      <!-- 분모 아주 작은 영 -->
+                      <text x="30" y="70" text-anchor="middle" fill="#64748b" font-size="18" font-family="sans-serif" font-weight="400">영</text>
+                    </svg>
+                  </div>
+                  <div class="text-center mt-3 text-lg font-extrabold text-emerald-700">
+                    $\to 0$ 수렴
+                  </div>
+                </div>
+                <!-- 수학적 예시 블록 -->
+                <div class="bg-emerald-50/50 p-3 rounded-lg border border-emerald-100/80 text-xs font-mono">
+                  <div class="text-[10px] text-emerald-700 font-bold mb-1">📝 실제 수학 예시</div>
+                  $$\lim_{x \to a} \frac{(x-a)^2}{x-a} = \lim_{x \to a}(x-a) = 0$$
+                </div>
+              </div>
+
+              <!-- 2-B: 영인자 개수가 같을 때 -->
+              <div class="bg-white p-4 rounded-xl border border-emerald-100 shadow-sm flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-black text-indigo-600 block mb-2">② 영인자 개수가 같을 때</span>
+                  <p class="text-slate-500 text-sm leading-relaxed mb-3">분모와 분자의 소거 규모가 같은 수렴 상태</p>
+                </div>
+                <!-- 시각화 수식 렌더 패널 -->
+                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 flex flex-col items-center justify-center min-h-[140px] mb-3">
+                  <div class="flex items-center justify-center select-none">
+                    <svg width="60" height="85" viewBox="0 0 60 85" xmlns="http://www.w3.org/2000/svg">
+                      <!-- 분자 일반 영 -->
+                      <text x="30" y="31" text-anchor="middle" fill="#4f46e5" font-size="28" font-family="sans-serif" font-weight="700">영</text>
+                      <!-- 분수선 -->
+                      <line x1="12" y1="44" x2="48" y2="44" stroke="#475569" stroke-width="3"/>
+                      <!-- 분모 일반 영 -->
+                      <text x="30" y="72" text-anchor="middle" fill="#4f46e5" font-size="28" font-family="sans-serif" font-weight="700">영</text>
+                    </svg>
+                  </div>
+                  <div class="text-center mt-3 text-lg font-extrabold text-indigo-700">
+                    $\to A \neq 0$ 수렴
+                  </div>
+                </div>
+                <!-- 수학적 예시 블록 -->
+                <div class="bg-indigo-50/50 p-3 rounded-lg border border-indigo-100/80 text-xs font-mono">
+                  <div class="text-[10px] text-indigo-700 font-bold mb-1">📝 실제 수학 예시</div>
+                  $$\lim_{x \to a} \frac{5(x-a)}{x-a} = 5 \neq 0$$
+                </div>
+              </div>
+
+              <!-- 2-C: 분모 영인자가 더 많을 때 -->
+              <div class="bg-white p-4 rounded-xl border border-emerald-100 shadow-sm flex flex-col justify-between">
+                <div>
+                  <span class="text-xs font-black text-red-600 block mb-2">③ 분모 영인자가 더 많을 때</span>
+                  <p class="text-slate-500 text-sm leading-relaxed mb-3">분모가 압도하여 무한대로 발산시키는 상태</p>
+                </div>
+                <!-- 시각화 수식 렌더 패널 -->
+                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 flex flex-col items-center justify-center min-h-[140px] mb-3">
+                  <div class="flex items-center justify-center select-none">
+                    <svg width="60" height="85" viewBox="0 0 60 85" xmlns="http://www.w3.org/2000/svg">
+                      <!-- 분자 아주 작은 영 -->
+                      <text x="30" y="22" text-anchor="middle" fill="#64748b" font-size="18" font-family="sans-serif" font-weight="400">영</text>
+                      <!-- 분수선 -->
+                      <line x1="8" y1="36" x2="52" y2="36" stroke="#475569" stroke-width="3.5"/>
+                      <!-- 분모 거대한 영 -->
+                      <text x="30" y="75" text-anchor="middle" fill="#dc2626" font-size="44" font-family="sans-serif" font-weight="900">영</text>
+                    </svg>
+                  </div>
+                  <div class="text-center mt-3 text-lg font-extrabold text-red-700">
+                    $\to$ 발산 (수렴 불가)
+                  </div>
+                </div>
+                <!-- 수학적 예시 블록 -->
+                <div class="bg-red-50/50 p-3 rounded-lg border border-red-100/80 text-xs font-mono">
+                  <div class="text-[10px] text-red-700 font-bold mb-1">📝 실제 수학 예시</div>
+                  $$\lim_{x \to a} \frac{x-a}{(x-a)^2} = \lim_{x \to a} \frac{1}{x-a} \to \text{발산}$$
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN SPLIT WORKSPACE -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8" id="grid-layout">
+        
+        <!-- ==================== LEFT COLUMN: PROBLEM 1 (p16 Lv3 2번) ==================== -->
+        <div id="panel-c1" class="space-y-6 transition-all duration-300">
+          
+          <!-- Heading & Problem Statement -->
+          <div class="panel-bg p-6 rounded-2xl border-2 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-indigo-600 font-mono">[p16 Lv3 2번] 이차함수의 연속성</span>
+              <span class="bg-indigo-600/10 text-indigo-700 text-xs font-bold px-2 py-1 rounded border border-indigo-200">EBS 수능특강</span>
+            </div>
+            <div class="leading-relaxed font-semibold">
+              이차함수 $f(x)$에 대하여 함수 <br>
+              $$g(x) = \begin{cases} \frac{(x+1)f(2x)}{f(x)} & (-1 < x < 0) \\ 2f(x) & (x \le -1 \text{ 또는 } x \ge 0) \end{cases}$$
+              이 실수 전체의 집합에서 연속일 때, $f(11)$의 값을 구하시오.
+            </div>
+          </div>
+
+          <!-- Problem 1: x -> -1 Limit Analysis -->
+          <div class="panel-bg border-2 rounded-2xl p-6 relative overflow-hidden shadow-sm">
+            <div id="blind-a1" class="blind-overlay absolute inset-0 flex flex-col items-center justify-center z-10 p-4 text-center">
+              <p class="font-bold text-slate-200 mb-1">[p16 Lv3 2번] $x \to -1$ 연속성 분석</p>
+              <p class="text-xs text-slate-300 mb-2">(좌우 동시 공개)</p>
+              <button onclick="revealGroup('1')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg flex items-center gap-1 font-bold shadow-lg">
+                <i data-lucide="eye" class="w-4 h-4"></i> -1 단계 공개
+              </button>
+            </div>
+
+            <div class="flex justify-between items-start mb-3">
+              <h4 class="font-bold flex items-center gap-1.5 text-slate-500">
+                <span class="bg-slate-400 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center">1</span>
+                $x \to -1$ 우극한값과 함숫값($2f(-1)$) 비교
+              </h4>
+              <button onclick="hideGroup('1')" class="text-slate-500 hover:text-slate-400 text-xs flex items-center gap-1 font-mono">
+                <i data-lucide="eye-off" class="w-3.5 h-3.5"></i> -1 단계 가리기
+              </button>
+            </div>
+            <p class="text-slate-500 leading-relaxed mb-4">
+              $\lim_{x \to -1^+} \frac{(x+1)f(2x)}{f(x)} = 2f(-1)$ 가 성립해야 합니다.
+            </p>
+
+            <!-- Case A: 분모 != 0 -->
+            <div class="p-4 bg-red-500/5 rounded-xl border border-red-200 mb-4">
+              <span class="font-bold text-alert block mb-2">① 분모가 $f(-1) \neq 0$ 일 때:</span>
+              대입값: $\frac{0 \cdot f(-2)}{f(-1)} = 0 = 2f(-1) \implies \mathbf{f(-1) = 0}$ 이 유도되어 최초의 가정($f(-1) \neq 0$)과 부딪히는 <span class="underline text-alert font-bold">모순(X)</span>이 발생합니다.
+            </div>
+
+            <!-- Case B: 분모 = 0 -->
+            <div class="p-4 bg-emerald-500/5 rounded-xl border border-emerald-200">
+              <span class="font-bold text-emerald-600 block mb-2">② 분모가 $f(-1) = 0$ 일 때:</span>
+              $\frac{0}{0}$ 꼴의 영인자 연산이 요구됩니다. <br>
+              $\lim_{x \to -1^+} \frac{(x+1)f(2x)}{f(x)} \xrightarrow{\text{미분/로피탈}} \frac{f(-2)}{f'(-1)} = 2f(-1) = 0 \implies \mathbf{f(-2) = 0}$ <br>
+              따라서 <strong class="text-emerald-600 font-bold">성립(O)</strong>하며, 인자 <strong class="text-emerald-600 font-bold">$f(-1)=0, f(-2)=0$</strong>을 얻습니다!
+            </div>
+          </div>
+
+          <!-- Problem 1: x -> 0 Limit Analysis -->
+          <div class="panel-bg border-2 rounded-2xl p-6 relative overflow-hidden shadow-sm">
+            <div id="blind-a2" class="blind-overlay absolute inset-0 flex flex-col items-center justify-center z-10 p-4 text-center">
+              <p class="font-bold text-slate-200 mb-1">[p16 Lv3 2번] $x \to 0$ 연속성 분석</p>
+              <p class="text-xs text-slate-300 mb-2">(좌우 동시 공개)</p>
+              <button onclick="revealGroup('2')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg flex items-center gap-1 font-bold shadow-lg">
+                <i data-lucide="eye" class="w-4 h-4"></i> 0 단계 공개
+              </button>
+            </div>
+
+            <div class="flex justify-between items-start mb-3">
+              <h4 class="font-bold flex items-center gap-1.5 text-slate-500">
+                <span class="bg-slate-400 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center">2</span>
+                $x \to 0$ 좌극한값과 함숫값($2f(0)$) 비교
+              </h4>
+              <button onclick="hideGroup('2')" class="text-slate-500 hover:text-slate-400 text-xs flex items-center gap-1 font-mono">
+                <i data-lucide="eye-off" class="w-3.5 h-3.5"></i> 0 단계 가리기
+              </button>
+            </div>
+            <p class="text-slate-500 leading-relaxed mb-4">
+              $\lim_{x \to 0^-} \frac{(x+1)f(2x)}{f(x)} = 2f(0)$ 가 성립해야 합니다.
+            </p>
+
+            <!-- Case A: 분모 != 0 -->
+            <div class="p-4 bg-emerald-500/5 rounded-xl border border-emerald-200 mb-4">
+              <span class="font-bold text-emerald-600 block mb-2">① 분모가 $f(0) \neq 0$ 일 때:</span>
+              대입값: $\frac{1 \cdot f(0)}{f(0)} = 1 = 2f(0) \implies \mathbf{f(0) = \frac{1}{2}}$<br>
+              가정인 $f(0) \neq 0$ 과 완벽히 부합하여 <strong class="text-emerald-600 font-bold">성립(O)</strong>합니다!
+            </div>
+
+            <!-- Case B: 분모 = 0 -->
+            <div class="p-4 bg-red-500/5 rounded-xl border border-red-200">
+              <span class="font-bold text-alert block mb-2">② 분모가 $f(0) = 0$ 일 때:</span>
+              $f(x) = kx(x-\alpha)$로 놓을 경우, 좌극한은 $\lim_{x\to0} \frac{(x+1)2kx(2x-\alpha)}{kx(x-\alpha)} = 2 \neq 2f(0)=0$이 되므로 모순이 발생하여 탈락합니다.
+            </div>
+          </div>
+
+          <!-- Problem 1: Final Solution Box -->
+          <div class="bg-slate-900 border-2 border-indigo-500/50 rounded-2xl p-6 relative overflow-hidden shadow-lg">
+            <div id="blind-a3" class="blind-overlay absolute inset-0 flex flex-col items-center justify-center z-10 p-4 text-center">
+              <p class="font-bold text-slate-200 mb-1">[p16 Lv3 2번] f(11) 최종 답안</p>
+              <p class="text-xs text-slate-300 mb-2">(좌우 동시 공개)</p>
+              <button onclick="revealGroup('3')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg flex items-center gap-1 font-bold shadow-lg">
+                <i data-lucide="eye" class="w-4 h-4"></i> 최종 답안 공개
+              </button>
+            </div>
+
+            <div class="flex justify-between items-start mb-3">
+              <h4 class="font-bold text-indigo-400 flex items-center gap-1.5">
+                <span class="bg-indigo-600 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center">3</span>
+                이차함수 $f(x)$ 식 수립 및 최종 연산 완료
+              </h4>
+              <button onclick="hideGroup('3')" class="text-slate-500 hover:text-slate-400 text-xs flex items-center gap-1 font-mono">
+                <i data-lucide="eye-off" class="w-3.5 h-3.5"></i> 최종 답안 가리기
+              </button>
+            </div>
+            <p class="text-slate-300 mb-4">
+              유도된 조건: $f(-1) = 0, f(-2) = 0 \implies f(x) = k(x+1)(x+2)$ <br>
+              여기에 $f(0) = \frac{1}{2}$을 대입하면: $k(1)(2) = \frac{1}{2} \implies k = \frac{1}{4}$
+            </p>
+            <div class="bg-black/50 p-6 rounded-xl text-center text-white border border-indigo-500/30">
+              $$f(x) = \frac{1}{4}(x+1)(x+2)$$
+              $$f(11) = \frac{1}{4}(12)(13) = 3 \times 13 = \mathbf{39}$$
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ==================== RIGHT COLUMN: PROBLEM 2 (p30 Lv3 1번) ==================== -->
+        <div id="panel-c2" class="space-y-6 transition-all duration-300">
+          
+          <!-- Heading & Problem Statement -->
+          <div class="panel-bg p-6 rounded-2xl border-2 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-emerald-600 font-mono">[p30 Lv3 1번] 삼차함수의 극한 조건 집합</span>
+              <span class="bg-emerald-600/10 text-emerald-700 text-xs font-bold px-2 py-1 rounded border border-emerald-200 font-bold">EBS 수능특강</span>
+            </div>
+            <div class="leading-relaxed font-semibold">
+              최고차항의 계수가 1인 삼차함수 $f(x)$에 대하여 <br>
+              $$\left\{ a \;\middle|\; \lim_{x \to a} \frac{f(x)+2x+1}{f(x)+x} = \frac{3}{2}, a\text{는 실수} \right\} = \{-1, 0\}$$
+              일 때, $f(1)$의 값을 구하시오.
+            </div>
+          </div>
+
+          <!-- Problem 2: a = -1 Analysis -->
+          <div class="panel-bg border-2 rounded-2xl p-6 relative overflow-hidden shadow-sm">
+            <div id="blind-b1" class="blind-overlay absolute inset-0 flex flex-col items-center justify-center z-10 p-4 text-center">
+              <p class="font-bold text-slate-200 mb-1">[p30 Lv3 1번] $a = -1$ 성립성 분석</p>
+              <p class="text-xs text-slate-300 mb-2">(좌우 동시 공개)</p>
+              <button onclick="revealGroup('1')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg flex items-center gap-1 font-bold shadow-lg">
+                <i data-lucide="eye" class="w-4 h-4"></i> -1 단계 공개
+              </button>
+            </div>
+
+            <div class="flex justify-between items-start mb-3">
+              <h4 class="font-bold flex items-center gap-1.5 text-slate-500">
+                <span class="bg-slate-400 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center">1</span>
+                $a = -1$ 일 때 극한의 수렴 수식 전개
+              </h4>
+              <button onclick="hideGroup('1')" class="text-slate-500 hover:text-slate-400 text-xs flex items-center gap-1 font-mono">
+                <i data-lucide="eye-off" class="w-3.5 h-3.5"></i> -1 단계 가리기
+              </button>
+            </div>
+            <p class="text-slate-500 leading-relaxed mb-4">
+              $\lim_{x \to -1} \frac{f(x)+2x+1}{f(x)+x} = \frac{3}{2}$ 가 되어야 합니다.
+            </p>
+
+            <!-- Case A: 분모 != 0 -->
+            <div class="p-4 bg-red-500/5 rounded-xl border border-red-200 mb-4">
+              <span class="font-bold text-alert block mb-2">① 분모가 $f(-1)-1 \neq 0$ 일 때:</span>
+              단순대입: $\frac{f(-1)-2+1}{f(-1)-1} = \frac{f(-1)-1}{f(-1)-1} = 1 \neq \frac{3}{2} \implies$ 상수 수렴 결과가 조건과 달라 <span class="underline text-alert font-bold">모순(X)</span>이 일어납니다.
+            </div>
+
+            <!-- Case B: 분모 = 0 -->
+            <div class="p-4 bg-emerald-500/5 rounded-xl border border-emerald-200">
+              <span class="font-bold text-emerald-600 block mb-2">② 분모가 $f(-1) - 1 = 0 \implies f(-1) = 1$ 일 때:</span>
+              $\frac{0}{0}$ 꼴이 되어 로피탈 정리가 성립합니다. <br>
+              $\lim_{x \to -1} \frac{f'(x)+2}{f'(x)+1} = \frac{3}{2} \implies 2f'(-1)+4 = 3f'(-1)+3 \implies \mathbf{f'(-1) = 1}$ <br>
+              따라서 모순 없이 완벽히 <strong class="text-emerald-600 font-bold">성립(O)</strong>합니다!
+            </div>
+          </div>
+
+          <!-- Problem 2: a = 0 Analysis -->
+          <div class="panel-bg border-2 rounded-2xl p-6 relative overflow-hidden shadow-sm">
+            <div id="blind-b2" class="blind-overlay absolute inset-0 flex flex-col items-center justify-center z-10 p-4 text-center">
+              <p class="font-bold text-slate-200 mb-1">[p30 Lv3 1번] $a = 0$ 성립성 분석</p>
+              <p class="text-xs text-slate-300 mb-2">(좌우 동시 공개)</p>
+              <button onclick="revealGroup('2')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg flex items-center gap-1 font-bold shadow-lg">
+                <i data-lucide="eye" class="w-4 h-4"></i> 0 단계 공개
+              </button>
+            </div>
+
+            <div class="flex justify-between items-start mb-3">
+              <h4 class="font-bold flex items-center gap-1.5 text-slate-500">
+                <span class="bg-slate-400 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center">2</span>
+                $a = 0$ 일 때 극한의 수렴 수식 전개
+              </h4>
+              <button onclick="hideGroup('2')" class="text-slate-500 hover:text-slate-400 text-xs flex items-center gap-1 font-mono">
+                <i data-lucide="eye-off" class="w-3.5 h-3.5"></i> 0 단계 가리기
+              </button>
+            </div>
+            <p class="text-slate-500 leading-relaxed mb-4">
+              $\lim_{x \to 0} \frac{f(x)+2x+1}{f(x)+x} = \frac{3}{2}$ 가 되어야 합니다.
+            </p>
+
+            <!-- Case A: 분모 != 0 -->
+            <div class="p-4 bg-emerald-500/5 rounded-xl border border-emerald-200 mb-4">
+              <span class="font-bold text-emerald-600 block mb-2">① 분모가 $f(0) \neq 0$ 일 때:</span>
+              단순대입: $\frac{f(0)+1}{f(0)} = \frac{3}{2} \implies 2f(0)+2 = 3f(0) \implies \mathbf{f(0) = 2}$ <br>
+              가정인 $f(0) \neq 0$ 과 모순 없이 딱 맞아떨어져 <strong class="text-emerald-600 font-bold">성립(O)</strong>합니다!
+            </div>
+
+            <!-- Case B: 분모 = 0 -->
+            <div class="p-4 bg-red-500/5 rounded-xl border border-red-200">
+              <span class="font-bold text-alert block mb-2">② 분모가 $f(0) = 0$ 일 때:</span>
+              부정형 조건에 의해 분자도 동시에 $0$으로 수렴하려면 $f(0)+1=0 \implies f(0)=-1$ 이어야 하므로 충돌하는 <span class="underline text-alert font-bold">모순(X)</span>이 발생합니다.
+            </div>
+          </div>
+
+          <!-- Problem 2: Final Solution Box -->
+          <div class="bg-slate-900 border-2 border-emerald-500/50 rounded-2xl p-6 relative overflow-hidden shadow-lg">
+            <div id="blind-b3" class="blind-overlay absolute inset-0 flex flex-col items-center justify-center z-10 p-4 text-center">
+              <p class="font-bold text-slate-200 mb-1">[p30 Lv3 1번] f(1) 최종 답안</p>
+              <p class="text-xs text-slate-300 mb-2">(좌우 동시 공개)</p>
+              <button onclick="revealGroup('3')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg flex items-center gap-1 font-bold shadow-lg">
+                <i data-lucide="eye" class="w-4 h-4"></i> 최종 답안 공개
+              </button>
+            </div>
+
+            <div class="flex justify-between items-start mb-3">
+              <h4 class="font-bold text-emerald-400 flex items-center gap-1.5">
+                <span class="bg-emerald-600 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center">3</span>
+                삼차함수 $f(x)$ 식 수립 및 최종 연산 완료
+              </h4>
+              <button onclick="hideGroup('3')" class="text-slate-500 hover:text-slate-400 text-xs flex items-center gap-1 font-mono">
+                <i data-lucide="eye-off" class="w-3.5 h-3.5"></i> 최종 답안 가리기
+              </button>
+            </div>
+            <p class="text-slate-300 mb-4">
+              유도된 조건: $f(0)=2$, $f(-1)=1$, $f'(-1)=1$<br>
+              최고차항 계수가 1인 삼차함수 $f(x) = x^3 + px^2 + qx + 2$ 로 두고 계수를 비교하면, $p = -1, q = -1$이 되어 $f(x) = x^3 - x^2 - x + 2$ 가 됩니다.
+            </p>
+            <div class="bg-black/50 p-6 rounded-xl text-center text-white border border-emerald-500/30">
+              $$f(x) = x^3 - x^2 - x + 2$$
+              $$f(1) = 1 - 1 - 1 + 2 = \mathbf{1}$$
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // 1. Theme Configuration
+    function setTheme(theme) {
+      const root = document.getElementById('canvas-root');
+      const btnBlackboard = document.getElementById('btn-theme-blackboard');
+      const btnPaper = document.getElementById('btn-theme-paper');
+
+      if (theme === 'blackboard') {
+        root.className = 'theme-blackboard transition-all duration-300 min-h-screen p-4 md:p-8 font-sans';
+        btnBlackboard.className = 'px-3 py-1 text-xs font-bold rounded-md bg-emerald-700 text-white flex items-center gap-1 transition-all';
+        btnPaper.className = 'px-3 py-1 text-xs font-bold rounded-md text-slate-400 hover:text-slate-800 flex items-center gap-1 transition-all';
+      } else {
+        root.className = 'theme-paper transition-all duration-300 min-h-screen p-4 md:p-8 font-sans';
+        btnPaper.className = 'px-3 py-1 text-xs font-bold rounded-md bg-amber-800 text-white flex items-center gap-1 transition-all';
+        btnBlackboard.className = 'px-3 py-1 text-xs font-bold rounded-md text-slate-400 hover:text-white flex items-center gap-1 transition-all';
+      }
+    }
+
+    // 2. Font Size Adjustments
+    let fontSizeLevel = 0; // 0: Normal (26px+), 1: Large (32px+), 2: XL (40px+)
+    const fontSizeClasses = ['font-size-normal', 'font-size-large', 'font-size-xl'];
+    const sizeLabels = ['최소 26px (보통)', '최소 32px (대형)', '최소 40px (초대형)'];
+
+    function adjustFontSize(dir) {
+      fontSizeLevel = Math.max(0, Math.min(2, fontSizeLevel + dir));
+      const container = document.getElementById('content-container');
+      
+      // Reset classes
+      fontSizeClasses.forEach(c => container.classList.remove(c));
+      // Add current
+      container.classList.add(fontSizeClasses[fontSizeLevel]);
+      // Update UI label
+      document.getElementById('size-label').textContent = sizeLabels[fontSizeLevel];
+    }
+    // Set default on load
+    adjustFontSize(0);
+
+    // 3. Screen Layout (Focus Zoom Mode)
+    function setLayout(mode) {
+      const grid = document.getElementById('grid-layout');
+      const panel1 = document.getElementById('panel-c1');
+      const panel2 = document.getElementById('panel-c2');
+      
+      const btnSplit = document.getElementById('btn-layout-split');
+      const btnC1 = document.getElementById('btn-layout-c1');
+      const btnC2 = document.getElementById('btn-layout-c2');
+
+      // Reset Active classes for buttons
+      [btnSplit, btnC1, btnC2].forEach(btn => {
+        btn.className = 'px-2 py-1 text-xs font-bold rounded text-slate-400 hover:text-white flex items-center gap-1';
+      });
+
+      if (mode === 'split') {
+        grid.className = 'grid grid-cols-1 lg:grid-cols-2 gap-8';
+        panel1.classList.remove('hidden');
+        panel2.classList.remove('hidden');
+        btnSplit.className = 'px-2 py-1 text-xs font-bold rounded bg-slate-700 text-white flex items-center gap-1';
+      } else if (mode === 'c1') {
+        grid.className = 'grid grid-cols-1 gap-8';
+        panel1.classList.remove('hidden');
+        panel2.classList.add('hidden');
+        btnC1.className = 'px-2 py-1 text-xs font-bold rounded bg-slate-700 text-white flex items-center gap-1';
+      } else if (mode === 'c2') {
+        grid.className = 'grid grid-cols-1 gap-8';
+        panel1.classList.add('hidden');
+        panel2.classList.remove('hidden');
+        btnC2.className = 'px-2 py-1 text-xs font-bold rounded bg-slate-700 text-white flex items-center gap-1';
+      }
+    }
+
+    // 4. Interactive Core Section Toggle
+    let coreDetailsVisible = false;
+    function toggleCoreDetails() {
+      const details = document.getElementById('core-details');
+      const chevron = document.getElementById('core-chevron');
+      if (coreDetailsVisible) {
+        details.classList.add('hidden');
+        chevron.style.transform = 'rotate(0deg)';
+        coreDetailsVisible = false;
+      } else {
+        details.classList.remove('hidden');
+        chevron.style.transform = 'rotate(180deg)';
+        coreDetailsVisible = true;
+        // Trigger MathJax render for the newly shown equations
+        if (window.MathJax) {
+          MathJax.typesetPromise();
+        }
+      }
+    }
+
+    // 5. Grouped Curtain / Blind Reveal States
+    const curtainIds = ['a1', 'a2', 'a3', 'b1', 'b2', 'b3'];
+    let allCurtainsVisible = false;
+
+    // Reveal matched group (1 for -1 step, 2 for 0 step, 3 for final answer)
+    // a1/b1 correspond to Step 1 (-1), a2/b2 to Step 2 (0), a3/b3 to Step 3 (final answer)
+    function revealGroup(groupNum) {
+      if (groupNum === '1') {
+        document.getElementById('blind-a1').classList.add('hidden');
+        document.getElementById('blind-b1').classList.add('hidden');
+      } else if (groupNum === '2') {
+        document.getElementById('blind-a2').classList.add('hidden');
+        document.getElementById('blind-b2').classList.add('hidden');
+      } else if (groupNum === '3') {
+        document.getElementById('blind-a3').classList.add('hidden');
+        document.getElementById('blind-b3').classList.add('hidden');
+      }
+    }
+
+    // Hide matched group
+    function hideGroup(groupNum) {
+      if (groupNum === '1') {
+        document.getElementById('blind-a1').classList.remove('hidden');
+        document.getElementById('blind-b1').classList.remove('hidden');
+      } else if (groupNum === '2') {
+        document.getElementById('blind-a2').classList.remove('hidden');
+        document.getElementById('blind-b2').classList.remove('hidden');
+      } else if (groupNum === '3') {
+        document.getElementById('blind-a3').classList.remove('hidden');
+        document.getElementById('blind-b3').classList.remove('hidden');
+      }
+    }
+
+    // Master curtain control
+    function toggleAllCurtains() {
+      const btnIcon = document.getElementById('btn-all-curtains-icon');
+      const btnText = document.getElementById('btn-all-curtains-text');
+
+      if (allCurtainsVisible) {
+        // Hide all
+        hideGroup('1');
+        hideGroup('2');
+        hideGroup('3');
+        allCurtainsVisible = false;
+        btnIcon.setAttribute('data-lucide', 'eye');
+        btnText.textContent = '전체 공개';
+      } else {
+        // Reveal all
+        revealGroup('1');
+        revealGroup('2');
+        revealGroup('3');
+        allCurtainsVisible = true;
+        btnIcon.setAttribute('data-lucide', 'eye-off');
+        btnText.textContent = '전체 숨기기';
+      }
+      lucide.createIcons();
+    }
+  </script>
+</body>
+</html>
