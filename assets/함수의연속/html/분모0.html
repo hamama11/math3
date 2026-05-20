@@ -158,6 +158,24 @@
       line-height: 1 !important;
       display: inline-block;
     }
+
+    /* ==========================================
+       드래그/스크롤 수식 영역 강제 폰트 다이어트 클래스
+       ========================================== */
+    .drag-friendly-panel, 
+    .drag-friendly-panel p, 
+    .drag-friendly-panel span, 
+    .drag-friendly-panel div {
+      font-size: 14px !important;
+      line-height: 1.4 !important;
+    }
+    .drag-friendly-panel h3 {
+      font-size: 18px !important;
+      font-weight: bold !important;
+    }
+    .drag-friendly-panel mjx-container {
+      font-size: 1.05em !important;
+    }
   </style>
 </head>
 <body class="bg-slate-100 min-h-screen transition-colors duration-300">
@@ -252,14 +270,14 @@
           </div>
         </div>
 
-        <!-- 펼쳐지는 상세 수학 이론 (hidden-core-details) -->
-        <div id="core-details" class="hidden mt-6 pt-5 border-t border-slate-200 space-y-4 text-[26px]">
+        <!-- 펼쳐지는 상세 수학 이론 (drag-friendly-panel 적용하여 내부 가독성 다이어트) -->
+        <div id="core-details" class="hidden mt-6 pt-5 border-t border-slate-200 space-y-4 drag-friendly-panel">
           
           <!-- 1) 분모 0 아닐 때 (image_a034eb 분기 시각 구조 구현) -->
           <div class="p-4 bg-blue-500/5 rounded-xl border border-blue-200 flex flex-col md:flex-row items-start md:items-center gap-6 justify-between">
             <div class="flex-1">
               <h3 class="font-bold text-blue-900 mb-1 flex items-center gap-2">
-                <span class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center text-xs">1</span>
+                <span class="w-5 h-5 rounded-md bg-blue-600 text-white flex items-center justify-center text-xs">1</span>
                 분모가 0이 아닐 때 $\implies$ 극한의 성질 + 연속성 바탕 대입
               </h3>
               <p class="text-slate-600 font-normal">
@@ -290,7 +308,7 @@
           <div class="p-4 bg-emerald-500/5 rounded-xl border border-emerald-200">
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-4 border-b border-emerald-100 pb-3">
               <h3 class="font-bold text-emerald-900 flex items-center gap-2">
-                <span class="w-6 h-6 rounded-md bg-emerald-600 text-white flex items-center justify-center text-xs">2</span>
+                <span class="w-5 h-5 rounded-md bg-emerald-600 text-white flex items-center justify-center text-xs">2</span>
                 분모가 0일 때 $\implies$ 영인자 개수 비교 분석 및 수학적 예시
               </h3>
             </div>
@@ -302,7 +320,7 @@
               <div class="bg-white p-4 rounded-xl border border-emerald-100 shadow-sm flex flex-col justify-between">
                 <div>
                   <span class="text-xs font-black text-emerald-600 block mb-2">① 분자 영인자가 더 많을 때</span>
-                  <p class="text-slate-500 text-sm leading-relaxed mb-3">분자가 강력하게 누르며 0으로 수렴하는 상태</p>
+                  <p class="text-slate-500 leading-relaxed mb-3">분자가 강력하게 누르며 0으로 수렴하는 상태</p>
                 </div>
                 <!-- 시각화 수식 렌더 패널 -->
                 <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 flex flex-col items-center justify-center min-h-[140px] mb-3">
@@ -331,7 +349,7 @@
               <div class="bg-white p-4 rounded-xl border border-emerald-100 shadow-sm flex flex-col justify-between">
                 <div>
                   <span class="text-xs font-black text-indigo-600 block mb-2">② 영인자 개수가 같을 때</span>
-                  <p class="text-slate-500 text-sm leading-relaxed mb-3">분모와 분자의 소거 규모가 같은 수렴 상태</p>
+                  <p class="text-slate-500 leading-relaxed mb-3">분모와 분자의 소거 규모가 같은 수렴 상태</p>
                 </div>
                 <!-- 시각화 수식 렌더 패널 -->
                 <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 flex flex-col items-center justify-center min-h-[140px] mb-3">
@@ -360,7 +378,7 @@
               <div class="bg-white p-4 rounded-xl border border-emerald-100 shadow-sm flex flex-col justify-between">
                 <div>
                   <span class="text-xs font-black text-red-600 block mb-2">③ 분모 영인자가 더 많을 때</span>
-                  <p class="text-slate-500 text-sm leading-relaxed mb-3">분모가 압도하여 무한대로 발산시키는 상태</p>
+                  <p class="text-slate-500 leading-relaxed mb-3">분모가 압도하여 무한대로 발산시키는 상태</p>
                 </div>
                 <!-- 시각화 수식 렌더 패널 -->
                 <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 flex flex-col items-center justify-center min-h-[140px] mb-3">
@@ -428,9 +446,6 @@
                 <i data-lucide="eye-off" class="w-3.5 h-3.5"></i> -1 단계 가리기
               </button>
             </div>
-            <p class="text-slate-500 leading-relaxed mb-4">
-              $\lim_{x \to -1^+} \frac{(x+1)f(2x)}{f(x)} = 2f(-1)$ 가 성립해야 합니다.
-            </p>
 
             <!-- Case A: 분모 != 0 -->
             <div class="p-4 bg-red-500/5 rounded-xl border border-red-200 mb-4">
@@ -466,9 +481,6 @@
                 <i data-lucide="eye-off" class="w-3.5 h-3.5"></i> 0 단계 가리기
               </button>
             </div>
-            <p class="text-slate-500 leading-relaxed mb-4">
-              $\lim_{x \to 0^-} \frac{(x+1)f(2x)}{f(x)} = 2f(0)$ 가 성립해야 합니다.
-            </p>
 
             <!-- Case A: 분모 != 0 -->
             <div class="p-4 bg-emerald-500/5 rounded-xl border border-emerald-200 mb-4">
@@ -550,9 +562,6 @@
                 <i data-lucide="eye-off" class="w-3.5 h-3.5"></i> -1 단계 가리기
               </button>
             </div>
-            <p class="text-slate-500 leading-relaxed mb-4">
-              $\lim_{x \to -1} \frac{f(x)+2x+1}{f(x)+x} = \frac{3}{2}$ 가 되어야 합니다.
-            </p>
 
             <!-- Case A: 분모 != 0 -->
             <div class="p-4 bg-red-500/5 rounded-xl border border-red-200 mb-4">
@@ -588,9 +597,6 @@
                 <i data-lucide="eye-off" class="w-3.5 h-3.5"></i> 0 단계 가리기
               </button>
             </div>
-            <p class="text-slate-500 leading-relaxed mb-4">
-              $\lim_{x \to 0} \frac{f(x)+2x+1}{f(x)+x} = \frac{3}{2}$ 가 되어야 합니다.
-            </p>
 
             <!-- Case A: 분모 != 0 -->
             <div class="p-4 bg-emerald-500/5 rounded-xl border border-emerald-200 mb-4">
