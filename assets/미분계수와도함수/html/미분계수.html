@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>미분계수 패턴 마스터 (교실 상하 배치)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap');
+        body { font-family: 'Pretendard', sans-serif; background-color: #f1f5f9; }
+        .grid-layout { display: grid; grid-template-rows: auto 1fr; gap: 20px; padding: 20px; height: 100vh; }
+        .panel { background: white; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 24px; overflow-y: auto; }
+        .math-card { background: white; border-radius: 16px; padding: 16px; transition: all 0.2s; border: 2px solid #e2e8f0; cursor: pointer; }
+        .math-card:hover { border-color: #3b82f6; transform: translateY(-2px); }
+        .ans-box { display: none; margin-top: 12px; padding-top: 12px; border-top: 2px dashed #cbd5e1; }
+        /* 버튼 스타일 */
+        .ctrl-btn { cursor: pointer; transition: all 0.2s; user-select: none; font-weight: 800; border-radius: 12px; padding: 10px 16px; box-shadow: 0 4px 0 rgba(0,0,0,0.1); }
+        .ctrl-btn:active { transform: translateY(4px); box-shadow: none; }
+    </style>
+</head>
+<body>
+
+    <main class="grid-layout">
+        <header class="panel flex items-center justify-between gap-6 border-t-8 border-slate-900">
+            <h1 class="text-3xl font-black text-slate-900 italic">미분계수 로직</h1>
+            
+            <div class="bg-slate-900 text-white px-6 py-2 rounded-xl font-bold text-lg">
+                $$\frac{f(A) - f(B)}{A - B} \to f'(B)$$
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <div id="btn-blue" class="ctrl-btn bg-blue-500 text-white border-b-4 border-blue-700" onclick="toggleStep('blue')">STEP 1 (도착점)</div>
+                <div id="btn-emerald" class="ctrl-btn bg-emerald-500 text-white border-b-4 border-emerald-700" onclick="toggleStep('emerald')">STEP 2 (변화량)</div>
+                <div class="h-10 w-px bg-slate-300 mx-2"></div>
+                <button onclick="toggleAll(true)" class="ctrl-btn bg-slate-700 text-white border-b-4 border-slate-900">전체 ON</button>
+                <button onclick="toggleAll(false)" class="ctrl-btn bg-slate-200 text-slate-800 border-b-4 border-slate-400">전체 OFF</button>
+            </div>
+        </header>
+
+        <section class="panel">
+            <h2 class="text-xl font-bold text-slate-900 mb-6">실전 문제 (총 10문항)</h2>
+            <div id="problemGrid" class="grid grid-cols-2 md:grid-cols-5 gap-4"></div>
+        </section>
+    </main>
+
+    <script>
+        const problems = [
+            { id: 1, formula: "\\frac{f(3t)-f(3x)}{t-x}", ans: "3f'(3x)", color: "blue" },
+            { id: 2, formula: "\\frac{f(t^2)-f(x^2)}{t-x}", ans: "2xf'(x^2)", color: "emerald" },
+            { id: 3, formula: "\\frac{f(4t-2)-f(4x-2)}{2(t-x)}", ans: "2f'(4x-2)", color: "emerald" },
+            { id: 4, formula: "\\frac{f(2t-1)-f(2x-1)}{4(t-x)}", ans: "\\frac{1}{2}f'(2x-1)", color: "emerald" },
+            { id: 5, formula: "\\frac{f(5-2t)-f(5-2x)}{-2(t-x)}", ans: "f'(5-2x)", color: "emerald" },
+            { id: 6, formula: "\\frac{f(t^2)-f(x^2)}{t^2-x^2}", ans: "f'(x^2)", color: "blue" },
+            { id: 7, formula: "\\frac{f(t)-f(x)}{t^2-x^2}", ans: "\\frac{1}{2x}f'(x)", color: "emerald" },
+            { id: 8, formula: "\\frac{f(3t+1)-f(3x+1)}{t-x}", ans: "3f'(3x+1)", color: "blue" },
+            { id: 9, formula: "\\frac{f(2t-1)-f(2x-1)}{t-x}", ans: "2f'(2x-1)", color: "emerald" },
+            { id: 10, formula: "\\frac{f(t^3)-f(x^3)}{t-x}", ans: "3x^2 f'(x^3)", color: "emerald" }
+        ];
+
+        let activeSteps = { blue: false, emerald: false };
+
+        function toggleStep(color) {
+            activeSteps[color] = !activeSteps[color];
+            const btn = document.getElementById(`btn-${color}`);
+            btn.style.opacity = activeSteps[color] ? "1" : "0.6";
+            
+            document.querySelectorAll(`.math-card[data-color="${color}"]`).forEach(card => {
+                card.querySelector('.ans-box').style.display = activeSteps[color] ? 'block' : 'none';
+            });
+        }
+
+        function toggleAll(show) {
+            activeSteps = { blue: show, emerald: show };
+            document.querySelectorAll('.ctrl-btn').forEach(btn => {
+                if(btn.id.includes('btn')) btn.style.opacity = show ? "1" : "0.6";
+            });
+            document.querySelectorAll('.ans-box').forEach(box => {
+                box.style.display = show ? 'block' : 'none';
+            });
+        }
+
+        const grid = document.getElementById('problemGrid');
+        problems.forEach(p => {
+            const card = document.createElement('div');
+            card.className = "math-card";
+            card.dataset.color = p.color;
+            card.innerHTML = `
+                <div class="flex justify-between items-center mb-2">
+                    <span class="px-2.5 py-0.5 rounded-full bg-slate-800 text-white text-[10px] font-black">Q ${p.id}</span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-${p.color}-500"></span>
+                </div>
+                <div class="text-center py-2 limit-expr text-sm">$$\\lim_{t \\to x} ${p.formula}$$</div>
+                <div class="ans-box text-center text-lg font-bold text-blue-700">
+                    $$= ${p.ans}$$
+                </div>`;
+            
+            card.onclick = function() {
+                const ansBox = this.querySelector('.ans-box');
+                ansBox.style.display = (ansBox.style.display === 'block') ? 'none' : 'block';
+                MathJax.typesetPromise([this]);
+            };
+            grid.appendChild(card);
+        });
+    </script>
+</body>
+</html>
