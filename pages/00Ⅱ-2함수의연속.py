@@ -64,7 +64,7 @@ wrapped_html = f"""
 st.markdown("---")
 
 # 좌우 배치
-left, right = st.columns([1, 1])
+left, right = st.columns([1.5, 1])
 
 with left:
     st.image(
@@ -82,6 +82,27 @@ with right:
         )
 
 st.markdown("---")
+
+# HTML 불러오기
+html_path = "assets/함수의연속/html/분모0.html"
+
+with open(html_path, "r", encoding="utf-8") as f:
+    html_content = f.read()
+
+wrapped_html = f"""
+<div style="width: 100%; margin: 0; padding: 0;">
+    {html_content}
+</div>
+"""
+
+with st.expander("🔍 대입vs극한", expanded=False):
+    components.html(
+        wrapped_html,
+        height=900,
+        scrolling=True
+    )
+
+
     
 # 🖼 슬라이드 7~8
 for i in range(7, 9):
