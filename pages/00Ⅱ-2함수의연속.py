@@ -59,11 +59,11 @@ with left:
 with right:
     with st.expander("🔍 복습", expanded=False):
 
-        components.html(
-            wrapped_html,
-            height=650,
-            scrolling=True
-        )
+         st.image(
+        "assets/함수의연속/images/슬라이드5.PNG",
+        use_container_width=True
+    )
+
 
 # HTML 불러오기
 html_path = "assets/함수의연속/html/분모0.html"
