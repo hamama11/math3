@@ -74,3 +74,23 @@ for i in range(3, 6):
         f"assets/미분계수와도함수/images/슬라이드{i}.PNG",
         use_container_width=True
     )
+
+
+# HTML 불러오기
+html_path = "assets/미분계수와도함수/html/2종불연속.html"
+
+with open(html_path, "r", encoding="utf-8") as f:
+    html_content = f.read()
+
+wrapped_html = f"""
+<div style="width: 100%; margin: 0; padding: 0;">
+    {html_content}
+</div>
+"""
+
+with st.expander("🔍lim f' vs f'", expanded=False):
+    components.html(
+        wrapped_html,
+        height=900,
+        scrolling=True
+    )
