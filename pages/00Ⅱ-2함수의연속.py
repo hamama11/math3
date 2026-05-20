@@ -47,24 +47,44 @@ st.markdown("""
 
 st.markdown("---")
 
-# 외부 URL
-url1 = "https://gemini.google.com/share/d835a7cc5d36"
+# HTML 읽기
+with open(
+    "assets/함수의연속/html/분모0.html",
+    "r",
+    encoding="utf-8"
+) as f:
+    html = f.read()
 
-components.html(
-    f"""
-    <iframe
-        src="{url1}"
-        width="100%"
-        height="900"
-        style="border:none; border-radius:12px;"
-        allowfullscreen>
-    </iframe>
-    """,
-    height=920
-)
+wrapped_html = f"""
+<div style="width: 100%; margin: 0; padding: 0;">
+    {html}
+</div>
+"""
+
+st.markdown("---")
+
+# 좌우 배치
+left, right = st.columns([1, 1])
+
+with left:
+    st.image(
+        "assets/함수의연속/images/슬라이드6.PNG",
+        use_container_width=True
+    )
+
+with right:
+    with st.expander("🔍 복습", expanded=False):
+
+        components.html(
+            wrapped_html,
+            height=650,
+            scrolling=True
+        )
+
+st.markdown("---")
     
-# 🖼 슬라이드 6~8
-for i in range(6, 9):
+# 🖼 슬라이드 7~8
+for i in range(7, 9):
     st.image(
         f"assets/함수의연속/images/슬라이드{i}.PNG",
         use_container_width=True
