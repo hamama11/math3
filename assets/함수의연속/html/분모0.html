@@ -51,18 +51,18 @@
     .theme-blackboard .panel-bg { background-color: rgba(21, 45, 33, 0.9); border-color: #2e5a44; }
     
     /* ==========================================
-       교실/전자칠판용 최소 26px 보장 글자 스케일링
+       교실/전자칠판용 최소 20px 보장 글자 스케일링 개편 (기존 24/26대비 조율)
        ========================================== */
     
-    /* 1. 보통 크기 모드 (최소 26px 보장) */
+    /* 1. 보통 크기 모드 (최소 20px 보장) */
     .font-size-normal {
-      font-size: 26px !important;
+      font-size: 20px !important;
     }
     .font-size-normal p, 
     .font-size-normal span, 
     .font-size-normal div, 
     .font-size-normal li {
-      font-size: 26px !important;
+      font-size: 20px !important;
       line-height: 1.6 !important;
     }
     .font-size-normal h4.step-header {
@@ -75,19 +75,19 @@
     .font-size-normal .text-xl, 
     .font-size-normal .text-2xl, 
     .font-size-normal .text-3xl {
-      font-size: 32px !important;
+      font-size: 28px !important;
       line-height: 1.4 !important;
     }
 
-    /* 2. 크게 판서 모드 (최소 32px 보장) */
+    /* 2. 크게 판서 모드 (최소 26px 보장) */
     .font-size-large {
-      font-size: 32px !important;
+      font-size: 26px !important;
     }
     .font-size-large p, 
     .font-size-large span, 
     .font-size-large div, 
     .font-size-large li {
-      font-size: 32px !important;
+      font-size: 26px !important;
       line-height: 1.6 !important;
     }
     .font-size-large h4.step-header {
@@ -100,19 +100,19 @@
     .font-size-large .text-xl, 
     .font-size-large .text-2xl, 
     .font-size-large .text-3xl {
-      font-size: 40px !important;
+      font-size: 34px !important;
       line-height: 1.4 !important;
     }
 
-    /* 3. 매우 크게 모드 (최소 40px 보장) */
+    /* 3. 매우 크게 모드 (최소 32px 보장) */
     .font-size-xl {
-      font-size: 40px !important;
+      font-size: 32px !important;
     }
     .font-size-xl p, 
     .font-size-xl span, 
     .font-size-xl div, 
     .font-size-xl li {
-      font-size: 40px !important;
+      font-size: 32px !important;
       line-height: 1.6 !important;
     }
     .font-size-xl h4.step-header {
@@ -125,15 +125,15 @@
     .font-size-xl .text-xl, 
     .font-size-xl .text-2xl, 
     .font-size-xl .text-3xl {
-      font-size: 48px !important;
+      font-size: 42px !important;
       line-height: 1.4 !important;
     }
 
-    /* 수식 크기도 큼직하게 유지 */
+    /* 수식 크기도 큼직하게 유지하며 드래그(가로스크롤) 대신 자연스러운 줄바꿈 보장 */
     .mjx-chtml, .MathJax, mjx-container {
       font-size: 1.15em !important;
-      overflow-x: auto;
-      overflow-y: hidden;
+      white-space: normal !important;
+      word-break: break-all !important;
     }
 
     /* 블라인드/가리개 효과 */
@@ -166,24 +166,6 @@
       font-weight: 700 !important;
       line-height: 1 !important;
       display: inline-block;
-    }
-
-    /* ==========================================
-       드래그/스크롤 수식 영역 강제 폰트 다이어트 클래스
-       ========================================== */
-    .drag-friendly-panel, 
-    .drag-friendly-panel p, 
-    .drag-friendly-panel span, 
-    .drag-friendly-panel div {
-      font-size: 14px !important;
-      line-height: 1.4 !important;
-    }
-    .drag-friendly-panel h3 {
-      font-size: 18px !important;
-      font-weight: bold !important;
-    }
-    .drag-friendly-panel mjx-container {
-      font-size: 1.05em !important;
     }
   </style>
 </head>
@@ -220,7 +202,7 @@
         <!-- Zoom Controls -->
         <div class="bg-slate-900 p-1 rounded-lg border border-slate-700 flex items-center gap-1">
           <button onclick="adjustFontSize(-1)" class="w-7 h-7 flex items-center justify-center text-xs font-bold bg-slate-800 rounded text-slate-300 hover:bg-slate-700">-A</button>
-          <span class="text-xs px-2 text-slate-400 font-mono" id="size-label">최소 26px (보통)</span>
+          <span class="text-xs px-2 text-slate-400 font-mono" id="size-label">최소 20px (보통)</span>
           <button onclick="adjustFontSize(1)" class="w-7 h-7 flex items-center justify-center text-xs font-bold bg-slate-800 rounded text-slate-300 hover:bg-slate-700">+A</button>
         </div>
 
@@ -251,10 +233,10 @@
     
     <div class="max-w-7xl mx-auto space-y-8" id="content-container">
       
-      <!-- CORE META CONCEPT (인터랙티브 클릭 아코디언 개편) -->
-      <div onclick="toggleCoreDetails()" class="panel-bg border-2 rounded-2xl p-5 shadow-md relative transition-all duration-200 cursor-pointer hover:border-indigo-500 hover:shadow-lg">
-        <div class="absolute top-3 right-4 bg-indigo-600 text-white font-mono text-[11px] px-2.5 py-1 rounded-full uppercase font-bold tracking-wider flex items-center gap-1">
-          <span>이론 터치 분석기</span>
+      <!-- CORE META CONCEPT (인터랙티브 클릭 아코디언 개편 - 레이아웃 겹침 방지를 위해 마진 확보) -->
+      <div onclick="toggleCoreDetails()" class="panel-bg border-2 rounded-2xl p-5 shadow-md relative transition-all duration-200 cursor-pointer hover:border-indigo-500 hover:shadow-lg mb-8">
+        <div class="absolute top-3 right-4 bg-indigo-600 text-white font-mono text-[11px] px-2.5 py-1 rounded-full uppercase font-bold tracking-wider flex items-center gap-1 z-20">
+          <span>이론</span>
           <i id="core-chevron" data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-200"></i>
         </div>
         
@@ -279,8 +261,8 @@
           </div>
         </div>
 
-        <!-- 펼쳐지는 상세 수학 이론 (drag-friendly-panel 적용하여 내부 가독성 다이어트) -->
-        <div id="core-details" class="hidden mt-6 pt-5 border-t border-slate-200 space-y-4 drag-friendly-panel">
+        <!-- 펼쳐지는 상세 수학 이론 (가독성 높은 20px 기본 글꼴 지원 및 유연한 줄바꿈) -->
+        <div id="core-details" class="hidden mt-6 pt-5 border-t border-slate-200 space-y-4">
           
           <!-- 1) 분모 0 아닐 때 (image_a034eb 분기 시각 구조 구현) -->
           <div class="p-4 bg-blue-500/5 rounded-xl border border-blue-200 flex flex-col md:flex-row items-start md:items-center gap-6 justify-between">
@@ -313,7 +295,7 @@
             </div>
           </div>
 
-          <!-- 2) 분모 0 일 때 (영인자 수식 렌더 패널 개편 - image_a0400f 기반 설계 + 수학적 예시 추가) -->
+          <!-- 2) 분모 0 일 때 (영인자 수식 렌절 패널 개편 - image_a0400f 기반 설계 + 수학적 예시 추가) -->
           <div class="p-4 bg-emerald-500/5 rounded-xl border border-emerald-200">
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-4 border-b border-emerald-100 pb-3">
               <h3 class="font-bold text-emerald-900 flex items-center gap-2">
@@ -350,6 +332,7 @@
                 <!-- 수학적 예시 블록 -->
                 <div class="bg-emerald-50/50 p-3 rounded-lg border border-emerald-100/80 text-xs font-mono">
                   <div class="text-[10px] text-emerald-700 font-bold mb-1">📝 실제 수학 예시</div>
+                  $$\text{수식 전개:}$$
                   $$\lim_{x \to a} \frac{(x-a)^2}{x-a} = \lim_{x \to a}(x-a) = 0$$
                 </div>
               </div>
@@ -379,6 +362,7 @@
                 <!-- 수학적 예시 블록 -->
                 <div class="bg-indigo-50/50 p-3 rounded-lg border border-indigo-100/80 text-xs font-mono">
                   <div class="text-[10px] text-indigo-700 font-bold mb-1">📝 실제 수학 예시</div>
+                  $$\text{수식 전개:}$$
                   $$\lim_{x \to a} \frac{5(x-a)}{x-a} = 5 \neq 0$$
                 </div>
               </div>
@@ -408,6 +392,7 @@
                 <!-- 수학적 예시 블록 -->
                 <div class="bg-red-50/50 p-3 rounded-lg border border-red-100/80 text-xs font-mono">
                   <div class="text-[10px] text-red-700 font-bold mb-1">📝 실제 수학 예시</div>
+                  $$\text{수식 전개:}$$
                   $$\lim_{x \to a} \frac{x-a}{(x-a)^2} = \lim_{x \to a} \frac{1}{x-a} \to \text{발산}$$
                 </div>
               </div>
@@ -417,8 +402,8 @@
         </div>
       </div>
 
-      <!-- MAIN SPLIT WORKSPACE -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8" id="grid-layout">
+      <!-- MAIN SPLIT WORKSPACE (이론 분석기 개방 시 공간 확보를 위해 margin-top 적용) -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-4" id="grid-layout">
         
         <!-- ==================== LEFT COLUMN: PROBLEM 1 (p16 Lv3 2번) ==================== -->
         <div id="panel-c1" class="space-y-6 transition-all duration-300">
@@ -426,8 +411,8 @@
           <!-- Heading & Problem Statement -->
           <div class="panel-bg p-6 rounded-2xl border-2 space-y-3">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-indigo-600 font-mono">[p16 Lv3 2번] 이차함수의 연속성</span>
-              <span class="bg-indigo-600/10 text-indigo-700 text-xs font-bold px-2 py-1 rounded border border-indigo-200 font-bold">EBS 수능특강</span>
+              <span class="font-bold text-indigo-600 font-mono" style="font-size: 20px !important;">[p16 Lv3 2번] 이차함수의 연속성</span>
+              <span class="bg-indigo-600/10 text-indigo-700 text-xs font-bold px-2 py-1 rounded border border-indigo-200" style="font-size: 14px !important;">EBS 수능특강</span>
             </div>
             <div class="leading-relaxed font-semibold">
               이차함수 $f(x)$에 대하여 함수 <br>
@@ -446,29 +431,29 @@
               </button>
             </div>
 
-            <!-- 헤더 폰트 사이즈를 20px로 정교하게 강제 적용하는 inline style 추가 -->
+            <!-- 헤더 폰트 사이즈를 20px로 정교하게 강제 적용하는 inline style 추가 및 가리기 글씨 삭제 -->
             <div class="flex justify-between items-start mb-3">
               <h4 class="step-header font-bold flex items-center gap-1.5 text-slate-500" style="font-size: 20px !important;">
                 <span class="bg-slate-400 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center" style="font-size: 12px !important; width: 24px; height: 24px;">1</span>
                 $x \to -1$ 우극한값과 함숫값($2f(-1)$) 비교
               </h4>
-              <button onclick="hideGroup('1')" class="text-slate-500 hover:text-slate-400 text-xs flex items-center gap-1 font-mono">
-                <i data-lucide="eye-off" class="w-3.5 h-3.5"></i> -1 단계 가리기
+              <button onclick="hideGroup('1')" class="text-slate-500 hover:text-slate-400 flex items-center gap-1 font-mono">
+                <i data-lucide="eye-off" class="w-4 h-4"></i>
               </button>
             </div>
 
             <!-- Case A: 분모 != 0 -->
             <div class="p-4 bg-red-500/5 rounded-xl border border-red-200 mb-4">
-              <span class="font-bold text-alert block mb-2">① 분모가 $f(-1) \neq 0$ 일 때:</span>
+              <span class="font-bold text-alert block mb-2" style="font-size: 20px !important;">① 분모가 $f(-1) \neq 0$ 일 때:</span>
               $$\frac{0 \cdot f(-2)}{f(-1)} = 0 = 2f(-1) \implies \mathbf{f(-1) = 0}$$
-              <span class="underline text-alert font-bold">모순(X)</span>
+              <span class="underline text-alert font-bold" style="font-size: 20px !important;">모순(X)</span>
             </div>
 
             <!-- Case B: 분모 = 0 -->
             <div class="p-4 bg-emerald-500/5 rounded-xl border border-emerald-200">
-              <span class="font-bold text-emerald-600 block mb-2">② 분모가 $f(-1) = 0$ 일 때:</span>
+              <span class="font-bold text-emerald-600 block mb-2" style="font-size: 20px !important;">② 분모가 $f(-1) = 0$ 일 때:</span>
               $$\lim_{x \to -1^+} \frac{(x+1)f(2x)}{f(x)} \xrightarrow{\text{미분/로피탈}} \frac{f(-2)}{f'(-1)} = 2f(-1) = 0 \implies \mathbf{f(-2) = 0}$$
-              <strong class="text-emerald-600 font-bold">성립(O) $\implies$ $f(-1)=0, f(-2)=0$</strong>
+              <strong class="text-emerald-600 font-bold" style="font-size: 20px !important;">성립(O) $\implies$ $f(-1)=0, f(-2)=0$</strong>
             </div>
           </div>
 
@@ -482,29 +467,29 @@
               </button>
             </div>
 
-            <!-- 헤더 폰트 사이즈를 20px로 정교하게 강제 적용하는 inline style 추가 -->
+            <!-- 헤더 폰트 사이즈를 20px로 정교하게 강제 적용하는 inline style 추가 및 가리기 글씨 삭제 -->
             <div class="flex justify-between items-start mb-3">
               <h4 class="step-header font-bold flex items-center gap-1.5 text-slate-500" style="font-size: 20px !important;">
                 <span class="bg-slate-400 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center" style="font-size: 12px !important; width: 24px; height: 24px;">2</span>
                 $x \to 0$ 좌극한값과 함숫값($2f(0)$) 비교
               </h4>
-              <button onclick="hideGroup('2')" class="text-slate-500 hover:text-slate-400 text-xs flex items-center gap-1 font-mono">
-                <i data-lucide="eye-off" class="w-3.5 h-3.5"></i> 0 단계 가리기
+              <button onclick="hideGroup('2')" class="text-slate-500 hover:text-slate-400 flex items-center gap-1 font-mono">
+                <i data-lucide="eye-off" class="w-4 h-4"></i>
               </button>
             </div>
 
             <!-- Case A: 분모 != 0 -->
             <div class="p-4 bg-emerald-500/5 rounded-xl border border-emerald-200 mb-4">
-              <span class="font-bold text-emerald-600 block mb-2">① 분모가 $f(0) \neq 0$ 일 때:</span>
+              <span class="font-bold text-emerald-600 block mb-2" style="font-size: 20px !important;">① 분모가 $f(0) \neq 0$ 일 때:</span>
               $$\frac{1 \cdot f(0)}{f(0)} = 1 = 2f(0) \implies \mathbf{f(0) = \frac{1}{2}}$$
-              <strong class="text-emerald-600 font-bold">성립(O)</strong>
+              <strong class="text-emerald-600 font-bold" style="font-size: 20px !important;">성립(O)</strong>
             </div>
 
             <!-- Case B: 분모 = 0 -->
             <div class="p-4 bg-red-500/5 rounded-xl border border-red-200">
-              <span class="font-bold text-alert block mb-2">② 분모가 $f(0) = 0$ 일 때:</span>
+              <span class="font-bold text-alert block mb-2" style="font-size: 20px !important;">② 분모가 $f(0) = 0$ 일 때:</span>
               $$\lim_{x\to0} \frac{(x+1)2kx(2x-\alpha)}{kx(x-\alpha)} = 2 \neq 2f(0)=0$$
-              <span class="underline text-alert font-bold">모순(X)</span>
+              <span class="underline text-alert font-bold" style="font-size: 20px !important;">모순(X)</span>
             </div>
           </div>
 
@@ -523,8 +508,8 @@
                 <span class="bg-indigo-600 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center">3</span>
                 이차함수 $f(x)$ 식 수립 및 최종 연산 완료
               </h4>
-              <button onclick="hideGroup('3')" class="text-slate-500 hover:text-slate-400 text-xs flex items-center gap-1 font-mono">
-                <i data-lucide="eye-off" class="w-3.5 h-3.5"></i> 최종 답안 가리기
+              <button onclick="hideGroup('3')" class="text-slate-500 hover:text-slate-400 flex items-center gap-1 font-mono">
+                <i data-lucide="eye-off" class="w-4 h-4"></i>
               </button>
             </div>
             <p class="text-slate-300 mb-4 font-bold">
@@ -544,8 +529,8 @@
           <!-- Heading & Problem Statement -->
           <div class="panel-bg p-6 rounded-2xl border-2 space-y-3">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-emerald-600 font-mono">[p30 Lv3 1번] 삼차함수의 극한 조건 집합</span>
-              <span class="bg-emerald-600/10 text-emerald-700 text-xs font-bold px-2 py-1 rounded border border-emerald-200 font-bold">EBS 수능특강</span>
+              <span class="font-bold text-emerald-600 font-mono" style="font-size: 20px !important;">[p30 Lv3 1번] 삼차함수의 극한 조건 집합</span>
+              <span class="bg-emerald-600/10 text-emerald-700 text-xs font-bold px-2 py-1 rounded border border-emerald-200 font-bold" style="font-size: 14px !important;">EBS 수능특강</span>
             </div>
             <div class="leading-relaxed font-semibold">
               최고차항의 계수가 1인 삼차함수 $f(x)$에 대하여 <br>
@@ -554,7 +539,7 @@
             </div>
           </div>
 
-          <!-- Problem 2: a = -1 Analysis -->
+          <!-- Problem 2: a = -1 Analysis (2f'(-1)+4=3f'(-1)+3 수식 제거) -->
           <div class="panel-bg border-2 rounded-2xl p-6 relative overflow-hidden shadow-sm">
             <div id="blind-b1" class="blind-overlay absolute inset-0 flex flex-col items-center justify-center z-10 p-4 text-center">
               <p class="font-bold text-slate-200 mb-1">[p30 Lv3 1번] $a = -1$ 성립성 분석</p>
@@ -564,29 +549,29 @@
               </button>
             </div>
 
-            <!-- 헤더 폰트 사이즈를 20px로 정교하게 강제 적용하는 inline style 추가 -->
+            <!-- 헤더 폰트 사이즈를 20px로 정교하게 강제 적용하는 inline style 추가 및 가리기 글씨 삭제 -->
             <div class="flex justify-between items-start mb-3">
               <h4 class="step-header font-bold flex items-center gap-1.5 text-slate-500" style="font-size: 20px !important;">
                 <span class="bg-slate-400 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center" style="font-size: 12px !important; width: 24px; height: 24px;">1</span>
                 $a = -1$ 일 때 극한의 수렴 수식 전개
               </h4>
-              <button onclick="hideGroup('1')" class="text-slate-500 hover:text-slate-400 text-xs flex items-center gap-1 font-mono">
-                <i data-lucide="eye-off" class="w-3.5 h-3.5"></i> -1 단계 가리기
+              <button onclick="hideGroup('1')" class="text-slate-500 hover:text-slate-400 flex items-center gap-1 font-mono">
+                <i data-lucide="eye-off" class="w-4 h-4"></i>
               </button>
             </div>
 
             <!-- Case A: 분모 != 0 -->
             <div class="p-4 bg-red-500/5 rounded-xl border border-red-200 mb-4">
-              <span class="font-bold text-alert block mb-2">① 분모가 $f(-1)-1 \neq 0$ 일 때:</span>
+              <span class="font-bold text-alert block mb-2" style="font-size: 20px !important;">① 분모가 $f(-1)-1 \neq 0$ 일 때:</span>
               $$\frac{f(-1)-2+1}{f(-1)-1} = \frac{f(-1)-1}{f(-1)-1} = 1 \neq \frac{3}{2}$$
-              <span class="underline text-alert font-bold">모순(X)</span>
+              <span class="underline text-alert font-bold" style="font-size: 20px !important;">모순(X)</span>
             </div>
 
-            <!-- Case B: 분모 = 0 -->
+            <!-- Case B: 분모 = 0 (2f'(-1)+4=3f'(-1)+3 식 삭제 후 결과 연결) -->
             <div class="p-4 bg-emerald-500/5 rounded-xl border border-emerald-200">
-              <span class="font-bold text-emerald-600 block mb-2">② 분모가 $f(-1) - 1 = 0 \implies f(-1) = 1$ 일 때:</span>
-              $$\lim_{x \to -1} \frac{f'(x)+2}{f'(x)+1} = \frac{3}{2} \implies 2f'(-1)+4 = 3f'(-1)+3 \implies \mathbf{f'(-1) = 1}$$
-              <strong class="text-emerald-600 font-bold">성립(O) $\implies$ $f'(-1) = 1$</strong>
+              <span class="font-bold text-emerald-600 block mb-2" style="font-size: 20px !important;">② 분모가 $f(-1) - 1 = 0 \implies f(-1) = 1$ 일 때:</span>
+              $$\lim_{x \to -1} \frac{f'(x)+2}{f'(x)+1} = \frac{3}{2} \implies \mathbf{f'(-1) = 1}$$
+              <strong class="text-emerald-600 font-bold" style="font-size: 20px !important;">성립(O) $\implies$ $f'(-1) = 1$</strong>
             </div>
           </div>
 
@@ -600,29 +585,29 @@
               </button>
             </div>
 
-            <!-- 헤더 폰트 사이즈를 20px로 정교하게 강제 적용하는 inline style 추가 -->
+            <!-- 헤더 폰트 사이즈를 20px로 정교하게 강제 적용하는 inline style 추가 및 가리기 글씨 삭제 -->
             <div class="flex justify-between items-start mb-3">
               <h4 class="step-header font-bold flex items-center gap-1.5 text-slate-500" style="font-size: 20px !important;">
                 <span class="bg-slate-400 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center" style="font-size: 12px !important; width: 24px; height: 24px;">2</span>
                 $a = 0$ 일 때 극한의 수렴 수식 전개
               </h4>
-              <button onclick="hideGroup('2')" class="text-slate-500 hover:text-slate-400 text-xs flex items-center gap-1 font-mono">
-                <i data-lucide="eye-off" class="w-3.5 h-3.5"></i> 0 단계 가리기
+              <button onclick="hideGroup('2')" class="text-slate-500 hover:text-slate-400 flex items-center gap-1 font-mono">
+                <i data-lucide="eye-off" class="w-4 h-4"></i>
               </button>
             </div>
 
             <!-- Case A: 분모 != 0 -->
             <div class="p-4 bg-emerald-500/5 rounded-xl border border-emerald-200 mb-4">
-              <span class="font-bold text-emerald-600 block mb-2">① 분모가 $f(0) \neq 0$ 일 때:</span>
-              $$\frac{f(0)+1}{f(0)} = \frac{3}{2} \implies 2f(0)+2 = 3f(0) \implies \mathbf{f(0) = 2}$$
-              <strong class="text-emerald-600 font-bold">성립(O)</strong>
+              <span class="font-bold text-emerald-600 block mb-2" style="font-size: 20px !important;">① 분모가 $f(0) \neq 0$ 일 때:</span>
+              $$\frac{f(0)+1}{f(0)} = \frac{3}{2} \implies \mathbf{f(0) = 2}$$
+              <strong class="text-emerald-600 font-bold" style="font-size: 20px !important;">성립(O)</strong>
             </div>
 
             <!-- Case B: 분모 = 0 -->
             <div class="p-4 bg-red-500/5 rounded-xl border border-red-200">
-              <span class="font-bold text-alert block mb-2">② 분모가 $f(0) = 0$ 일 때:</span>
+              <span class="font-bold text-alert block mb-2" style="font-size: 20px !important;">② 분모가 $f(0) = 0$ 일 때:</span>
               $$f(0)+1=0 \implies f(0)=-1$$
-              <span class="underline text-alert font-bold">모순(X)</span>
+              <span class="underline text-alert font-bold" style="font-size: 20px !important;">모순(X)</span>
             </div>
           </div>
 
@@ -641,8 +626,8 @@
                 <span class="bg-emerald-600 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center">3</span>
                 삼차함수 $f(x)$ 식 수립 및 최종 연산 완료
               </h4>
-              <button onclick="hideGroup('3')" class="text-slate-500 hover:text-slate-400 text-xs flex items-center gap-1 font-mono">
-                <i data-lucide="eye-off" class="w-3.5 h-3.5"></i> 최종 답안 가리기
+              <button onclick="hideGroup('3')" class="text-slate-500 hover:text-slate-400 flex items-center gap-1 font-mono">
+                <i data-lucide="eye-off" class="w-4 h-4"></i>
               </button>
             </div>
             <p class="text-slate-300 mb-4 font-bold">
@@ -684,9 +669,9 @@
     }
 
     // 2. Font Size Adjustments
-    let fontSizeLevel = 0; // 0: Normal (26px+), 1: Large (32px+), 2: XL (40px+)
+    let fontSizeLevel = 0; // 0: Normal (20px+), 1: Large (26px+), 2: XL (32px+)
     const fontSizeClasses = ['font-size-normal', 'font-size-large', 'font-size-xl'];
-    const sizeLabels = ['최소 26px (보통)', '최소 32px (대형)', '최소 40px (초대형)'];
+    const sizeLabels = ['최소 20px (보통)', '최소 26px (대형)', '최소 32px (초대형)'];
 
     function adjustFontSize(dir) {
       fontSizeLevel = Math.max(0, Math.min(2, fontSizeLevel + dir));
@@ -718,17 +703,17 @@
       });
 
       if (mode === 'split') {
-        grid.className = 'grid grid-cols-1 lg:grid-cols-2 gap-8';
+        grid.className = 'grid grid-cols-1 lg:grid-cols-2 gap-8 mt-4';
         panel1.classList.remove('hidden');
         panel2.classList.remove('hidden');
         btnSplit.className = 'px-2 py-1 text-xs font-bold rounded bg-slate-700 text-white flex items-center gap-1';
       } else if (mode === 'c1') {
-        grid.className = 'grid grid-cols-1 gap-8';
+        grid.className = 'grid grid-cols-1 gap-8 mt-4';
         panel1.classList.remove('hidden');
         panel2.classList.add('hidden');
         btnC1.className = 'px-2 py-1 text-xs font-bold rounded bg-slate-700 text-white flex items-center gap-1';
       } else if (mode === 'c2') {
-        grid.className = 'grid grid-cols-1 gap-8';
+        grid.className = 'grid grid-cols-1 gap-8 mt-4';
         panel1.classList.add('hidden');
         panel2.classList.remove('hidden');
         btnC2.className = 'px-2 py-1 text-xs font-bold rounded bg-slate-700 text-white flex items-center gap-1';
