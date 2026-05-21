@@ -101,7 +101,7 @@ wrapped_html = f"""
 </div>
 """
 
-with st.expander("🔍lim f' vs f'", expanded=False):
+with st.expander("</b>🔍lim f' != f'", expanded=False):
     components.html(
         wrapped_html,
         height=900,
