@@ -101,7 +101,6 @@ wrapped_html = f"""
     {html_content}
 </div>
 """
-import streamlit as st
 
 with st.expander(
     "🔍 <span style='font-size:24px;'>f'(0)은 존재하지만 연속은 아니로다</span>",
