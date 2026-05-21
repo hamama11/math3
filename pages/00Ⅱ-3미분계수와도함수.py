@@ -3,6 +3,33 @@ import streamlit.components.v1 as components
 
 st.set_page_config(layout="wide")
 
+
+# =========================
+# 공통 함수
+# =========================
+
+def show_html(path, title="🔍 인터랙션", height=900):
+    with open(path, "r", encoding="utf-8") as f:
+        html_content = f.read()
+
+    wrapped_html = f"""
+    <div style="width: 100%; margin: 0; padding: 0;">
+        {html_content}
+    </div>
+    """
+
+    with st.expander(title, expanded=False):
+        components.html(
+            wrapped_html,
+            height=height,
+            scrolling=True
+        )
+
+
+# =========================
+# 슬라이드 1 + 머리말
+# =========================
+
 left, right = st.columns([1.3, 1])
 
 with left:
@@ -10,12 +37,12 @@ with left:
         "assets/미분계수와도함수/images/슬라이드1.PNG",
         use_container_width=True
     )
-    
+
 with right:
     st.markdown("""
     <p style='font-size:19px; line-height:2;'>
 
-    🌌 <b>변화</b>
+    🌌 <b>변화</b><br><br>
 
     우리는 매 순간 달라지고 흔들리건만,<br>
     어째서 여전히 같은 사람이라 말하는 것이더냐.<br><br>
@@ -27,11 +54,19 @@ with right:
     <b>‘지금 이 순간, 나는 어떤 방향으로 변하고 있는가’</b><br><br>
     
     두려움은 변화 그 자체가 아니라,<br>
-    변화하고 있음에도 스스로 어디로 향하는지 잊어버리는 일인지도 모르도다.<br><br>
+    변화하고 있음에도 스스로 어디로 향하는지 잊어버리는 일인지도 모르도다.
+
     </p>
     """, unsafe_allow_html=True)
 
-# 좌우 배치
+
+st.markdown("---")
+
+
+# =========================
+# 슬라이드 2 + 풀이 이미지
+# =========================
+
 left, right = st.columns([1, 1.2])
 
 with left:
@@ -42,32 +77,29 @@ with left:
 
 with right:
     with st.expander("🔍 풀이", expanded=False):
+        st.image(
+            "assets/미분계수와도함수/images/슬라이드2-3.PNG",
+            use_container_width=True
+        )
 
-         st.image(
-        "assets/미분계수와도함수/images/슬라이드2-3.PNG",
-        use_container_width=True
-    )
 
-# HTML 불러오기
-html_path = "assets/미분계수와도함수/html/미분계수.html"
+# =========================
+# 미분계수 Quiz HTML
+# =========================
 
-with open(html_path, "r", encoding="utf-8") as f:
-    html_content = f.read()
+show_html(
+    "assets/미분계수와도함수/html/미분계수.html",
+    title="🔍 미분계수 Quiz",
+    height=900
+)
 
-wrapped_html = f"""
-<div style="width: 100%; margin: 0; padding: 0;">
-    {html_content}
-</div>
-"""
-
-with st.expander("🔍미분계수 Quiz ",expanded=False):
-    components.html(
-        wrapped_html,
-        height=900,
-        scrolling=True
-    )
 
 st.markdown("---")
+
+
+# =========================
+# 중간 문구
+# =========================
 
 st.markdown("""
 <p style='font-size:18px; line-height:1.9;'>
@@ -80,9 +112,14 @@ st.markdown("""
 </p>
 """, unsafe_allow_html=True)
 
+
 st.markdown("---")
 
-# 🖼 슬라이드 3~5
+
+# =========================
+# 슬라이드 3~5
+# =========================
+
 for i in range(3, 6):
     st.image(
         f"assets/미분계수와도함수/images/슬라이드{i}.PNG",
@@ -90,27 +127,23 @@ for i in range(3, 6):
     )
 
 
-# HTML 불러오기
-html_path = "assets/미분계수와도함수/html/2종불연속.html"
+# =========================
+# 2종 불연속 HTML
+# =========================
 
-with open(html_path, "r", encoding="utf-8") as f:
-    html_content = f.read()
+show_html(
+    "assets/미분계수와도함수/html/2종불연속.html",
+    title="🔍 2종 불연속 살펴보기",
+    height=900
+)
 
-wrapped_html = f"""
-<div style="width: 100%; margin: 0; padding: 0;">
-    {html_content}
-</div>
-"""
 
-# HTML 불러오기
-html_path = "assets/미분계수와도함수/html/2종예시.html"
+# =========================
+# 2종 예시 HTML
+# =========================
 
-with open(html_path, "r", encoding="utf-8") as f:
-    html_content = f.read()
-
-wrapped_html = f"""
-<div style="width: 100%; margin: 0; padding: 0;">
-    {html_content}
-</div>
-"""
-
+show_html(
+    "assets/미분계수와도함수/html/2종예시.html",
+    title="🔍 2종 불연속 예시",
+    height=900
+)
