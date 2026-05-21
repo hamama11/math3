@@ -103,145 +103,143 @@ wrapped_html = f"""
 """
 import streamlit as st
 
-with st.expander("🔍 f(x)=x²sin(1/x) 에서 f'(0)은 연속일까?", expanded=False):
+with st.expander(
+    "🔍 <span style='font-size:24px;'>f'(0)은 존재하지만 연속은 아니로다</span>",
+    expanded=False
+):
 
-    st.markdown("""
-    <p style='font-size:18px; line-height:1.9;'>
+    left, right = st.columns([1, 1])
 
-    함수 \\( f(x) \\)를 다음과 같이 정의하자.
+    # =========================
+    # 📘 왼쪽 : f'(0) 존재
+    # =========================
 
-    </p>
-    """, unsafe_allow_html=True)
+    with left:
 
-    st.latex(r"""
-    f(x)=
-    \begin{cases}
-    x^2\sin\frac{1}{x}, & x\neq 0 \\
-    0, & x=0
-    \end{cases}
-    """)
+        st.markdown("""
+        <p style='font-size:20px; line-height:1.9;'>
 
-    st.markdown("""
-    <p style='font-size:18px; line-height:1.9;'>
+        🌿 <b>1. 먼저 \\(f'(0)\\)의 존재를 살펴보자</b>
 
-    먼저 \\(x=0\\)에서의 미분계수를 정의로 계산하면,
+        </p>
+        """, unsafe_allow_html=True)
 
-    </p>
-    """, unsafe_allow_html=True)
+        st.latex(r"""
+        f(x)=
+        \begin{cases}
+        x^2\sin\frac{1}{x}, & x\neq0 \\
+        0, & x=0
+        \end{cases}
+        """)
 
-    st.latex(r"""
-    f'(0)
-    =
-    \lim_{h\to 0}\frac{f(h)-f(0)}{h}
-    =
-    \lim_{h\to 0}\frac{h^2\sin(1/h)}{h}
-    =
-    \lim_{h\to 0}h\sin(1/h)
-    """)
+        st.latex(r"""
+        f'(0)
+        =
+        \lim_{h\to0}
+        \frac{f(h)-f(0)}{h}
+        """)
 
-    st.markdown("""
-    <p style='font-size:18px; line-height:1.9;'>
+        st.latex(r"""
+        =
+        \lim_{h\to0}
+        \frac{h^2\sin(1/h)}{h}
+        """)
 
-    이때 \\(-|h| \\le h\\sin(1/h) \\le |h|\\) 이므로 샌드위치 정리에 의해,
+        st.latex(r"""
+        =
+        \lim_{h\to0}
+        h\sin(1/h)
+        """)
 
-    </p>
-    """, unsafe_allow_html=True)
+        st.markdown("""
+        <p style='font-size:18px; line-height:1.8;'>
 
-    st.latex(r"""
-    \lim_{h\to 0}h\sin(1/h)=0
-    """)
+        샌드위치 정리에 의해,
 
-    st.latex(r"""
-    \therefore f'(0)=0
-    """)
+        </p>
+        """, unsafe_allow_html=True)
 
-    st.markdown("""
-    <p style='font-size:18px; line-height:1.9;'>
+        st.latex(r"""
+        -|h|
+        \le
+        h\sin(1/h)
+        \le
+        |h|
+        """)
 
-    이제 \\(x\\neq 0\\)에서 도함수를 구하면,
+        st.latex(r"""
+        \therefore
+        f'(0)=0
+        """)
 
-    </p>
-    """, unsafe_allow_html=True)
+    # =========================
+    # 📕 오른쪽 : 불연속
+    # =========================
 
-    st.latex(r"""
-    f'(x)
-    =
-    2x\sin\frac{1}{x}
-    +
-    x^2\cos\frac{1}{x}\cdot\left(-\frac{1}{x^2}\right)
-    """)
+    with right:
 
-    st.latex(r"""
-    f'(x)
-    =
-    2x\sin\frac{1}{x}
-    -
-    \cos\frac{1}{x}
-    \quad (x\neq 0)
-    """)
+        st.markdown("""
+        <p style='font-size:20px; line-height:1.9;'>
 
-    st.markdown("""
-    <p style='font-size:18px; line-height:1.9;'>
+        🌊 <b>2. 그러나 도함수는 연속이 아니로다</b>
 
-    여기서 \\(x\\to 0\\)일 때 첫 번째 항은
+        </p>
+        """, unsafe_allow_html=True)
 
-    </p>
-    """, unsafe_allow_html=True)
+        st.latex(r"""
+        f'(x)
+        =
+        2x\sin\frac1x
+        -
+        \cos\frac1x
+        \quad (x\neq0)
+        """)
 
-    st.latex(r"""
-    2x\sin\frac{1}{x}\to 0
-    """)
+        st.markdown("""
+        <p style='font-size:18px; line-height:1.8;'>
 
-    st.markdown("""
-    <p style='font-size:18px; line-height:1.9;'>
+        여기서 첫 번째 항은,
 
-    하지만 두 번째 항 \\(-\\cos(1/x)\\)는 \\(x\\to 0\\)에서 계속 진동하므로 극한이 존재하지 않는다.
+        </p>
+        """, unsafe_allow_html=True)
 
-    </p>
-    """, unsafe_allow_html=True)
+        st.latex(r"""
+        2x\sin\frac1x \to 0
+        """)
 
-    st.latex(r"""
-    \lim_{x\to 0}f'(x)
-    =
-    \lim_{x\to 0}
-    \left(
-    2x\sin\frac{1}{x}
-    -
-    \cos\frac{1}{x}
-    \right)
-    \quad \text{does not exist}
-    """)
+        st.markdown("""
+        <p style='font-size:18px; line-height:1.8;'>
 
-    st.markdown("""
-    <p style='font-size:18px; line-height:1.9;'>
+        하지만 \\(-\cos(1/x)\\)는 계속 진동하므로
 
-    따라서 \\(f'(0)\\)은 존재하지만,<br>
-    \\(\\lim_{x\\to 0}f'(x)\\)는 존재하지 않는다.
+        </p>
+        """, unsafe_allow_html=True)
 
-    </p>
-    """, unsafe_allow_html=True)
+        st.latex(r"""
+        \lim_{x\to0}\cos\frac1x
+        """)
 
-    st.latex(r"""
-    f'(0)=0
-    \quad \text{but} \quad
-    \lim_{x\to 0}f'(x) \text{ does not exist}
-    """)
+        st.markdown("""
+        <p style='font-size:18px; line-height:1.8;'>
 
-    st.markdown("""
-    <p style='font-size:18px; line-height:1.9;'>
+        는 존재하지 않는다.
 
-    그러므로 도함수 \\(f'\\)는 \\(x=0\\)에서 연속이 아니다.
+        </p>
+        """, unsafe_allow_html=True)
 
-    </p>
-    """, unsafe_allow_html=True)
+        st.latex(r"""
+        \therefore
+        \lim_{x\to0}f'(x)
+        \text{ does not exist}
+        """)
 
-    st.latex(r"""
-    \therefore f'(x)\text{ is not continuous at }x=0
-    """)
+        st.markdown("""
+        <p style='font-size:18px; line-height:1.9;'>
 
-with st.expander("</b>🔍lim f' != f'", expanded=False):
-    components.html(
-        wrapped_html,
-        height=900,
+        즉, \\(f'(0)\\)은 존재하지만<br>
+        도함수 \\(f'\\)는 \\(x=0\\)에서 연속이 아니로다.
+
+        </p>
+        """, unsafe_allow_html=True)
         scrolling=True
     )
