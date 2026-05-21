@@ -101,6 +101,143 @@ wrapped_html = f"""
     {html_content}
 </div>
 """
+import streamlit as st
+
+with st.expander("🔍 f(x)=x²sin(1/x) 에서 f'(0)은 연속일까?", expanded=False):
+
+    st.markdown("""
+    <p style='font-size:18px; line-height:1.9;'>
+
+    함수 \\( f(x) \\)를 다음과 같이 정의하자.
+
+    </p>
+    """, unsafe_allow_html=True)
+
+    st.latex(r"""
+    f(x)=
+    \begin{cases}
+    x^2\sin\frac{1}{x}, & x\neq 0 \\
+    0, & x=0
+    \end{cases}
+    """)
+
+    st.markdown("""
+    <p style='font-size:18px; line-height:1.9;'>
+
+    먼저 \\(x=0\\)에서의 미분계수를 정의로 계산하면,
+
+    </p>
+    """, unsafe_allow_html=True)
+
+    st.latex(r"""
+    f'(0)
+    =
+    \lim_{h\to 0}\frac{f(h)-f(0)}{h}
+    =
+    \lim_{h\to 0}\frac{h^2\sin(1/h)}{h}
+    =
+    \lim_{h\to 0}h\sin(1/h)
+    """)
+
+    st.markdown("""
+    <p style='font-size:18px; line-height:1.9;'>
+
+    이때 \\(-|h| \\le h\\sin(1/h) \\le |h|\\) 이므로 샌드위치 정리에 의해,
+
+    </p>
+    """, unsafe_allow_html=True)
+
+    st.latex(r"""
+    \lim_{h\to 0}h\sin(1/h)=0
+    """)
+
+    st.latex(r"""
+    \therefore f'(0)=0
+    """)
+
+    st.markdown("""
+    <p style='font-size:18px; line-height:1.9;'>
+
+    이제 \\(x\\neq 0\\)에서 도함수를 구하면,
+
+    </p>
+    """, unsafe_allow_html=True)
+
+    st.latex(r"""
+    f'(x)
+    =
+    2x\sin\frac{1}{x}
+    +
+    x^2\cos\frac{1}{x}\cdot\left(-\frac{1}{x^2}\right)
+    """)
+
+    st.latex(r"""
+    f'(x)
+    =
+    2x\sin\frac{1}{x}
+    -
+    \cos\frac{1}{x}
+    \quad (x\neq 0)
+    """)
+
+    st.markdown("""
+    <p style='font-size:18px; line-height:1.9;'>
+
+    여기서 \\(x\\to 0\\)일 때 첫 번째 항은
+
+    </p>
+    """, unsafe_allow_html=True)
+
+    st.latex(r"""
+    2x\sin\frac{1}{x}\to 0
+    """)
+
+    st.markdown("""
+    <p style='font-size:18px; line-height:1.9;'>
+
+    하지만 두 번째 항 \\(-\\cos(1/x)\\)는 \\(x\\to 0\\)에서 계속 진동하므로 극한이 존재하지 않는다.
+
+    </p>
+    """, unsafe_allow_html=True)
+
+    st.latex(r"""
+    \lim_{x\to 0}f'(x)
+    =
+    \lim_{x\to 0}
+    \left(
+    2x\sin\frac{1}{x}
+    -
+    \cos\frac{1}{x}
+    \right)
+    \quad \text{does not exist}
+    """)
+
+    st.markdown("""
+    <p style='font-size:18px; line-height:1.9;'>
+
+    따라서 \\(f'(0)\\)은 존재하지만,<br>
+    \\(\\lim_{x\\to 0}f'(x)\\)는 존재하지 않는다.
+
+    </p>
+    """, unsafe_allow_html=True)
+
+    st.latex(r"""
+    f'(0)=0
+    \quad \text{but} \quad
+    \lim_{x\to 0}f'(x) \text{ does not exist}
+    """)
+
+    st.markdown("""
+    <p style='font-size:18px; line-height:1.9;'>
+
+    그러므로 도함수 \\(f'\\)는 \\(x=0\\)에서 연속이 아니다.
+
+    </p>
+    """, unsafe_allow_html=True)
+
+    st.latex(r"""
+    \therefore f'(x)\text{ is not continuous at }x=0
+    """)
 
 with st.expander("</b>🔍lim f' != f'", expanded=False):
     components.html(
