@@ -1,6 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
+st.set_page_config(layout="wide")
 
 left, right = st.columns([1.3, 1])
 
