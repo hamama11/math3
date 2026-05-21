@@ -140,7 +140,7 @@ show_html(
 
 show_html(
     "assets/미분계수와도함수/html/2종예시.html",
-    title="수식🔍 Proof",
+    title="3D🔍",
     height=600
 )
 
@@ -149,11 +149,10 @@ left, right = st.columns([1, 1])
 with left:
     st.image(
         "assets/미분계수와도함수/images/슬라이드6.PNG",
-        use_container_width=True
+         height=600
     )
 with right:
     show_html(
-        "assets/미분계수와도함수/html/2종예시.html",
-        title="수식🔍 Proof",
-        height=600
+        "assets/미분계수와도함수/html/2종불연속3D.html",
+        use_container_width=True
     )
