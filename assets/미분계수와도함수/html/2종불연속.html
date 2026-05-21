@@ -5,19 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>f'(x) vs lim f'(x)</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Fira+Code:wght@400;500&display=swap');
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #0d1117; color: #c9d1d9; }
         .code-font { font-family: 'Fira Code', monospace; }
-        .serif-text { font-family: 'Georgia', 'Times New Roman', serif; }
         .text-large { font-size: 26px !important; line-height: 1.6 !important; }
         .text-xlarge { font-size: 36px !important; line-height: 1.4 !important; }
-        
-        .math-container { display: flex; flex-direction: column; align-items: center; gap: 20px; margin: 30px 0; padding: 30px; background: #161b22; border: 1px solid #30363d; border-radius: 16px; }
-        .fraction { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; }
-        .numerator { border-bottom: 2px solid #c9d1d9; padding: 0 10px; }
-        .denominator { padding: 0 10px; }
-        .limit { font-style: italic; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -37,16 +31,26 @@
             const [animStatus, setAnimStatus] = useState("");
             const canvasRef = useRef(null);
             const animationRef = useRef(null);
+            const synthRef = useRef(null);
 
             const f = (x) => (x === 0 ? 0 : x * x * Math.sin(1 / x));
             const df = (x) => (x === 0 ? 0 : 2 * x * Math.sin(1 / x) - Math.cos(1 / x));
 
-            const runZoomInOdyssey = () => {
-                if (isAnimating) { cancelAnimationFrame(animationRef.current); setIsAnimating(false); setAnimStatus(""); return; }
+            const runZoomInOdyssey = async () => {
+                if (isAnimating) {
+                    cancelAnimationFrame(animationRef.current);
+                    if (synthRef.current) synthRef.current.dispose();
+                    setIsAnimating(false);
+                    setAnimStatus("");
+                    return;
+                }
+
+                await Tone.start();
+                synthRef.current = new Tone.Oscillator({ type: 'sawtooth', volume: -15 }).toDestination().start();
+                
                 setIsAnimating(true);
                 const startX = 0.28;
                 let frame = 0;
-                // 11초 이상 (60fps * 11 = 660프레임 이상)
                 const totalFrames = 800; 
 
                 const animate = () => {
@@ -72,8 +76,17 @@
 
                     setTargetX(currentX);
                     setZoom(currentZoom);
+
+                    // Audio
+                    const freq = 100 + Math.abs(df(currentX) * 200);
+                    synthRef.current.frequency.rampTo(freq, 0.1);
+
                     if (frame < totalFrames) animationRef.current = requestAnimationFrame(animate);
-                    else { setTargetX(0); setZoom(20); setIsAnimating(false); setTimeout(() => setAnimStatus(""), 2000); }
+                    else { 
+                        setTargetX(0); setZoom(20); setIsAnimating(false); 
+                        if (synthRef.current) synthRef.current.dispose();
+                        setTimeout(() => setAnimStatus(""), 2000); 
+                    }
                 };
                 animationRef.current = requestAnimationFrame(animate);
             };
@@ -140,50 +153,6 @@
                                 <div className="space-y-4">
                                     <label className="text-large text-[#8b949e]">현미경 확대 비율 (Zoom)</label>
                                     <input type="range" min="1" max="20" step="0.1" value={zoom} onChange={(e) => setZoom(parseFloat(e.target.value))} className="w-full h-4 accent-[#58a6ff]" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-[#161b22] border border-[#30363d] rounded-2xl p-10 serif-text">
-                            <h2 className="text-xlarge font-bold text-[#f0f6fc] mb-10 border-b border-[#30363d] pb-4">x=0에서의 수학적 증명</h2>
-                            
-                            <div className="mb-12">
-                                <h3 className="text-[28px] font-bold text-[#f0f6fc] mb-6">0. 함수 정의</h3>
-                                <div className="math-container text-large">
-                                    <div className="text-[24px]">f(x) = x² sin(1/x) (x ≠ 0), f(0) = 0</div>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-large text-[#f0f6fc]">
-                                <div className="bg-[#0d1117] p-8 rounded-xl border border-[#30363d]">
-                                    <h3 className="text-[28px] font-bold text-[#58a6ff] mb-6">1. 미분계수의 존재성 (f'(0))</h3>
-                                    <div className="math-container text-[20px]">
-                                        <div className="flex items-center gap-4">
-                                            <span className="limit">f'(0) = lim<sub>h→0</sub></span>
-                                            <div className="fraction">
-                                                <span className="numerator">f(h) - f(0)</span>
-                                                <span className="denominator">h</span>
-                                            </div>
-                                            <span>= lim<sub>h→0</sub></span>
-                                            <div className="fraction">
-                                                <span className="numerator">h² sin(1/h)</span>
-                                                <span className="denominator">h</span>
-                                            </div>
-                                        </div>
-                                        <p className="mt-6">= lim<sub>h→0</sub> h sin(1/h) = 0</p>
-                                        <p className="font-bold text-[#ff7b72] mt-4">∴ 미분 가능하며, f'(0) = 0</p>
-                                    </div>
-                                </div>
-
-                                <div className="bg-[#0d1117] p-8 rounded-xl border border-[#30363d]">
-                                    <h3 className="text-[28px] font-bold text-[#ff7b72] mb-6">2. 도함수의 불연속성 (lim f'(x))</h3>
-                                    <div className="math-container text-[20px]">
-                                        <p>f'(x) = 2x sin(1/x) - cos(1/x) (x ≠ 0)</p>
-                                        <p className="mt-4">lim<sub>x→0</sub> f'(x) = lim<sub>x→0</sub> [2x sin(1/x) - cos(1/x)]</p>
-                                        <p className="text-[#8b949e] mt-4">· 2x sin(1/x) → 0</p>
-                                        <p className="text-[#8b949e]">· cos(1/x) : 진동 (발산)</p>
-                                        <p className="font-bold text-[#ff7b72] mt-4">∴ lim<sub>x→0</sub> f'(x) ≠ f'(0) (존재하지 않음!)</p>
-                                    </div>
                                 </div>
                             </div>
                         </div>
