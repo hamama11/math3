@@ -90,7 +90,7 @@ with right:
 show_html(
     "assets/미분계수와도함수/html/미분계수.html",
     title="🔍 미분계수 Quiz",
-    height=900
+    height=600
 )
 
 
@@ -133,8 +133,8 @@ for i in range(3, 6):
 
 show_html(
     "assets/미분계수와도함수/html/2종불연속.html",
-    title="🔍 2종 불연속 살펴보기",
-    height=900
+    title="Graph🔍 속도가 불연속??? limf'(a)=f'(a)?",
+    height=600
 )
 
 
@@ -144,6 +144,6 @@ show_html(
 
 show_html(
     "assets/미분계수와도함수/html/2종예시.html",
-    title="🔍 2종 불연속 예시",
-    height=900
+    title="수식🔍 Proof",
+    height=800
 )
