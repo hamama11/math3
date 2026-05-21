@@ -31,10 +31,25 @@ st.markdown("""
 
 st.markdown("---")
 
-# 🖼 슬라이드 1~2
-for i in range(1, 3):
+# 🖼 슬라이드 1
     st.image(
-        f"assets/미분계수와도함수/images/슬라이드{i}.PNG",
+        f"assets/미분계수와도함수/images/슬라이드1.PNG",
+        use_container_width=True
+    )
+# 좌우 배치
+left, right = st.columns([1, 1.2])
+
+with left:
+    st.image(
+        "assets/미분계수와도함수/images/슬라이드2.PNG",
+        use_container_width=True
+    )
+
+with right:
+    with st.expander("🔍 풀이", expanded=False):
+
+         st.image(
+        "assets/미분계수와도함수/images/슬라이드2-3.PNG",
         use_container_width=True
     )
 
