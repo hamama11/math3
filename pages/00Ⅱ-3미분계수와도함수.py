@@ -59,7 +59,7 @@ wrapped_html = f"""
 </div>
 """
 
-with st.expander("🔍미분계수 뿌시기", expanded=False):
+with st.expander("🔍 <span style='font-size:24px;'>lim f'(x) ≠ f'(x)</span>",expanded=False):
     components.html(
         wrapped_html,
         height=900,
