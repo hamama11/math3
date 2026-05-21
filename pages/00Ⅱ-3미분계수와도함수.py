@@ -1,12 +1,14 @@
 import streamlit as st
 import streamlit.components.v1 as components
+
+
 left, right = st.columns([1.3, 1])
 
 with left:
     st.markdown("""
     <p style='font-size:19px; line-height:2;'>
 
-    🌌 <b>변화</b><br><br>
+    🌌 <b>변화</b>
 
     우리는 매 순간 달라지고 흔들리건만,<br>
     어째서 여전히 같은 사람이라 말하는 것이더냐.<br><br>
