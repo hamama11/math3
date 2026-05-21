@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>f'(x) vs lim f'(x) - 블랙홀 오디세이</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js CDN (3D 그래픽용) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Font Awesome (아이콘용) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (수학 및 세련된 폰트 적용) -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Noto+Sans+KR:wght@300;400;700&family=Playfair+Display:ital,wght@1,500&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #030508;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+        .math-font {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+        }
+        .code-font {
+            font-family: 'Fira Code', monospace;
+        }
+        /* 스크롤바 커스텀 */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #06090e;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #141f2d;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b82f6;
+        }
+        /* 부드러운 네온 글로우 효과 */
+        .neon-border-blue {
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.5);
+            border: 1px solid rgba(59, 130, 246, 0.8);
+        }
+        .neon-border-cyan {
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.6);
+            border: 1px solid rgba(6, 182, 212, 0.9);
+        }
+        .neon-border-green {
+            box-shadow: 0 0 25px rgba(34, 197, 94, 0.5);
+            border: 1px solid rgba(34, 197, 94, 0.8);
+        }
+        /* 타이핑 커서 깜빡임 애니메이션 */
+        .cursor::after {
+            content: '|';
+            animation: blink 0.8s infinite;
+            color: #3b82f6;
+            font-weight: bold;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-3 md:p-6">
+
+    <!-- 메인 대시보드 컨테이너 -->
+    <div class="w-full max-w-7xl mx-auto flex flex-col gap-4 bg-[#060a12]/95 border border-slate-800 rounded-2xl p-4 md:p-6 shadow-2xl backdrop-blur-md">
+        
+        <!-- 상단 헤더 영역 -->
+        <div class="flex justify-between items-center border-b border-slate-800/80 pb-3">
+            <h1 class="text-2xl md:text-3xl font-light tracking-wide text-slate-100">
+                <span class="math-font font-bold text-sky-400">f'(x)</span> <span class="text-xs text-slate-500 mx-2">vs</span> <span class="math-font font-bold text-teal-400">lim f'(x)</span>
+            </h1>
+            <div class="flex items-center gap-2 text-xs text-slate-400 bg-slate-900/80 px-3 py-1.5 rounded-full border border-slate-800">
+                <span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+                <span>인터랙티브 오디세이 가동 중</span>
+            </div>
+        </div>
+
+        <!-- 중간 그리드: 3D 블랙홀 뷰 및 제어판 -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            
+            <!-- 3D 블랙홀 시각화 캔버스 (3개 열 차지) -->
+            <div class="lg:col-span-3 relative h-[380px] md:h-[500px] bg-[#020305] rounded-xl overflow-hidden border border-slate-800/80" id="canvas-container">
+                <!-- Three.js 가 여기에 렌더링됩니다 -->
+                <div id="loading-overlay" class="absolute inset-0 flex flex-col items-center justify-center bg-[#030508] z-10 transition-opacity duration-500">
+                    <i class="fa-solid fa-circle-notch fa-spin text-4xl text-sky-500 mb-3"></i>
+                    <p class="text-sm text-slate-400">시공간 중력 렌즈 좌표 가동 중...</p>
+                </div>
+                <!-- 캔버스 위 오버레이 (수학적 격자망 연출) -->
+                <div class="absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem]"></div>
+                <!-- 커스텀 알림 박스 -->
+                <div id="custom-alert" class="absolute top-4 left-4 bg-slate-950/95 border border-cyan-500/50 text-cyan-200 px-4 py-2.5 rounded-lg text-xs tracking-wider uppercase opacity-0 transition-all duration-300 transform -translate-y-2 pointer-events-none z-20 flex items-center gap-2 shadow-lg shadow-cyan-950/50">
+                    <i class="fa-solid fa-circle-info text-cyan-400"></i>
+                    <span id="alert-text">알림 내용</span>
+                </div>
+            </div>
+
+            <!-- 오른쪽 제어 패널 (1개 열 차지) -->
+            <div class="flex flex-col justify-between gap-4 bg-slate-950/80 p-4 rounded-xl border border-slate-800/80">
+                <div class="flex flex-col gap-4">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-sky-400"></i>
+                        컨트롤러 패널
+                    </h3>
+                    
+                    <!-- 1. 블랙홀 오디세이 기동 버튼 -->
+                    <button id="btn-zoom" class="w-full text-left p-3.5 rounded-lg bg-blue-600/10 hover:bg-blue-600/25 text-blue-200 hover:text-white border border-blue-500/30 hover:border-blue-400 transition-all duration-300 flex flex-col gap-0.5 group">
+                        <span class="text-xs font-bold tracking-wider uppercase group-hover:translate-x-1 transition-transform flex items-center gap-2">
+                            <i class="fa-solid fa-rocket text-blue-400"></i> ZOOM IN ODYSSEY GADGET
+                        </span>
+                        <span class="text-[10px] text-blue-400">블랙홀 오디세이 기동 (카메라 근접)</span>
+                    </button>
+
+                    <!-- 2. 소용돌이 효과 활성화 버튼 -->
+                    <button id="btn-vortex" class="w-full text-left p-3.5 rounded-lg bg-cyan-950/20 hover:bg-cyan-900/40 text-cyan-300 hover:text-cyan-100 border border-cyan-500/25 hover:border-cyan-400 transition-all duration-300 flex flex-col gap-0.5 group">
+                        <span class="text-xs font-bold tracking-wider uppercase group-hover:translate-x-1 transition-transform flex items-center gap-2">
+                            <i class="fa-solid fa-hurricane text-cyan-400"></i> ACTIVATE VORTEX EFFECT
+                        </span>
+                        <span class="text-[10px] text-cyan-400">소용돌이 효과 활성화 (진동수 왜곡)</span>
+                    </button>
+
+                    <!-- 3. 슬라이더: 줌 속도 조절 -->
+                    <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800/60">
+                        <div class="flex justify-between text-xs font-bold mb-2">
+                            <span class="text-slate-400 uppercase tracking-wider">ZOOM SPEED</span>
+                            <span class="text-sky-400" id="speed-val">1.0x</span>
+                        </div>
+                        <input type="range" id="slider-speed" min="0.1" max="3.0" step="0.1" value="1.0" class="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-sky-500 focus:outline-none">
+                        <div class="flex justify-between text-[10px] text-slate-500 mt-1">
+                            <span>느리게 (0.1x)</span>
+                            <span>빠르게 (3.0x)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. 초기화 버튼 -->
+                <button id="btn-reset" class="w-full text-center p-3.5 rounded-lg bg-emerald-700/10 hover:bg-emerald-700/25 text-emerald-300 hover:text-white border border-emerald-500/20 hover:border-emerald-400 transition-all duration-300 flex flex-col items-center justify-center gap-0.5">
+                    <span class="text-xs font-bold tracking-wider uppercase flex items-center gap-1.5">
+                        <i class="fa-solid fa-rotate-left"></i> RESET ODYSSEY
+                    </span>
+                    <span class="text-[10px] text-emerald-400/80">오디세이 시뮬레이션 초기화</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 하단: 수학적 증명 및 타자 연출 텍스트 영역 -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 border-t border-slate-800/80 pt-4">
+            <!-- 텍스트 영역 (11칸) -->
+            <div class="md:col-span-11 bg-black/40 p-5 rounded-xl border border-slate-800/60 h-[220px] overflow-y-auto" id="terminal-container">
+                <div id="typewriter-area" class="code-font text-xs md:text-sm leading-relaxed text-slate-300 cursor whitespace-pre-wrap"></div>
+            </div>
+            
+            <!-- 별 장식 아이콘 영역 (1칸) -->
+            <div class="md:col-span-1 flex items-center justify-center py-2 md:py-0">
+                <div class="relative w-8 h-8 flex items-center justify-center text-slate-600 hover:text-sky-400 transition-colors duration-500 cursor-help" title="Singularity Point">
+                    <i class="fa-solid fa-star-of-david text-xl animate-spin" style="animation-duration: 15s;"></i>
+                    <i class="fa-solid fa-circle text-[6px] absolute text-sky-500 animate-pulse"></i>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 푸터 -->
+    <div class="text-center text-[10px] text-slate-600 mt-4 max-w-7xl mx-auto w-full flex justify-between px-4">
+        <span>Mathematics Visualizer - f'(x) Continuity Study</span>
+        <span>Three.js & Tailwind CSS Rendering</span>
+    </div>
+
+    <!-- JavaScript 로직 -->
+    <script>
+        // 1. 상태 및 상수 정의
+        let scene, camera, renderer;
+        let starField, starGeometry, starMaterial;
+        const particleCount = 18000; // 은하수 같은 고밀도 연출을 위해 별 입자 대폭 증가
+        
+        // 애니메이션 및 물리 상수
+        let baseSpeed = 1.0;
+        let isVortexActive = false;
+        let targetCameraZ = 120;
+        let currentCameraZ = 120;
+        let time = 0;
+
+        // UI 요소 취득
+        const container = document.getElementById('canvas-container');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const btnZoom = document.getElementById('btn-zoom');
+        const btnVortex = document.getElementById('btn-vortex');
+        const btnReset = document.getElementById('btn-reset');
+        const sliderSpeed = document.getElementById('slider-speed');
+        const speedVal = document.getElementById('speed-val');
+        const customAlert = document.getElementById('custom-alert');
+        const alertText = document.getElementById('alert-text');
+
+        // 커스텀 알림 표시 함수
+        function showAlert(message) {
+            alertText.textContent = message;
+            customAlert.classList.remove('opacity-0', '-translate-y-2', 'pointer-events-none');
+            customAlert.classList.add('opacity-100', 'translate-y-0');
+            
+            setTimeout(() => {
+                customAlert.classList.add('opacity-0', '-translate-y-2', 'pointer-events-none');
+                customAlert.classList.remove('opacity-100', 'translate-y-0');
+            }, 3000);
+        }
+
+        // 2. Three.js 우주 및 블랙홀 초기화
+        function initThree() {
+            // 씬 생성
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x030508, 0.0015);
+
+            // 카메라 생성 (원근감 카메라)
+            camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 1, 1000);
+            camera.position.z = currentCameraZ;
+            camera.position.y = 15;
+            camera.lookAt(0, 0, 0);
+
+            // 렌더러 생성
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            // 입자 기하학 생성
+            starGeometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const colors = new Float32Array(particleCount * 3);
+            const sizes = new Float32Array(particleCount);
+            
+            // 물리 연산용 메타데이터 보존
+            const initialAngles = new Float32Array(particleCount);
+            const radii = new Float32Array(particleCount);
+            const speeds = new Float32Array(particleCount);
+
+            // [색상 그라데이션 설계] - 원본 이미지의 극단적 대조감을 재현하기 위해 색조 대폭 수정
+            const colorInner = new THREE.Color('#ffffff'); // 핵심 특이점: 완벽한 눈부신 하얀색 광원
+            const colorMid = new THREE.Color('#7be3ff');   // 나선 수렴부: 초고온 성운의 시안 블루
+            const colorOuter = new THREE.Color('#ffa84a'); // 외곽 나선 팔: 가속되며 마찰열을 내는 골드 오렌지 황휘
+            const colorDeep = new THREE.Color('#221155');  // 배경 심연: 중력에 붙잡힌 어둡고 차가운 심연의 퍼플
+
+            for (let i = 0; i < particleCount; i++) {
+                // 은하 내부 중심에 별이 더 촘촘히 뭉치도록 거듭제곱 지수 조정 (밀도 향상)
+                const radius = Math.pow(Math.random(), 2.8) * 220 + 1.2; 
+                radii[i] = radius;
+
+                // 대칭적인 구조의 나선 은하 팔 분포
+                const armIndex = i % 2;
+                const angle = (armIndex * Math.PI) + (Math.random() * 0.45) + (radius * 0.08);
+                initialAngles[i] = angle;
+                
+                // 중심부로의 안정적인 유입 속도
+                speeds[i] = (Math.random() * 0.38 + 0.15) * (1.7 - (radius / 220));
+
+                const x = Math.cos(angle) * radius;
+                const z = Math.sin(angle) * radius;
+                // 우주의 두께감을 주어 평면이 아닌 3차원 공간으로 느껴지도록 y축 편차 적용
+                const y = (Math.random() - 0.5) * (24 - (radius * 0.1));
+
+                positions[i * 3] = x;
+                positions[i * 3 + 1] = y;
+                positions[i * 3 + 2] = z;
+
+                // 세밀한 3단계 그라데이션 보간 (블랙홀 강착원반의 완벽한 색감 조합)
+                let mixedColor;
+                if (radius < 20) {
+                    mixedColor = colorInner.clone().lerp(colorMid, radius / 20);
+                } else if (radius < 90) {
+                    mixedColor = colorMid.clone().lerp(colorOuter, (radius - 20) / 70);
+                } else {
+                    mixedColor = colorOuter.clone().lerp(colorDeep, (radius - 90) / 130);
+                }
+
+                colors[i * 3] = mixedColor.r;
+                colors[i * 3 + 1] = mixedColor.g;
+                colors[i * 3 + 2] = mixedColor.b;
+
+                // [별 품질 향상 핵심 - 입자 크기의 완벽한 변조]
+                // 중심에 초밀착된 고휘도 입자들은 크게 반짝이고, 바깥쪽은 아스라이 반짝이게 설계
+                sizes[i] = (radius < 25) ? (4.2 - (radius / 10)) : (1.8 + Math.random() * 2.2);
+            }
+
+            starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            starGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            starGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+            
+            // 별 물리학 속성 부여
+            starGeometry.userData = { radii, initialAngles, speeds, sizes };
+
+            // [별 품질 향상 핵심 - 고화질 소프트 눈부심 광채 텍스처 동적 렌더링]
+            // 거친 픽셀 느낌 대신, 안개가 서린 듯 은은하게 주위로 발산하는 하이엔드 광원 텍스처 생성
+            const canvas = document.createElement('canvas');
+            canvas.width = 64; // 고해상도 캔버스 사용
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+            gradient.addColorStop(0, 'rgba(255,255,255,1.0)');     // 핫스팟 (가장 눈부신 중앙)
+            gradient.addColorStop(0.15, 'rgba(220,245,255,0.95)'); // 푸르스름한 열기 필터
+            gradient.addColorStop(0.4, 'rgba(120,200,255,0.4)');   // 아우라 번짐 영역
+            gradient.addColorStop(0.7, 'rgba(80,150,255,0.1)');    // 극도로 미세한 잔광
+            gradient.addColorStop(1, 'rgba(0,0,0,0)');             // 소멸 투명화
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 64, 64);
+            
+            const starTexture = new THREE.CanvasTexture(canvas);
+
+            // 파티클 재질 설정
+            starMaterial = new THREE.PointsMaterial({
+                size: 3.5, // 기본 별 입자 픽셀 크기를 대폭 키워 가시성 향상
+                vertexColors: true,
+                transparent: true,
+                blending: THREE.AdditiveBlending, // 광채가 겹칠수록 환하게 중첩되도록 가산 혼합 적용
+                depthWrite: false,
+                map: starTexture,
+                sizeAttenuation: true // 원근에 따른 자동 별 크기 렌더링 활성화
+            });
+
+            starField = new THREE.Points(starGeometry, starMaterial);
+            scene.add(starField);
+
+            // 특이점 중심에 강력한 보조 백색 구체 광체 추가 (블랙홀 싱귤래리티 코어)
+            const coreGeo = new THREE.SphereGeometry(1.2, 32, 32);
+            const coreMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+            scene.add(coreMesh);
+
+            // 주변을 광범위하게 수놓는 청록색 포인트 라이트
+            const centerLight = new THREE.PointLight(0x0ea5e9, 12, 160);
+            centerLight.position.set(0, 0, 0);
+            scene.add(centerLight);
+
+            // 로딩 오버레이 소멸
+            loadingOverlay.classList.add('opacity-0');
+            setTimeout(() => {
+                loadingOverlay.style.display = 'none';
+            }, 500);
+
+            // 애니메이션 루프 가동
+            animate();
+        }
+
+        // 3. 블랙홀 물리 모델 및 애니메이션 루프
+        function animate() {
+            requestAnimationFrame(animate);
+
+            time += 0.012 * baseSpeed;
+
+            // 카메라 줌인 타겟 보간 적용 (부드러운 시차 전환)
+            currentCameraZ += (targetCameraZ - currentCameraZ) * 0.06;
+            camera.position.z = currentCameraZ;
+
+            // 소용돌이 에너지 변조 계수 (진동수 왜곡 기능이 켜지면 물리 왜곡도 발생)
+            const vortexIntensity = isVortexActive ? 3.5 : 1.0;
+
+            const positions = starGeometry.attributes.position.array;
+            const { radii, initialAngles, speeds } = starGeometry.userData;
+
+            for (let i = 0; i < particleCount; i++) {
+                // 중심으로 빨려 들어가는 나선형 궤도 연산
+                let currentRadius = radii[i] - (time * speeds[i] * 4.2);
+                
+                // 블랙홀 특이점에 빨려 들어가 은하핵에서 완벽하게 소멸하면 외부 우주 궤도로 순환 재생성
+                if (currentRadius <= 1.2) {
+                    radii[i] = 200 + Math.random() * 20;
+                    currentRadius = radii[i];
+                }
+
+                // [회전 구심 가속도 공식]
+                // 케플러 법칙처럼 중심(싱귤래리티)에 가까워질수록 회전 각속도가 무한히 폭발(가속)하는 왜곡 알고리즘
+                const rotationFactor = 5.6 / (Math.pow(currentRadius, 0.46) + 0.7);
+                const angle = initialAngles[i] + (time * rotationFactor * vortexIntensity);
+
+                // 실시간 3D 성운 좌표 배치
+                positions[i * 3] = Math.cos(angle) * currentRadius;
+                
+                // [진동수 왜곡 - f'(x)의 위상수학적 묘사]
+                // 미분가능 함수 f'(x)가 x=0 부근에서 격렬하게 상하 진동하는 특성을 고주파 파동으로 시각화
+                const waveFreq = currentRadius * 0.18; // 중심부로 갈수록 촘촘해짐
+                const waveAmp = isVortexActive ? (2.8 * (1.2 - (currentRadius / 200))) : 0.8; // 소용돌이 극대화 시 상하 왜곡 폭발
+                positions[i * 3 + 1] = Math.sin(time * 3.5 + waveFreq) * waveAmp + (Math.random() - 0.5) * 0.5;
+                
+                positions[i * 3 + 2] = Math.sin(angle) * currentRadius;
+            }
+
+            starGeometry.attributes.position.needsUpdate = true;
+
+            // 역동적인 입체 관측을 위한 카메라의 미세 시차 회전 (우주 비행선 안에서 보는 듯한 진동)
+            camera.position.x = Math.sin(time * 0.035) * 8;
+            camera.lookAt(0, 0, 0);
+
+            renderer.render(scene, camera);
+        }
+
+        // 반응형 리사이즈 대응
+        window.addEventListener('resize', () => {
+            if (!camera || !renderer) return;
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+
+
+        // 4. 인터랙티브 제어 시스템
+        
+        // 줌 가젯 클릭시
+        btnZoom.addEventListener('click', () => {
+            if (targetCameraZ === 120) {
+                targetCameraZ = 35; // 초고도 근접 줌
+                btnZoom.classList.add('neon-border-blue');
+                showAlert("SYSTEM: 오디세이 초고속 줌인 가동 - 사건의 지평선(Event Horizon) 돌입.");
+            } else {
+                targetCameraZ = 120; // 표준 안전 관측 궤도 복원
+                btnZoom.classList.remove('neon-border-blue');
+                showAlert("SYSTEM: 관측 카메라 안전 거리 확보 궤도로 탈출 완료.");
+            }
+        });
+
+        // 소용돌이 왜곡 클릭시
+        btnVortex.addEventListener('click', () => {
+            isVortexActive = !isVortexActive;
+            if (isVortexActive) {
+                btnVortex.classList.add('neon-border-cyan');
+                showAlert("SYSTEM: 진동수 왜곡 활성화 - lim f'(x) [x->0] 부근의 무한 진동 파동을 모사합니다.");
+            } else {
+                btnVortex.classList.remove('neon-border-cyan');
+                showAlert("SYSTEM: 평형 중력장 상태 돌입 (진동 요동 왜곡 복구).");
+            }
+        });
+
+        // 슬라이더 조절
+        sliderSpeed.addEventListener('input', (e) => {
+            baseSpeed = parseFloat(e.target.value);
+            speedVal.textContent = baseSpeed.toFixed(1) + 'x';
+        });
+
+        // 리셋 버튼 클릭시
+        btnReset.addEventListener('click', () => {
+            baseSpeed = 1.0;
+            isVortexActive = false;
+            targetCameraZ = 120;
+            sliderSpeed.value = 1.0;
+            speedVal.textContent = '1.0x';
+            
+            btnZoom.classList.remove('neon-border-blue');
+            btnVortex.classList.remove('neon-border-cyan');
+            
+            showAlert("SYSTEM: 오디세이 우주 정밀 관측 매개변수가 원점으로 무사히 복구되었습니다.");
+            startTypewriter();
+        });
+
+
+        // 5. 하단 분석 로그 타자기 효과 (Typewriter Effect)
+        const proofText = `[ANALYSIS LOG #2026] ----------------------------------------------------
+WHY?
+이 함수는 x = 0에서 미분가능하지만(f'(0) = 0), x가 0으로 다가갈 때 그 도함수가 연속적이지 않습니다.
+This function is differentiable at x = 0 (f'(0) = 0), but its derivative is not continuous as x approaches 0.
+
+Proof: Differentiability at x = 0 (x=0에서의 미분가능성 증명)
+  f'(0) = lim [f(0 + h) - f(0)] / h
+        = lim [h² · sin(1/h) - 0] / h 
+        = lim h · sin(1/h) (as h -> 0)
+
+  이때, -1 ≤ sin(1/h) ≤ 1 이므로 -|h| ≤ h · sin(1/h) ≤ |h| 가 성립합니다.
+  By Squeeze Theorem (샌드위치 정리에 의해):
+  lim h · sin(1/h) = 0 (as h -> 0)
+  Therefore, f'(0) = 0.  (미분계수 0으로 완벽히 수렴)
+
+Analysis: Derivative Limit near x = 0 (x=0 근방에서의 도함수의 극한 분석)
+  x ≠ 0 일 때 곱의 미분법을 적용하면:
+  f'(x) = 2x · sin(1/x) - cos(1/x)
+
+  이제 x가 0으로 갈 때 도함수의 극한을 취해봅니다:
+  lim f'(x) = lim [2x · sin(1/x) - cos(1/x)]
+            = lim [2x · sin(1/x)] - lim [cos(1/x)] (as x -> 0)
+
+  첫 번째 항 lim 2x · sin(1/x) 은 샌드위치 정리에 의해 0으로 수렴합니다.
+  하지만 두 번째 항인 lim cos(1/x) 는 x가 0으로 무한히 다가갈 때 -1과 1 사이를 격렬하게 진동(oscillate)합니다.
+  이로 인해 극한값이 전혀 존재하지 않게 됩니다(Does not exist).
+
+Conclusion
+  따라서, lim f'(x) ≠ f'(0) 이 성립하며, 도함수 f'(x)는 x=0에서 극단적인 진동형 불연속(Discontinuous)을 보입니다.
+  마치 블랙홀 중심부로 다가갈수록 무한히 가속되며 요동치는 성운 입자들의 움직임과 같습니다.
+-------------------------------------------------------------------------`;
+
+        const typewriterArea = document.getElementById('typewriter-area');
+        const terminalContainer = document.getElementById('terminal-container');
+        let timerId = null;
+
+        function startTypewriter() {
+            if (timerId) clearInterval(timerId);
+            
+            typewriterArea.textContent = "";
+            let index = 0;
+            
+            // 텍스트를 빠르게 출력하기 위해 한 번에 2~3글자씩 타이핑 처리
+            timerId = setInterval(() => {
+                if (index < proofText.length) {
+                    const chunk = proofText.substring(index, index + 3);
+                    typewriterArea.textContent += chunk;
+                    index += 3;
+                    
+                    // 스크롤다운 자동 제어
+                    terminalContainer.scrollTop = terminalContainer.scrollHeight;
+                } else {
+                    clearInterval(timerId);
+                }
+            }, 10);
+        }
+
+        // 초기 구동 트리거
+        window.onload = function() {
+            initThree();
+            startTypewriter();
+        };
+    </script>
+</body>
+</html>
