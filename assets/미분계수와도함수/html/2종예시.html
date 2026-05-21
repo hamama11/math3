@@ -1,0 +1,140 @@
+with st.expander(
+    "🔍 <span style='font-size:24px;'>f'(0)은 존재하지만 연속은 아니로다</span>",
+    expanded=False
+):
+
+    left, right = st.columns([1, 1])
+
+    # =========================
+    # 📘 왼쪽 : f'(0) 존재
+    # =========================
+
+    with left:
+
+        st.markdown("""
+        <p style='font-size:20px; line-height:1.9;'>
+
+        🌿 <b>1. 먼저 \\(f'(0)\\)의 존재를 살펴보자</b>
+
+        </p>
+        """, unsafe_allow_html=True)
+
+        st.latex(r"""
+        f(x)=
+        \begin{cases}
+        x^2\sin\frac{1}{x}, & x\neq0 \\
+        0, & x=0
+        \end{cases}
+        """)
+
+        st.latex(r"""
+        f'(0)
+        =
+        \lim_{h\to0}
+        \frac{f(h)-f(0)}{h}
+        """)
+
+        st.latex(r"""
+        =
+        \lim_{h\to0}
+        \frac{h^2\sin(1/h)}{h}
+        """)
+
+        st.latex(r"""
+        =
+        \lim_{h\to0}
+        h\sin(1/h)
+        """)
+
+        st.markdown("""
+        <p style='font-size:18px; line-height:1.8;'>
+
+        샌드위치 정리에 의해,
+
+        </p>
+        """, unsafe_allow_html=True)
+
+        st.latex(r"""
+        -|h|
+        \le
+        h\sin(1/h)
+        \le
+        |h|
+        """)
+
+        st.latex(r"""
+        \therefore
+        f'(0)=0
+        """)
+
+    # =========================
+    # 📕 오른쪽 : 불연속
+    # =========================
+
+    with right:
+
+        st.markdown("""
+        <p style='font-size:20px; line-height:1.9;'>
+
+        🌊 <b>2. 그러나 도함수는 연속이 아니로다</b>
+
+        </p>
+        """, unsafe_allow_html=True)
+
+        st.latex(r"""
+        f'(x)
+        =
+        2x\sin\frac1x
+        -
+        \cos\frac1x
+        \quad (x\neq0)
+        """)
+
+        st.markdown("""
+        <p style='font-size:18px; line-height:1.8;'>
+
+        여기서 첫 번째 항은,
+
+        </p>
+        """, unsafe_allow_html=True)
+
+        st.latex(r"""
+        2x\sin\frac1x \to 0
+        """)
+
+        st.markdown("""
+        <p style='font-size:18px; line-height:1.8;'>
+
+        하지만 \\(-\cos(1/x)\\)는 계속 진동하므로
+
+        </p>
+        """, unsafe_allow_html=True)
+
+        st.latex(r"""
+        \lim_{x\to0}\cos\frac1x
+        """)
+
+        st.markdown("""
+        <p style='font-size:18px; line-height:1.8;'>
+
+        는 존재하지 않는다.
+
+        </p>
+        """, unsafe_allow_html=True)
+
+        st.latex(r"""
+        \therefore
+        \lim_{x\to0}f'(x)
+        \text{ does not exist}
+        """)
+
+        st.markdown("""
+        <p style='font-size:18px; line-height:1.9;'>
+
+        즉, \\(f'(0)\\)은 존재하지만<br>
+        도함수 \\(f'\\)는 \\(x=0\\)에서 연속이 아니로다.
+
+        </p>
+        """, unsafe_allow_html=True)
+        scrolling=True
+    )
