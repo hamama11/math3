@@ -102,3 +102,15 @@ wrapped_html = f"""
 </div>
 """
 
+# HTML 불러오기
+html_path = "assets/미분계수와도함수/html/2종예시.html"
+
+with open(html_path, "r", encoding="utf-8") as f:
+    html_content = f.read()
+
+wrapped_html = f"""
+<div style="width: 100%; margin: 0; padding: 0;">
+    {html_content}
+</div>
+"""
+
