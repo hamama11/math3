@@ -31,9 +31,34 @@ body{
     color:#222;
 }
 
+.title{
+    font-size:24px;
+    font-weight:700;
+    margin-bottom:16px;
+    color:#1f3c88;
+}
+
+.fx-card{
+    background:white;
+    border-radius:12px;
+    padding:12px 20px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.06);
+    margin-bottom:16px;
+    display:flex;
+    align-items:center;
+    gap:20px;
+}
+
+.fx-title{
+    font-size:16px;
+    font-weight:700;
+    color:#1f3c88;
+    white-space:nowrap;
+}
+
 .container{
     display:flex;
-    gap:20px;
+    gap:16px;
     align-items:flex-start;
 }
 
@@ -45,29 +70,22 @@ body{
     box-shadow:0 4px 12px rgba(0,0,0,0.06);
 }
 
-.title{
-    font-size:24px;
-    font-weight:700;
-    margin-bottom:20px;
-    color:#1f3c88;
-}
-
 .subtitle{
-    font-size:18px;
+    font-size:17px;
     font-weight:700;
     margin-bottom:12px;
     line-height:1.4;
 }
 
 .text{
-    font-size:15px;
+    font-size:14.5px;
     line-height:1.6;
-    margin-bottom:8px;
+    margin:4px 0;
 }
 
 .math{
-    font-size:18px;
-    margin:12px 0;
+    font-size:17.5px;
+    margin:4px 0;
     overflow-x:auto;
 }
 
@@ -80,6 +98,19 @@ body{
 🔍 f'(0)은 존재하지만 연속은 아니로다
 </div>
 
+<div class="fx-card">
+    <div class="fx-title">대상 함수</div>
+    <div class="math" style="margin:0; flex:1;">
+    \[
+    f(x)=
+    \begin{cases}
+    x^2\sin\frac{1}{x}, & x\neq0 \\
+    0, & x=0
+    \end{cases}
+    \]
+    </div>
+</div>
+
 <div class="container">
 
     <div class="card">
@@ -90,46 +121,15 @@ body{
 
         <div class="math">
         \[
-        f(x)=
-        \begin{cases}
-        x^2\sin\frac{1}{x}, & x\neq0 \\
-        0, & x=0
-        \end{cases}
-        \]
-        </div>
-
-        <div class="math">
-        \[
-        f'(0)
-        =
-        \lim_{h\to0}
-        \frac{f(h)-f(0)}{h}
-        \]
-        </div>
-
-        <div class="math">
-        \[
-        =
-        \lim_{h\to0}
-        \frac{h^2\sin(1/h)}{h}
-        =
-        \lim_{h\to0}
-        h\sin(1/h)
+        \begin{aligned}
+        f'(0) &= \lim_{h\to0} \frac{f(h)-f(0)}{h} \\
+              &= \lim_{h\to0} \frac{h^2\sin(1/h)}{h} = \lim_{h\to0} h\sin(1/h)
+        \end{aligned}
         \]
         </div>
 
         <div class="text">
-        샌드위치 정리에 의해,
-        </div>
-
-        <div class="math">
-        \[
-        -|h|
-        \le
-        h\sin(1/h)
-        \le
-        |h|
-        \]
+        샌드위치 정리에 의해 \(-|h| \le h\sin(1/h) \le |h|\) 이므로,
         </div>
 
         <div class="math">
@@ -148,50 +148,22 @@ body{
 
         <div class="math">
         \[
-        f'(x)
-        =
-        2x\sin\frac1x
-        -
-        \cos\frac1x
-        \quad (x\neq0)
+        f'(x) = 2x\sin\frac1x - \cos\frac1x \quad (x\neq0)
         \]
         </div>
 
         <div class="text">
-        여기서 첫 번째 항은,
+        여기서 \(2x\sin\frac1x \to 0\) 이지만, \(-\cos(1/x)\)는 계속 진동하므로 \(\lim_{x\to0}\cos\frac1x\)는 존재하지 않는다.
         </div>
 
         <div class="math">
         \[
-        2x\sin\frac1x \to 0
+        \therefore \lim_{x\to0}f'(x) \text{ does not exist}
         \]
         </div>
 
-        <div class="text">
-        하지만 \(-\cos(1/x)\)는 계속 진동하므로
-        </div>
-
-        <div class="math">
-        \[
-        \lim_{x\to0}\cos\frac1x
-        \]
-        </div>
-
-        <div class="text">
-        는 존재하지 않는다.
-        </div>
-
-        <div class="math">
-        \[
-        \therefore
-        \lim_{x\to0}f'(x)
-        \text{ does not exist}
-        \]
-        </div>
-
-        <div class="text">
-        즉, \(f'(0)\)은 존재하지만<br>
-        도함수 \(f'\)는 \(x=0\)에서 연속이 아니로다.
+        <div class="text" style="margin-top:12px; border-top:1px dashed #eee; padding-top:8px;">
+        즉, \(f'(0)\)은 존재하지만 도함수 \(f'\)는 \(x=0\)에서 연속이 아니로다.
         </div>
 
     </div>
