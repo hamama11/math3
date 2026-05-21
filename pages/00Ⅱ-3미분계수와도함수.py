@@ -5,6 +5,12 @@ import streamlit.components.v1 as components
 left, right = st.columns([1.3, 1])
 
 with left:
+    st.image(
+        "assets/미분계수와도함수/images/슬라이드1.PNG",
+        use_container_width=True
+    )
+    
+with right:
     st.markdown("""
     <p style='font-size:19px; line-height:2;'>
 
@@ -24,12 +30,6 @@ with left:
     </p>
     """, unsafe_allow_html=True)
 
-with right:
-    st.image(
-        "assets/미분계수와도함수/images/슬라이드1.PNG",
-        use_container_width=True
-    )
-    
 # 좌우 배치
 left, right = st.columns([1, 1.2])
 
