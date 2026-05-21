@@ -1,140 +1,204 @@
-with st.expander(
-    "🔍 <span style='font-size:24px;'>f'(0)은 존재하지만 연속은 아니로다</span>",
-    expanded=False
-):
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    left, right = st.columns([1, 1])
+<title>f'(0)은 존재하지만 연속은 아니로다</title>
 
-    # =========================
-    # 📘 왼쪽 : f'(0) 존재
-    # =========================
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
 
-    with left:
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['\\(','\\)']],
+    displayMath: [['\\[','\\]']]
+  }
+};
+</script>
 
-        st.markdown("""
-        <p style='font-size:20px; line-height:1.9;'>
+<script async
+src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
 
-        🌿 <b>1. 먼저 \\(f'(0)\\)의 존재를 살펴보자</b>
+<style>
 
-        </p>
-        """, unsafe_allow_html=True)
+body{
+    margin:0;
+    padding:40px;
+    background:#f7f8fc;
+    font-family:'Pretendard', sans-serif;
+    color:#222;
+}
 
-        st.latex(r"""
+.container{
+    display:flex;
+    gap:40px;
+    align-items:flex-start;
+}
+
+.card{
+    flex:1;
+    background:white;
+    border-radius:20px;
+    padding:32px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.08);
+}
+
+.title{
+    font-size:30px;
+    font-weight:700;
+    margin-bottom:40px;
+    color:#1f3c88;
+}
+
+.subtitle{
+    font-size:24px;
+    font-weight:700;
+    margin-bottom:24px;
+    line-height:1.8;
+}
+
+.text{
+    font-size:19px;
+    line-height:1.9;
+    margin-bottom:18px;
+}
+
+.math{
+    font-size:24px;
+    margin:24px 0;
+    overflow-x:auto;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="title">
+🔍 f'(0)은 존재하지만 연속은 아니로다
+</div>
+
+<div class="container">
+
+    <!-- 왼쪽 -->
+    <div class="card">
+
+        <div class="subtitle">
+        🌿 1. 먼저 \(f'(0)\)의 존재를 살펴보자
+        </div>
+
+        <div class="math">
+        \[
         f(x)=
         \begin{cases}
         x^2\sin\frac{1}{x}, & x\neq0 \\
         0, & x=0
         \end{cases}
-        """)
+        \]
+        </div>
 
-        st.latex(r"""
+        <div class="math">
+        \[
         f'(0)
         =
         \lim_{h\to0}
         \frac{f(h)-f(0)}{h}
-        """)
+        \]
+        </div>
 
-        st.latex(r"""
+        <div class="math">
+        \[
         =
         \lim_{h\to0}
         \frac{h^2\sin(1/h)}{h}
-        """)
-
-        st.latex(r"""
         =
         \lim_{h\to0}
         h\sin(1/h)
-        """)
+        \]
+        </div>
 
-        st.markdown("""
-        <p style='font-size:18px; line-height:1.8;'>
-
+        <div class="text">
         샌드위치 정리에 의해,
+        </div>
 
-        </p>
-        """, unsafe_allow_html=True)
-
-        st.latex(r"""
+        <div class="math">
+        \[
         -|h|
         \le
         h\sin(1/h)
         \le
         |h|
-        """)
+        \]
+        </div>
 
-        st.latex(r"""
-        \therefore
-        f'(0)=0
-        """)
+        <div class="math">
+        \[
+        \therefore f'(0)=0
+        \]
+        </div>
 
-    # =========================
-    # 📕 오른쪽 : 불연속
-    # =========================
+    </div>
 
-    with right:
+    <!-- 오른쪽 -->
+    <div class="card">
 
-        st.markdown("""
-        <p style='font-size:20px; line-height:1.9;'>
+        <div class="subtitle">
+        🌊 2. 그러나 도함수는 연속이 아니로다
+        </div>
 
-        🌊 <b>2. 그러나 도함수는 연속이 아니로다</b>
-
-        </p>
-        """, unsafe_allow_html=True)
-
-        st.latex(r"""
+        <div class="math">
+        \[
         f'(x)
         =
         2x\sin\frac1x
         -
         \cos\frac1x
         \quad (x\neq0)
-        """)
+        \]
+        </div>
 
-        st.markdown("""
-        <p style='font-size:18px; line-height:1.8;'>
-
+        <div class="text">
         여기서 첫 번째 항은,
+        </div>
 
-        </p>
-        """, unsafe_allow_html=True)
-
-        st.latex(r"""
+        <div class="math">
+        \[
         2x\sin\frac1x \to 0
-        """)
+        \]
+        </div>
 
-        st.markdown("""
-        <p style='font-size:18px; line-height:1.8;'>
+        <div class="text">
+        하지만 \(-\cos(1/x)\)는 계속 진동하므로
+        </div>
 
-        하지만 \\(-\cos(1/x)\\)는 계속 진동하므로
-
-        </p>
-        """, unsafe_allow_html=True)
-
-        st.latex(r"""
+        <div class="math">
+        \[
         \lim_{x\to0}\cos\frac1x
-        """)
+        \]
+        </div>
 
-        st.markdown("""
-        <p style='font-size:18px; line-height:1.8;'>
-
+        <div class="text">
         는 존재하지 않는다.
+        </div>
 
-        </p>
-        """, unsafe_allow_html=True)
-
-        st.latex(r"""
+        <div class="math">
+        \[
         \therefore
         \lim_{x\to0}f'(x)
         \text{ does not exist}
-        """)
+        \]
+        </div>
 
-        st.markdown("""
-        <p style='font-size:18px; line-height:1.9;'>
+        <div class="text">
+        즉, \(f'(0)\)은 존재하지만<br>
+        도함수 \(f'\)는 \(x=0\)에서 연속이 아니로다.
+        </div>
 
-        즉, \\(f'(0)\\)은 존재하지만<br>
-        도함수 \\(f'\\)는 \\(x=0\\)에서 연속이 아니로다.
+    </div>
 
-        </p>
-        """, unsafe_allow_html=True)
-        scrolling=True
-    )
+</div>
+
+</body>
+</html>
