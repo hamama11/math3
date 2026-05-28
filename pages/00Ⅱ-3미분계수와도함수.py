@@ -93,6 +93,12 @@ show_html(
     height=900
 )
 
+show_html(
+    "assets/미분계수와도함수/html/lim.html",
+    title="🔍 미분계수 Quiz",
+    height=900
+)
+
 # =========================
 # 중간 문구
 # =========================
