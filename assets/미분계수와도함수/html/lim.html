@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>미분계수 10선 통합 좌표평면 시뮬레이터 (GitHub 호환)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- MathJax for rendering LaTeX formulas -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            },
+            startup: {
+                pageReady: () => {
+                    return MathJax.startup.defaultPageReady().then(() => {
+                        console.log('MathJax initial typesetting complete');
+                    });
+                }
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+    </script>
+    <style>
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 52%; /* 16:9 와이드 비율 */
+        }
+        canvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #ffffff; /* 깨끗한 라이트 배경 */
+        }
+        /* Custom scrollbar for light theme */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans antialiased">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 px-6 py-4 shadow-sm">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-100">
+                    <i data-lucide="merge" class="w-7 h-7"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+                        미분계수 10선 동일 목적지($A$) 수렴 시뮬레이터
+                    </h1>
+                    <p class="text-slate-500 text-xs mt-0.5">서로 다른 출발점($B_n$)에서 출발한 10개의 할선들이 하나의 통합 도착점 $A(x_0, f(x_0))$로 완벽하게 수렴합니다.</p>
+                </div>
+            </div>
+            <div class="bg-indigo-50 border border-indigo-100 px-4 py-1.5 rounded-full text-xs font-semibold text-indigo-700 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                GitHub Pages 배포 지원 버전
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Column: Visualizer (Canvas) -->
+        <section class="lg:col-span-8 flex flex-col gap-4">
+            
+            <!-- Quick Question Selector (One-Touch Dashboard) -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <i data-lucide="mouse-pointer-click" class="w-4 h-4 text-amber-500"></i>
+                        [원터치 프리셋] 탐구할 문제 선택하기 (선택 시 위치가 완전 자동 초기화됩니다)
+                    </h3>
+                    <div class="flex gap-2">
+                        <button onclick="animateAllTogether()" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1">
+                            <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                            모든 점 동시 수렴 재생 (All B ➔ A)
+                        </button>
+                        <button onclick="resetAllPoints()" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold border border-slate-200 transition-all">
+                            모두 펼치기 (초기화)
+                        </button>
+                    </div>
+                </div>
+                <!-- 10 Questions Grid Dashboard -->
+                <div class="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-10 gap-2" id="preset-container">
+                    <!-- Buttons will be dynamically populated by js with formula tags -->
+                </div>
+            </div>
+
+            <!-- Active State Banner -->
+            <div id="type-banner" class="bg-indigo-50/50 border border-indigo-100 rounded-xl px-5 py-3 flex flex-col sm:flex-row sm:items-center justify-between text-sm gap-2">
+                <div class="flex items-center gap-2.5">
+                    <span class="px-2.5 py-1 bg-indigo-100 text-indigo-800 rounded-md font-bold text-xs border border-indigo-200" id="problem-num-badge">문제 Q1</span>
+                    <span class="font-bold text-slate-800" id="type-title">상수 조절형 (Q1)</span>
+                </div>
+                <div class="text-xs text-slate-600 bg-white px-3 py-1.5 rounded-lg border border-slate-200 flex items-center gap-2">
+                    <span class="font-semibold text-slate-500">수식 형태 (목적지 $x_0$):</span>
+                    <span id="current-formula-badge" class="font-mono text-indigo-600 font-bold text-sm">$\lim_{t \to x} \frac{f(3t)-f(3x)}{t-x}$</span>
+                </div>
+            </div>
+
+            <!-- Canvas Wrapper -->
+            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                <!-- Visualizer Stats -->
+                <div class="grid grid-cols-3 gap-1 bg-slate-50 border-b border-slate-200 text-xs px-4 py-2.5 font-mono text-slate-600">
+                    <div class="text-left">선택된 $B$ 점 가로 간격 ($\Delta x$): <span id="val-dx" class="text-sky-600 font-bold">-</span></div>
+                    <div class="text-center">선택된 $B$ 점 세로 간격 ($\Delta y$): <span id="val-dy" class="text-sky-600 font-bold">-</span></div>
+                    <div class="text-right">기하학적 실제 할선 기울기: <span id="val-slope" class="text-amber-600 font-bold">-</span></div>
+                </div>
+
+                <div class="canvas-container">
+                    <canvas id="geometryCanvas"></canvas>
+                </div>
+
+                <!-- Explanation Footnote -->
+                <div class="p-4 bg-slate-50 border-t border-slate-200 text-xs md:text-sm text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2">
+                    <span class="flex items-center gap-1"><i data-lucide="info" class="w-4 h-4 text-indigo-500"></i> 극한 수렴 애니메이션을 재생하면 사방의 할선들이 진한 공통 접선으로 모여드는 극한의 과정을 관찰할 수 있습니다.</span>
+                    <div class="flex gap-4">
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-violet-600"></span> 단일 도착점 $A(x_0)$</span>
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> 다양한 출발점 $B_n$</span>
+                        <span class="flex items-center gap-1.5"><span class="w-3.5 h-0.5 bg-sky-600 inline-block"></span> 할선 (연하게)</span>
+                        <span class="flex items-center gap-1.5"><span class="w-3.5 h-0.5 bg-rose-600 inline-block"></span> 기하학적 공통 접선 (진하게)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mathematical Mapping Activity -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                <h3 class="text-base font-bold text-slate-900 mb-3 flex items-center gap-2">
+                    <i data-lucide="calculator" class="w-5 h-5 text-emerald-600"></i>
+                    선택한 수식의 상세 대수적 풀이 (Algebraic Solution)
+                </h3>
+                <div id="math-explanation-box" class="text-sm text-slate-600 space-y-3 leading-relaxed">
+                    <!-- Dynamic injection based on active type -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Column: Control & Selection Panel -->
+        <section class="lg:col-span-4 flex flex-col gap-6">
+            
+            <!-- Type Selector Dashboard -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 flex flex-col gap-4 shadow-sm">
+                <h2 class="text-base font-bold text-slate-900 border-b border-slate-150 pb-2.5 flex items-center gap-2">
+                    <i data-lucide="grid" class="w-5 h-5 text-indigo-600"></i>
+                    10대 실전 문제 분류 코드
+                </h2>
+
+                <!-- Selection Buttons -->
+                <div class="flex flex-col gap-3">
+                    <!-- Type 1 -->
+                    <div id="badge-type1" class="text-left p-3.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 transition-all">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-bold text-xs text-indigo-700">유형 1: 상수 조절형</span>
+                            <span class="text-[9px] bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full border border-indigo-200">Q1, Q3, Q4, Q5, Q8, Q9</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 leading-relaxed">기준 변화에 맞춰 분모 계수를 확대/축소 보정하는 직선 수축형</p>
+                    </div>
+
+                    <!-- Type 2 & 3 통합 그룹화 (Q2, Q6, Q7, Q10을 한 세트로 시각 분류) -->
+                    <div id="badge-type2" class="text-left p-3.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 transition-all">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-bold text-xs text-amber-700">유형 2: 비선형 및 거듭제곱형 (한 세트)</span>
+                            <span class="text-[9px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full border border-amber-200">Q2, Q6, Q7, Q10</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 leading-relaxed">알맹이가 $t^2, t^3$이거나 분모 차수가 커서 합차/인수분해를 통해 수렴하는 비선형 보정 패키지</p>
+                    </div>
+
+                    <!-- Type 3 (기타 참조용) -->
+                    <div id="badge-type3" class="text-left p-3.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 transition-all">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-bold text-xs text-rose-700">유형 3: 역방향 차수형</span>
+                            <span class="text-[9px] bg-rose-100 text-rose-800 px-2 py-0.5 rounded-full border border-rose-200">Q7</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 leading-relaxed">분모의 차수가 더 커서 수렴 속도가 느려지고 기울기가 제한되는 감쇄형 (비선형형에 연동)</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 text-slate-400 text-center py-6 text-xs mt-12">
+        <p>© 2026 고교 미적분 통합 시각화 도구. Created by Gemini</p>
+    </footer>
+
+    <!-- Scripting -->
+    <script>
+        // Init Lucide Icons
+        lucide.createIcons();
+
+        // Canvas Setup
+        const canvas = document.getElementById('geometryCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Math Coordinate Boundaries (Zoomed out nicely to accommodate scaled points)
+        const mathBounds = {
+            xMin: -0.5,
+            xMax: 8.5,
+            yMin: -1.0,
+            yMax: 10.0
+        };
+
+        function toScreenX(x) {
+            return ((x - mathBounds.xMin) / (mathBounds.xMax - mathBounds.xMin)) * canvas.width;
+        }
+        function toScreenY(y) {
+            return canvas.height - (((y - mathBounds.yMin) / (mathBounds.yMax - mathBounds.yMin)) * canvas.height);
+        }
+
+        // State variables for ALL 10 problems
+        let activeProblem = 'Q1'; 
+        let paramX = 1.50; // Integrated destination x0
+        let onlyActiveLines = false; // 선 필터링 상태 플래그
+
+        // distance factor (1.0 = maximum split, 0.0 = completely converged to tangent)
+        const pointStates = {
+            Q1: 0.9, Q2: 0.85, Q3: 0.95, Q4: 0.8, Q5: 0.75,
+            Q6: 0.9, Q7: 0.82, Q8: 0.88, Q9: 0.7, Q10: 0.95
+        };
+
+        let isAnimatingAll = false;
+        let animationFrameId = null;
+
+        // Smooth Quadratic function for visual clarity: f(u) = 0.1 * u^2 + 0.5
+        // Derivative: f'(u) = 0.2 * u
+        function f(u) { return 0.1 * Math.pow(u, 2) + 0.5; }
+        function df(u) { return 0.2 * u; }
+
+        // Mapped problem data with Algebraic Solution Focus and problem tags
+        const problems = {
+            Q1: {
+                type: 'type1',
+                title: '상수 조절형 (Q1)',
+                tag: 'f(3x)',
+                formula: '$\\lim_{t \\to x} \\frac{f(3t)-f(3x)}{t-x}$',
+                insight: '도착지 $3x = x_0$로 동기화. 가로 변화폭 $\\Delta x$가 분모 간격보다 3배 빨라 할선 기울기가 최종 $3f\'(x_0)$에 수렴합니다.',
+                html: `
+                    <p class="font-bold text-indigo-700 text-base">🔍 Q1 대수적 문제해결 (인수 보정법)</p>
+                    <p class="text-slate-600 mt-2">미분계수의 정의 $f'(a) = \\lim_{\\square \\to 0} \\frac{f(a+\\square) - f(a)}{\\square}$를 이용하려면, <b>[분자 괄호 안 알맹이의 변화량]</b>과 <b>[분모의 변화량]</b>을 완벽하게 일치시켜야 합니다.</p>
+                    
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 my-3 font-mono text-xs text-slate-800 leading-relaxed">
+                        <span class="text-indigo-600 font-bold">[Step 1]</span> 분자의 알맹이 변화량 확인:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$\\Delta u = 3t - 3x = 3(t-x)$<br><br>
+                        <span class="text-indigo-600 font-bold">[Step 2]</span> 분모가 $(t-x)$이므로 형태를 맞추기 위해 분모·분자에 똑같이 $3$을 곱함:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$\\lim_{t \\to x} \\frac{f(3t)-f(3x)}{t-x} = \\lim_{t \\to x} \\left[ \\frac{f(3t)-f(3x)}{3(t-x)} \\times 3 \\right]$<br><br>
+                        <span class="text-indigo-600 font-bold">[Step 3]</span> $3t = T$, $3x = a$로 치환하면 $t \\to x$일 때 $T \\to a$가 되므로 미분계수 정의를 적용:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$= 3 \\times \\lim_{T \\to a} \\frac{f(T)-f(a)}{T-a} = 3f'(a) = 3f'(3x)$
+                    </div>
+                    <p class="text-slate-600 mt-2"><b>결론:</b> 도착지를 통합 목적지 $x_0$로 두면 최종값은 <b class="text-indigo-600">$3f'(x_0)$</b>가 됩니다.</p>
+                `
+            },
+            Q2: {
+                type: 'type2', // 비선형 거듭제곱형 패키지
+                title: '거듭제곱 변형형 (Q2)',
+                tag: 'f(x^2)',
+                formula: '$\\lim_{t \\to x} \\frac{f(t^2)-f(x^2)}{t-x}$',
+                insight: '도착지 $x^2 = x_0$로 동기화. 합차 공식의 보정 계수인 $2x$가 작용하여 최종 $2\\sqrt{x_0}f\'(x_0)$에 수렴합니다.',
+                html: `
+                    <p class="font-bold text-amber-700 text-base">🔍 Q2 대수적 문제해결 (합차 공식을 통한 인수분해)</p>
+                    <p class="text-slate-600 mt-2">분자의 알맹이 차수($t^2 - x^2$)와 분모의 차수($t-x$)가 다릅니다. 이 경우 고차식인 알맹이에 맞추어 분모를 팽창시켜 줍니다.</p>
+                    
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 my-3 font-mono text-xs text-slate-800 leading-relaxed">
+                        <span class="text-amber-600 font-bold">[Step 1]</span> 분자의 알맹이 변화량 확인:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$\\Delta u = t^2 - x^2$<br><br>
+                        <span class="text-amber-600 font-bold">[Step 2]</span> 합차 공식 $t^2-x^2 = (t-x)(t+x)$를 이용하여 분모·분자에 $(t+x)$를 각각 곱함:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$\\lim_{t \\to x} \\frac{f(t^2)-f(x^2)}{t-x} = \\lim_{t \\to x} \\left[ \\frac{f(t^2)-f(x^2)}{(t-x)(t+x)} \\times (t+x) \\right] = \\lim_{t \\to x} \\left[ \\frac{f(t^2)-f(x^2)}{t^2-x^2} \\times (t+x) \\right]$<br><br>
+                        <span class="text-amber-600 font-bold">[Step 3]</span> $t^2 = T$, $x^2 = a$로 치환하면 $t \\to x$일 때 $T \\to a$가 되며, 곱해진 인수는 $t+x \\to 2x$가 됨:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$= \\left( \\lim_{T \\to a} \\frac{f(T)-f(a)}{T-a} \\right) \\times \\lim_{t \\to x} (t+x) = f'(a) \\times 2x = 2x f'(x^2)$
+                    </div>
+                    <p class="text-slate-600 mt-2"><b>결론:</b> 통일 목적지 $x^2 = x_0$ ($x = \\sqrt{x_0}$)를 대입하면 대수적 해는 <b class="text-amber-700">$2\\sqrt{x_0}f'(x_0)$</b>가 됩니다.</p>
+                `
+            },
+            Q3: {
+                type: 'type1',
+                title: '계수 비율형 (Q3)',
+                tag: 'f(4x-2)',
+                formula: '$\\lim_{t \\to x} \\frac{f(4t-2)-f(4x-2)}{2t-2x}$',
+                insight: '도착지 $4x-2 = x_0$로 동기화. 가로폭 비율 $4/2 = 2$배가 적용되어 최종 $2f\'(x_0)$로 수렴합니다.',
+                html: `
+                    <p class="font-bold text-indigo-700 text-base">🔍 Q3 대수적 문제해결 (상수 비례 배분법)</p>
+                    <p class="text-slate-600 mt-2">분모에 이미 계수가 붙어 있는 상황입니다. 분모의 계수를 인수분해하여 분자 알맹이의 형태에 정합하도록 변형합니다.</p>
+                    
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 my-3 font-mono text-xs text-slate-800 leading-relaxed">
+                        <span class="text-indigo-600 font-bold">[Step 1]</span> 분자의 알맹이 변화량 확인:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$\\Delta u = (4t-2) - (4x-2) = 4(t-x)$<br><br>
+                        <span class="text-indigo-600 font-bold">[Step 2]</span> 현재 분모는 $2t-2x = 2(t-x)$이므로, 형태를 $4(t-x)$로 만들고 보정 계수 $2$를 곱함:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$\\lim_{t \\to x} \\frac{f(4t-2)-f(4x-2)}{2(t-x)} = \\lim_{t \\to x} \\left[ \\frac{f(4t-2)-f(4x-2)}{4(t-x)} \\times 2 \\right]$<br><br>
+                        <span class="text-indigo-600 font-bold">[Step 3]</span> 치환을 통해 표준 미분계수로 변환:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$= 2 \\times f'(4x-2)$
+                    </div>
+                    <p class="text-slate-600 mt-2"><b>결론:</b> 도착지 $4x-2 = x_0$를 적용하면 극한 풀이는 <b class="text-indigo-600">$2f'(x_0)$</b>로 전개됩니다.</p>
+                `
+            },
+            Q4: {
+                type: 'type1',
+                title: '계수 축소형 (Q4)',
+                tag: 'f(2x-1)',
+                formula: '$\\lim_{t \\to x} \\frac{f(2t-1)-f(2x-1)}{4t-4x}$',
+                insight: '도착지 $2x-1 = x_0$로 동기화. 알맹이 폭 대비 분모가 2배 커서 기울기가 절반인 $0.5f\'(x_0)$로 축소 수렴합니다.',
+                html: `
+                    <p class="font-bold text-indigo-700 text-base">🔍 Q4 대수적 문제해결 (분모 계수 추출법)</p>
+                    <p class="text-slate-600 mt-2">분모의 변화율 계수가 분자의 변화율 계수보다 오히려 큰 경우로, 수렴 시 크기가 감쇄되는 유형입니다.</p>
+                    
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 my-3 font-mono text-xs text-slate-800 leading-relaxed">
+                        <span class="text-indigo-600 font-bold">[Step 1]</span> 분자의 알맹이 변화량 확인:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$\\Delta u = (2t-1) - (2x-1) = 2(t-x)$<br><br>
+                        <span class="text-indigo-600 font-bold">[Step 2]</span> 현재 분모는 $4(t-x)$이므로, 이를 $2(t-x) \\times 2$로 해체하여 상수 $\\frac{1}{2}$을 분리:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$\\lim_{t \\to x} \\frac{f(2t-1)-f(2x-1)}{4(t-x)} = \\lim_{t \\to x} \\left[ \\frac{f(2t-1)-f(2x-1)}{2(t-x)} \\times \\frac{1}{2} \\right]$<br><br>
+                        <span class="text-indigo-600 font-bold">[Step 3]</span> 표준 형태로 치환하여 풀이 정리:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$= \\frac{1}{2} f'(2x-1)$
+                    </div>
+                    <p class="text-slate-600 mt-2"><b>결론:</b> 도착지 $2x-1 = x_0$에서 평가하면 최종 해는 <b class="text-indigo-600">$\\frac{1}{2}f'(x_0)$</b>가 됩니다.</p>
+                `
+            },
+            Q5: {
+                type: 'type1',
+                title: '음수정합형 (Q5)',
+                tag: 'f(5-2x)',
+                formula: '$\\lim_{t \\to x} \\frac{f(5-2t)-f(5-2x)}{-2t+2x}$',
+                insight: '도착지 $5-2x = x_0$로 동기화. 알맹이 변화와 분모의 감소율이 똑같아 보정 없이 바로 $f\'(x_0)$로 안착합니다.',
+                html: `
+                    <p class="font-bold text-indigo-700 text-base">🔍 Q5 대수적 문제해결 (음수 부호 일치법)</p>
+                    <p class="text-slate-600 mt-2">음수의 계수를 갖고 있으나 분모 또한 음수 방향으로 완벽하게 일치해 있어 변형할 필요가 없는 가장 깔끔한 유형입니다.</p>
+                    
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 my-3 font-mono text-xs text-slate-800 leading-relaxed">
+                        <span class="text-indigo-600 font-bold">[Step 1]</span> 분자의 알맹이 변화량 확인:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$\\Delta u = (5-2t) - (5-2x) = -2(t-x)$<br><br>
+                        <span class="text-indigo-600 font-bold">[Step 2]</span> 현재 분모의 수식 전개 확인:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$-2t+2x = -2(t-x)$<br><br>
+                        <span class="text-indigo-600 font-bold">[Step 3]</span> 분자 알맹이 변화량과 분모가 $-2(t-x)$로 완벽히 정합하므로 즉시 정의 적용:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$\\lim_{t \\to x} \\frac{f(5-2t)-f(5-2x)}{-2(t-x)} = f'(5-2x)$
+                    </div>
+                    <p class="text-slate-600 mt-2"><b>결론:</b> 도착지 $5-2x = x_0$ 적용 시 최종 대수해는 <b class="text-indigo-600">$f'(x_0)$</b>입니다.</p>
+                `
+            },
+            Q6: {
+                type: 'type2', // 비선형 거듭제곱형 패키지
+                title: '거듭제곱 정합형 (Q6)',
+                tag: 'f(x^2)',
+                formula: '$\\lim_{t \\to x} \\frac{f(t^2)-f(x^2)}{t^2-x^2}$',
+                insight: '도착지 $x^2 = x_0$로 동기화. 알맹이 변화와 분모의 비선형 폭이 동일하여 보정 없이 깔끔하게 $f\'(x_0)$로 도달합니다.',
+                html: `
+                    <p class="font-bold text-amber-700 text-base">🔍 Q6 대수적 문제해결 (고차수 동치 치환)</p>
+                    <p class="text-slate-600 mt-2">분자의 알맹이 차수와 분모의 수식이 고차식($2$차) 상태로 이미 완벽하게 균형을 이루고 있습니다.</p>
+                    
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 my-3 font-mono text-xs text-slate-800 leading-relaxed">
+                        <span class="text-amber-600 font-bold">[Step 1]</span> 분자 변화량 $\\Delta u = t^2 - x^2$ 과 분모 $t^2 - x^2$ 이 완전히 일치함을 확인.<br><br>
+                        <span class="text-amber-600 font-bold">[Step 2]</span> $t^2 = T$, $x^2 = a$로 치환:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$\\lim_{t \\to x} \\frac{f(t^2)-f(x^2)}{t^2-x^2} = \\lim_{T \\to a} \\frac{f(T)-f(a)}{T-a}$<br><br>
+                        <span class="text-amber-600 font-bold">[Step 3]</span> 즉각 정의를 대입하여 풀이 전개:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$= f'(a) = f'(x^2)$
+                    </div>
+                    <p class="text-slate-600 mt-2"><b>결론:</b> 통일 도착지 $x^2 = x_0$를 적용하면 최종값은 <b class="text-amber-700">$f'(x_0)$</b>로 직결됩니다.</p>
+                `
+            },
+            Q7: {
+                type: 'type2', // 비선형 및 거듭제곱형 세트로 통합 연동
+                title: '분모 고차 감쇄형 (Q7)',
+                tag: 'f(x)',
+                formula: '$\\lim_{t \\to x} \\frac{f(t)-f(x)}{t^2-x^2}$',
+                insight: '분모의 차수($t^2-x^2$)가 너무 급격하게 팽창하여 수렴 시 기울기가 원본의 $\\frac{1}{2x}$배로 줄어듭니다.',
+                html: `
+                    <p class="font-bold text-rose-700 text-base">🔍 Q7 대수적 문제해결 (분모 인수분해 및 분리)</p>
+                    <p class="text-slate-600 mt-2">분자의 알맹이 변화 속도($t-x$)보다 분모의 수축 속도($t^2-x^2$)가 훨씬 커서, 수렴 시 분모가 무환하게 넓어져 전체 가치가 감쇄되는 형태입니다.</p>
+                    
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 my-3 font-mono text-xs text-slate-800 leading-relaxed">
+                        <span class="text-rose-700 font-bold">[Step 1]</span> 분모의 $t^2-x^2$를 합차 공식을 이용해 곱의 형태로 해체함:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$t^2-x^2 = (t-x)(t+x)$<br><br>
+                        <span class="text-rose-700 font-bold">[Step 2]</span> 미분계수의 정의 모양을 만들기 위해 $(t-x)$만 사용하고, 남은 인수를 곱하기 연산으로 떼어냄:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$\\lim_{t \\to x} \\frac{f(t)-f(x)}{(t-x)(t+x)} = \\lim_{t \\to x} \\left[ \\frac{f(t)-f(x)}{t-x} \\times \\frac{1}{t+x} \\right]$<br><br>
+                        <span class="text-rose-700 font-bold">[Step 3]</span> 앞부분은 $f'(x)$가 되고, 뒷부분은 $t \\to x$ 대입을 통해 극한값을 도출:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$= \\left( \\lim_{t \\to x} \\frac{f(t)-f(x)}{t-x} \\right) \\times \\left( \\lim_{t \\to x} \\frac{1}{t+x} \\right) = f'(x) \\times \\frac{1}{2x}$
+                    </div>
+                    <p class="text-slate-600 mt-2"><b>결론:</b> 도착지 $x = x_0$ 대입 시 최종 대수적 전개는 <b class="text-rose-700">$\\frac{f'(x_0)}{2x_0}$</b>가 됩니다.</p>
+                `
+            },
+            Q8: {
+                type: 'type1',
+                title: '상수 합성형 (Q8)',
+                tag: 'f(3x+1)',
+                formula: '$\\lim_{t \\to x} \\frac{f(3t+1)-f(3x+1)}{t-x}$',
+                insight: '상수 $+1$은 횡형 이동일 뿐이며 수렴 보정은 알맹이 가로폭 3배의 영항을 받아 3배 증가합니다.',
+                html: `
+                    <p class="font-bold text-indigo-700 text-base">🔍 Q8 대수적 문제해결 (합성함수의 1차식 변형)</p>
+                    <p class="text-slate-600 mt-2">알맹이에 평행이동 상수($+1$)가 합성되어 있으나, 변화량을 계산하면 상수는 서로 상쇄되어 소거되므로 Q1과 동일한 방법으로 풀이합니다.</p>
+                    
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 my-3 font-mono text-xs text-slate-800 leading-relaxed">
+                        <span class="text-indigo-600 font-bold">[Step 1]</span> 분자의 실제 알맹이 차이 계산:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$\\Delta u = (3t+1) - (3x+1) = 3t - 3x = 3(t-x)$<br><br>
+                        <span class="text-indigo-600 font-bold">[Step 2]</span> 알맹이 차이에 맞게 분모를 조절하기 위해 $3$을 분모·분자에 곱함:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$\\lim_{t \\to x} \\frac{f(3t+1)-f(3x+1)}{t-x} = \\lim_{t \\to x} \\left[ \\frac{f(3t+1)-f(3x+1)}{3(t-x)} \\times 3 \\right]$<br><br>
+                        <span class="text-indigo-600 font-bold">[Step 3]</span> 치환을 적용하여 풀이 마감:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$= 3f'(3x+1)$
+                    </div>
+                    <p class="text-slate-600 mt-2"><b>결론:</b> 통합 도착지 $3x+1 = x_0$ 대입 시 결과는 <b class="text-indigo-600">$3f'(x_0)$</b>로 정렬됩니다.</p>
+                `
+            },
+            Q9: {
+                type: 'type1',
+                title: '음수 합성형 (Q9)',
+                tag: 'f(2x-1)',
+                formula: '$\\lim_{t \\to x} \\frac{f(2t-1)-f(2x-1)}{t-x}$',
+                insight: '가로 수축 속도가 2배 빠르므로 최종 기하학적 접선 한도가 2배로 상승하게 됩니다.',
+                html: `
+                    <p class="font-bold text-indigo-700 text-base">🔍 Q9 대수적 문제해결 (변수 가중치 맞춤법)</p>
+                    <p class="text-slate-600 mt-2">문제집 속 평행이동 상수가 음수($-1$)이고 계수가 $2$배로 구성된 일차식 알맹이 맞추기 문제입니다.</p>
+                    
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 my-3 font-mono text-xs text-slate-800 leading-relaxed">
+                        <span class="text-indigo-600 font-bold">[Step 1]</span> 분자의 실제 알맹이 차이 계산:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$\\Delta u = (2t-1) - (2x-1) = 2(t-x)$<br><br>
+                        <span class="text-indigo-600 font-bold">[Step 2]</span> 알맹이의 차이를 맞추기 위해 분모·분자에 $2$를 곱하여 짝 정합성 조절:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$\\lim_{t \\to x} \\frac{f(2t-1)-f(2x-1)}{t-x} = \\lim_{t \\to x} \\left[ \\frac{f(2t-1)-f(2x-1)}{2(t-x)} \\times 2 \\right]$<br><br>
+                        <span class="text-indigo-600 font-bold">[Step 3]</span> 변형 완료된 미분계수 수식 전개:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$= 2f'(2x-1)$
+                    </div>
+                    <p class="text-slate-600 mt-2"><b>결론:</b> 도착지 $2x-1 = x_0$로 동기화하면 풀이는 <b class="text-indigo-600">$2f'(x_0)$</b>로 마감됩니다.</p>
+                `
+            },
+            Q10: {
+                type: 'type2', // 비선형 거듭제곱형 패키지
+                title: '삼차 거듭제곱형 (Q10)',
+                tag: 'f(x^3)',
+                formula: '$\\lim_{t \\to x} \\frac{f(t^3)-f(x^3)}{t-x}$',
+                insight: '알맹이가 삼차식 형태로 엄청난 비선형 초가속 수렴이 발생하며 접선 기울기는 $3x^2$배 만큼 팽창합니다.',
+                html: `
+                    <p class="font-bold text-amber-700 text-base">🔍 Q10 대수적 문제해결 (곱셈 공식과 고차 인수 분해)</p>
+                    <p class="text-slate-600 mt-2">알맹이 변화가 삼차식($t^3 - x^3$)인 가장 까다로운 유형입니다. 곱셈 공식의 대수적 인수분해 꼴을 분모에 유도하는 조작이 필요합니다.</p>
+                    
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 my-3 font-mono text-xs text-slate-800 leading-relaxed">
+                        <span class="text-amber-700 font-bold">[Step 1]</span> 분자의 알맹이 변화량 확인:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$\\Delta u = t^3 - x^3$<br><br>
+                        <span class="text-amber-700 font-bold">[Step 2]</span> 곱셈 공식 $t^3-x^3 = (t-x)(t^2+tx+x^2)$를 맞추기 위해 분모·분자에 $(t^2+tx+x^2)$를 곱함:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$\\lim_{t \\to x} \\frac{f(t^3)-f(x^3)}{t-x} = \\lim_{t \\to x} \\left[ \\frac{f(t^3)-f(x^3)}{(t-x)(t^2+tx+x^2)} \\times (t^2+tx+x^2) \\right] = \\lim_{t \\to x} \\left[ \\frac{f(t^3)-f(x^3)}{t^3-x^3} \\times (t^2+tx+x^2) \\right]$<br><br>
+                        <span class="text-amber-700 font-bold">[Step 3]</span> 치환을 거치고, 뒤의 인수는 극한 대입($t \\to x$)을 통해 $3x^2$를 출력:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;$= f'(x^3) \\times (x^2 + x^2 + x^2) = 3x^2 f'(x^3)$
+                    </div>
+                    <p class="text-slate-600 mt-2"><b>결론:</b> 도착지 $x^3 = x_0$ ($x = x_0^{1/3}$)를 적용하면 최종 전개는 <b class="text-amber-700">$3x_0^{2/3}f'(x_0)$</b>가 됩니다.</p>
+                `
+            }
+        };
+
+        // 10개 문제 각각의 수학적/해석적 극한값 계산 (최종 접선 기울기의 완벽한 정렬값)
+        function getAnalyticalLimit(key) {
+            const fPrime = df(paramX); // f'(x0)
+            if (key === 'Q1') return 3 * fPrime;
+            if (key === 'Q2') return 2 * Math.sqrt(paramX) * fPrime;
+            if (key === 'Q3') return 2 * fPrime;
+            if (key === 'Q4') return 0.5 * fPrime;
+            if (key === 'Q5') return fPrime;
+            if (key === 'Q6') return fPrime;
+            if (key === 'Q7') return fPrime / (2 * paramX);
+            if (key === 'Q8') return 3 * fPrime;
+            if (key === 'Q9') return 2 * fPrime;
+            if (key === 'Q10') return 3 * Math.pow(paramX, 2/3) * fPrime;
+            return fPrime;
+        }
+
+        // 특정 문제의 할선 기울기 계산 (물리적 좌표 상의 기울기 적용으로 할선-접선 완전 일치 구현)
+        function getFormulaSlope(key, factor, coords) {
+            // 수렴 완료 상황 분모가 0이 되는 에러 방지
+            if (factor < 0.002) {
+                return df(paramX); // 기하학적 기준 접선 기울기 f'(x0)
+            }
+            
+            // 모든 문제의 할선은 곡선 상의 두 실제 좌표점 A(ax, ay)와 B_n(bx, by)를 완벽하게 통과해야 하므로
+            // 기하학적 일치의 핵심인 실제 물리적 기울기 (by - ay) / (bx - ax)로 통합합니다.
+            const deltaX = coords.bx - coords.ax;
+            const deltaY = coords.by - coords.ay;
+            
+            // 수렴 방향에 따라 부호 및 나눗셈 안전 처리
+            if (Math.abs(deltaX) < 1e-5) {
+                return df(paramX);
+            }
+            return deltaY / deltaX;
+        }
+
+        // 목적지 x0에 수렴하는 f(x) 상의 고정점 A와 움직이는 점 B_n의 기하학적 x, y좌표 매칭 함수
+        function getPointsCoordinates(key, tFactor) {
+            // 모든 시나리오의 도착점 ax는 완벽한 통합 목적지 paramX (x0)가 됩니다.
+            const ax = paramX;
+            let bx;
+            
+            // 각 유형의 수식상 출발점 t의 성질에 맞춰 bx 가로축 변위를 정밀 가공합니다.
+            if (key === 'Q1' || key === 'Q8') {
+                bx = ax + 3 * tFactor;
+            } else if (key === 'Q3') {
+                bx = ax + 4 * tFactor;
+            } else if (key === 'Q4' || key === 'Q9') {
+                bx = ax + 2 * tFactor;
+            } else if (key === 'Q5') {
+                bx = ax - 2 * tFactor;
+            } else if (key === 'Q2') {
+                bx = Math.pow(Math.sqrt(ax) + tFactor, 2);
+            } else if (key === 'Q6') {
+                bx = Math.pow(Math.sqrt(ax) + tFactor, 2);
+            } else if (key === 'Q7') {
+                bx = ax + tFactor;
+            } else if (key === 'Q10') {
+                bx = Math.pow(Math.pow(ax, 1/3) + tFactor, 3);
+            }
+
+            return {
+                ax, ay: f(ax),
+                bx, by: f(bx)
+            };
+        }
+
+        // 하단 1~10 문제 선택 버튼 대시보드 렌더링
+        function renderPresets() {
+            const container = document.getElementById('preset-container');
+            container.innerHTML = '';
+            
+            Object.keys(problems).forEach(key => {
+                const isActive = (activeProblem === key);
+                const prob = problems[key];
+                const btn = document.createElement('button');
+                // 버튼 누를 때 selectProblem을 호출하여 해당 문제 설정 및 '모두 펼치기(초기화)' 상태 자동 동기화
+                btn.onclick = () => selectProblem(key);
+                
+                let colorClass = "border-slate-200 text-slate-500 hover:bg-slate-50 hover:border-slate-350 bg-white shadow-sm";
+                
+                if (isActive) {
+                    // 유형별 테마 하이라이트 동기화
+                    if (prob.type === 'type1') {
+                        colorClass = "border-indigo-600 text-indigo-700 bg-indigo-50/50 font-bold shadow-md scale-102";
+                    } else {
+                        colorClass = "border-amber-500 text-amber-700 bg-amber-50/50 font-bold shadow-md scale-102";
+                    }
+                } else if (pointStates[key] < 0.02) {
+                    colorClass = "border-emerald-500/50 text-emerald-600 bg-emerald-50/40";
+                }
+                
+                btn.className = `py-2 rounded-xl border text-center transition-all flex flex-col justify-center items-center ${colorClass}`;
+                btn.innerHTML = `
+                    <span class="block text-[9px] font-mono opacity-55">Q${key.replace('Q','')}</span>
+                    <span class="text-xs font-extrabold tracking-tight mt-0.5">${prob.tag}</span>
+                `;
+                container.appendChild(btn);
+            });
+        }
+
+        // 집중 관찰할 개별 문제 선택 액션
+        function selectProblem(problemKey) {
+            activeProblem = problemKey;
+            stopAllAnimations();
+
+            // 중요: 1~10번 각 버튼을 누를 때마다 수렴 거리를 강제 리셋(모두 펼치기) 상태로 동기화합니다.
+            resetAllPointsToDefault();
+
+            const prob = problems[problemKey];
+
+            // 배너 정보 업데이트
+            const badgeEl = document.getElementById('problem-num-badge');
+            const titleEl = document.getElementById('type-title');
+            const formulaEl = document.getElementById('current-formula-badge');
+            const explanationEl = document.getElementById('math-explanation-box');
+
+            if (badgeEl) badgeEl.textContent = `문제 ${problemKey}`;
+            if (titleEl) titleEl.textContent = prob.title;
+            if (formulaEl) formulaEl.textContent = prob.formula;
+            if (explanationEl) explanationEl.innerHTML = prob.html;
+
+            // GitHub Pages 환경에서 런타임 MathJax 변환 강제 업데이트
+            if (window.MathJax && MathJax.typesetPromise) {
+                MathJax.typesetPromise();
+            }
+
+            renderPresets();
+            draw();
+            updateUI();
+        }
+
+        // 모든 점 원상태로 확장 배치 (초기화)
+        function resetAllPoints() {
+            stopAllAnimations();
+            resetAllPointsToDefault();
+            draw();
+            updateUI();
+            renderPresets();
+        }
+
+        // 각 점의 수렴 파라미터 간격을 수동 일괄 리셋하는 편의 함수
+        function resetAllPointsToDefault() {
+            Object.keys(pointStates).forEach(key => {
+                pointStates[key] = 0.8;
+            });
+        }
+
+        // 1. 단일 문제 개별 수렴 제어부 (기하 수렴을 가속 실행)
+        function toggleSingleAnimation() {
+            // 전체 수렴 애니메이션이 돌고있다면 멈춤
+            stopAllAnimations();
+            isAnimatingAll = true;
+            
+            // 만약 이미 수렴 완료 상태라면 일시 초기화 후 재시작
+            if (pointStates[activeProblem] <= 0.02) {
+                pointStates[activeProblem] = 0.8;
+            }
+
+            runAllAnimation();
+        }
+
+        // 2. 동시 수렴 제어부 (10개 상황 일제 수축 및 회전 수렴)
+        function animateAllTogether() {
+            stopAllAnimations();
+            isAnimatingAll = true;
+            
+            let allClosed = true;
+            Object.keys(pointStates).forEach(k => {
+                if (pointStates[k] > 0.05) allClosed = false;
+            });
+            if (allClosed) {
+                Object.keys(pointStates).forEach(k => {
+                    pointStates[k] = 0.7 + Math.random() * 0.25; 
+                });
+            }
+
+            runAllAnimation();
+        }
+
+        function runAllAnimation() {
+            if (!isAnimatingAll) return;
+
+            let activeCount = 0;
+            Object.keys(pointStates).forEach(key => {
+                if (pointStates[key] > 0.005) {
+                    pointStates[key] -= 0.010; 
+                    if (pointStates[key] < 0.005) pointStates[key] = 0.0;
+                    activeCount++;
+                }
+            });
+
+            draw();
+            updateUI();
+
+            if (activeCount > 0) {
+                animationFrameId = requestAnimationFrame(runAllAnimation);
+            } else {
+                stopAllAnimations();
+            }
+        }
+
+        function stopAllAnimations() {
+            isAnimatingAll = false;
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            renderPresets();
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+        // GitHub Pages 및 반응형 환경을 위한 HD 고해상도 캔버스 리사이징 함수
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const dpr = window.devicePixelRatio || 1;
+            
+            // 크기 대입
+            const rect = container.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            
+            // 컨텍스트 배율 조절
+            ctx.scale(dpr, dpr);
+            
+            // 화면 픽셀 매칭
+            canvas.style.width = `${rect.width}px`;
+            canvas.style.height = `${rect.height}px`;
+            
+            draw();
+        }
+
+        // 수치 가이드 패널 업데이트
+        function updateUI() {
+            const factor = pointStates[activeProblem];
+            const coords = getPointsCoordinates(activeProblem, factor);
+            
+            // 기하학적 수평/수직 차이 (dx, dy)
+            const dx = coords.bx - coords.ax;
+            const dy = coords.by - coords.ay;
+            const slope = getFormulaSlope(activeProblem, factor, coords);
+
+            const dxEl = document.getElementById('val-dx');
+            const dyEl = document.getElementById('val-dy');
+            const slopeEl = document.getElementById('val-slope');
+
+            if (dxEl) dxEl.textContent = Math.abs(dx).toFixed(3);
+            if (dyEl) dyEl.textContent = Math.abs(dy).toFixed(3);
+            if (slopeEl) slopeEl.textContent = slope.toFixed(3);
+        }
+
+        // 메인 렌더링 파이프라인
+        function draw() {
+            // 디바이스 스케일 캔버스 크기 참조 조정
+            const container = canvas.parentElement;
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            ctx.clearRect(0, 0, width, height);
+
+            // 1. 그리드 및 보조선
+            drawGrid(width, height);
+
+            // 2. 메인 베이스 곡선 그리기
+            drawCurve(width, height);
+
+            // 3. 10개 문제의 할선 및 접선 그리기 (필터링 옵션 반영)
+            Object.keys(problems).forEach(key => {
+                const isFocused = (key === activeProblem);
+                
+                // "선택된 선만 보기" 가 체크되어 있는 경우, 포커스되지 않은 문제는 드로잉을 생략합니다.
+                if (onlyActiveLines && !isFocused) {
+                    return; 
+                }
+                
+                drawProblemLines(key, isFocused, width, height);
+            });
+
+            // 4. 좌표 상의 기하 점 10쌍 노드 그리기 (도착점은 단 하나로 고정!)
+            Object.keys(problems).forEach(key => {
+                const factor = pointStates[key];
+                const coords = getPointsCoordinates(key, factor);
+                
+                const pA = { x: toScreenX(coords.ax), y: toScreenY(coords.ay) };
+                const pB = { x: toScreenX(coords.bx), y: toScreenY(coords.by) };
+
+                const isFocused = (key === activeProblem);
+                
+                // 필터링 모드일 때는 선택되지 않은 점들도 노드 표시를 스킵하여 아주 깨끗하게 만듭니다.
+                if (onlyActiveLines && !isFocused) {
+                    return;
+                }
+                
+                drawNodes(pA, pB, key, factor, isFocused);
+            });
+
+            // 5. 현재 선택된 집중 관찰 항목의 가로축/세로축 거리 정사영 삼각 삼각형 그리기
+            drawFocusedTriangle();
+        }
+
+        function drawGrid(w, h) {
+            ctx.strokeStyle = '#f1f5f9'; 
+            ctx.lineWidth = 1;
+
+            // X 그리드
+            for (let x = 0; x <= 8; x++) {
+                const sx = toScreenX(x);
+                ctx.beginPath();
+                ctx.moveTo(sx, 0);
+                ctx.lineTo(sx, h);
+                ctx.stroke();
+            }
+            // Y 그리드
+            for (let y = 0; y <= 10; y++) {
+                const sy = toScreenY(y);
+                ctx.beginPath();
+                ctx.moveTo(0, sy);
+                ctx.lineTo(w, sy);
+                ctx.stroke();
+            }
+
+            // 고대비 축선 라인
+            ctx.strokeStyle = '#cbd5e1'; 
+            ctx.lineWidth = 1.5;
+            
+            const sy0 = toScreenY(0);
+            ctx.beginPath();
+            ctx.moveTo(0, sy0);
+            ctx.lineTo(w, sy0);
+            ctx.stroke();
+
+            const sx0 = toScreenX(0);
+            ctx.beginPath();
+            ctx.moveTo(sx0, 0);
+            ctx.lineTo(sx0, h);
+            ctx.stroke();
+        }
+
+        function drawCurve(w, h) {
+            ctx.strokeStyle = '#4f46e5'; 
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+
+            let first = true;
+            for (let sx = 0; sx < w; sx++) {
+                const mx = mathBounds.xMin + (sx / w) * (mathBounds.xMax - mathBounds.xMin);
+                const my = f(mx);
+                const sy = toScreenY(my);
+
+                if (sy >= 0 && sy <= h) {
+                    if (first) {
+                        ctx.moveTo(sx, sy);
+                        first = false;
+                    } else {
+                        ctx.lineTo(sx, sy);
+                    }
+                }
+            }
+            ctx.stroke();
+        }
+
+        // 실전 문제의 할선과 접선 그리기 파트
+        function drawProblemLines(key, isFocused, w, h) {
+            const factor = pointStates[key];
+            const coords = getPointsCoordinates(key, factor);
+            const prob = problems[key];
+
+            // 유형별 시그니처 색상 매핑
+            let baseColor = '#0284c7'; // 유형 1: 오션 블루
+            let baseRGBA = 'rgba(2, 132, 199, 0.08)'; // 비활성 할선: 매우 연하게
+            if (prob.type === 'type2') {
+                baseColor = '#ea580c'; // 유형 2: 웜 오렌지 (비선형 가속 팩)
+                baseRGBA = 'rgba(234, 88, 12, 0.08)';
+            } else if (prob.type === 'type3') {
+                baseColor = '#dc2626'; // 유형 3: 장미빛 레드
+                baseRGBA = 'rgba(220, 38, 38, 0.08)';
+            }
+
+            // 1. [접선] 공통 목적지 A(x0, f(x0))를 관통하는 진짜 기하학적 접선 - 선명한 두께
+            const tangentSlope = df(coords.ax); // 진짜 기준 접선 f'(x0)
+            const tangYStart = tangentSlope * (mathBounds.xMin - coords.ax) + coords.ay;
+            const tangYEnd = tangentSlope * (mathBounds.xMax - coords.ax) + coords.ay;
+
+            ctx.strokeStyle = isFocused ? '#dc2626' : 'rgba(220, 38, 38, 0.15)'; 
+            ctx.lineWidth = isFocused ? 2.5 : 1.2; 
+            ctx.beginPath();
+            ctx.moveTo(toScreenX(mathBounds.xMin), toScreenY(tangYStart));
+            ctx.lineTo(toScreenX(mathBounds.xMax), toScreenY(tangYEnd));
+            ctx.stroke();
+
+            // 2. [할선] 곡선 위 실제 두 점 A(ax, ay)와 B_n(bx, by)를 완벽하게 관통하는 직선 - 연하고 부드러운 대조
+            const formulaSlope = getFormulaSlope(key, factor, coords);
+            const secYStart = formulaSlope * (mathBounds.xMin - coords.ax) + coords.ay;
+            const secYEnd = formulaSlope * (mathBounds.xMax - coords.ax) + coords.ay;
+
+            const isVeryClose = (factor < 0.02);
+            if (isFocused) {
+                // 수렴 완료 시 접선과 자석처럼 정확히 겹치며 녹색(성공)으로 진화합니다.
+                ctx.strokeStyle = isVeryClose ? '#059669' : baseColor; 
+                ctx.lineWidth = 1.8; 
+            } else {
+                ctx.strokeStyle = isVeryClose ? 'rgba(5, 150, 105, 0.06)' : baseRGBA; 
+                ctx.lineWidth = 0.8; 
+            }
+            
+            ctx.beginPath();
+            ctx.moveTo(toScreenX(mathBounds.xMin), toScreenY(secYStart));
+            ctx.lineTo(toScreenX(mathBounds.xMax), toScreenY(secYEnd));
+            ctx.stroke();
+        }
+
+        // 점들 그리기 로직 (모든 A_idx가 동일한 위치 x0에 오버랩되도록 연산됨)
+        function drawNodes(pA, pB, key, factor, isFocused) {
+            const probType = problems[key].type;
+            
+            let nodeColor = '#0284c7'; 
+            if (probType === 'type2') nodeColor = '#ea580c'; 
+            if (probType === 'type3') nodeColor = '#dc2626'; 
+
+            const numStr = key.replace('Q', '');
+
+            // 1. Draw moving node B
+            if (factor > 0.015) {
+                ctx.fillStyle = nodeColor;
+                ctx.beginPath();
+                ctx.arc(pB.x, pB.y, isFocused ? 6.5 : 4.5, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                // White stroke border for high visibility
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = isFocused ? 2 : 1;
+                ctx.stroke();
+                
+                // Draw label index B
+                ctx.fillStyle = '#64748b';
+                ctx.font = 'bold 9px monospace';
+                ctx.fillText(`B${numStr}`, pB.x + 8, pB.y - 4);
+            }
+
+            // 2. 통합 도착점 A 그리기 (중복 드로잉 방지 및 포커스만 진하게 그리기)
+            if (isFocused) {
+                ctx.fillStyle = '#7c3aed'; // 선명한 보라색으로 통합 목적지 표현
+                ctx.beginPath();
+                ctx.arc(pA.x, pA.y, 8, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+                
+                ctx.fillStyle = '#7c3aed';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.fillText(`A (목적지)`, pA.x - 25, pA.y - 14);
+            } else if (key === 'Q1') {
+                // 한 번만 기본형으로 그려줌
+                ctx.fillStyle = '#94a3b8'; 
+                ctx.beginPath();
+                ctx.arc(pA.x, pA.y, 5.5, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+        }
+
+        // 활성화된 타겟 문제의 삼각 정사영 가이드 점선 처리
+        function drawFocusedTriangle() {
+            const factor = pointStates[activeProblem];
+            const coords = getPointsCoordinates(activeProblem, factor);
+            
+            const pA = { x: toScreenX(coords.ax), y: toScreenY(coords.ay) };
+            const pB = { x: toScreenX(coords.bx), y: toScreenY(coords.by) };
+            const pCorner = { x: pB.x, y: pA.y };
+
+            ctx.strokeStyle = '#818cf8';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([3, 3]);
+            
+            ctx.fillStyle = 'rgba(99, 102, 241, 0.06)';
+            ctx.beginPath();
+            ctx.moveTo(pA.x, pA.y);
+            ctx.lineTo(pCorner.x, pCorner.y);
+            ctx.lineTo(pB.x, pB.y);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(pA.x, pA.y);
+            ctx.lineTo(pCorner.x, pCorner.y);
+            ctx.lineTo(pB.x, pB.y);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.setLineDash([]); 
+        }
+
+        // 초기 시작점
+        window.onload = function() {
+            resizeCanvas();
+            selectProblem('Q1'); 
+        }
+    </script>
+</body>
+</html>
