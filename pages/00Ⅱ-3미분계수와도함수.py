@@ -95,7 +95,7 @@ show_html(
 
 show_html(
     "assets/미분계수와도함수/html/lim.html",
-    title="🔍 미분계수 Quiz",
+    title="🔍극한 시각화",
     height=900
 )
 
