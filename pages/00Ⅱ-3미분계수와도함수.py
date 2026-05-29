@@ -135,7 +135,7 @@ for i in range(3, 6):
 
 show_html(
     "assets/미분계수와도함수/html/2종불연속.html",
-    title="Graph🔍 속도가 불연속??? limf'(a)=f'(a)?",
+    title="Graph🔍 속도가 불연속??? limf'(X)=f'(a)?",
     height=800
 )
 
@@ -146,7 +146,7 @@ show_html(
 
 show_html(
     "assets/미분계수와도함수/html/2종예시.html",
-    title="3D🔍",
+    title="f'(x) 불연속 예시🔍",
     height=600
 )
 
