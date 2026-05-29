@@ -4,10 +4,6 @@ import streamlit.components.v1 as components
 st.set_page_config(layout="wide")
 
 # =========================
-# 슬라이드 1 + 머리말
-# =========================
-
-# =========================
 # 슬라이드 2 + 풀이 이미지
 # =========================
 
@@ -29,10 +25,10 @@ with right:
 st.markdown("---")
 
 # =========================
-# 슬라이드 1~6
+# 슬라이드 1~7
 # =========================
 
-for i in range(1, 7):
+for i in range(1, 8):
     st.image(
         f"assets/4 도함수활용(1)/images/슬라이드{i}.PNG",
         use_container_width=True
