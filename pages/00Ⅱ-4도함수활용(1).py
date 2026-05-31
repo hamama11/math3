@@ -4,27 +4,6 @@ import streamlit.components.v1 as components
 st.set_page_config(layout="wide")
 
 # =========================
-# 슬라이드 2 + 풀이 이미지
-# =========================
-
-left, right = st.columns([1, 1.2])
-
-with left:
-    st.image(
-        "assets/미분계수와도함수/images/슬라이드2.PNG",
-        use_container_width=True
-    )
-
-with right:
-    with st.expander("🔍 풀이", expanded=False):
-        st.image(
-            "assets/미분계수와도함수/images/슬라이드2-3.PNG",
-            use_container_width=True
-        )
-
-st.markdown("---")
-
-# =========================
 # 슬라이드 1~7
 # =========================
 
