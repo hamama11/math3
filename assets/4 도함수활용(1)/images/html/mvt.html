@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>삼차함수 평균값 정리 탐구</title>
+    <!-- 외부 CDN 대신 단일 파일로 동작하도록 구성 -->
+    <style>
+        body { font-family: sans-serif; background-color: #f3f4f6; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { font-size: 1.5rem; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        button { padding: 10px; cursor: pointer; border: none; border-radius: 6px; font-weight: bold; color: white; }
+        canvas { width: 100%; height: 400px; background: #fafafa; border: 1px solid #ddd; cursor: move; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>평균변화율 vs 순간변화율</h1>
+        
+        <div class="controls">
+            <button id="btnSecant" style="background-color: #2563eb;">할선 ON/OFF</button>
+            <button id="btnTangent" style="background-color: #9333ea;">접선 ON/OFF</button>
+        </div>
+
+        <div>
+            <label>평균변화율(할선) 개수: <span id="valCount">5</span></label>
+            <input type="range" id="sliderCount" min="1" max="20" step="1" value="5" style="width: 100%;">
+        </div>
+        
+        <p style="font-size: 0.8rem; color: #666; margin: 10px 0;">팁: 마우스 휠로 확대/축소, 드래그로 화면 이동이 가능합니다.</p>
+        <canvas id="mainCanvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d');
+        const btnSecant = document.getElementById('btnSecant');
+        const btnTangent = document.getElementById('btnTangent');
+        const sliderCount = document.getElementById('sliderCount');
+        
+        let showSecant = false;
+        let showTangent = false;
+        let lines = [];
+        
+        let scaleX = 100;
+        let ox = 100;
+        let oy = 250;
+        let isDragging = false;
+        let lastMouse = { x: 0, y: 0 };
+
+        const f = (x) => (1/3) * x * Math.pow(x - 3, 2);
+
+        function generateLines() {
+            lines = [];
+            const count = parseInt(sliderCount.value);
+            for(let i = 0; i < count; i++) {
+                lines.push({ rx1: Math.random() * 3, rx2: Math.random() * 3 });
+            }
+        }
+
+        function draw() {
+            const w = canvas.width = canvas.clientWidth;
+            const h = canvas.height = canvas.clientHeight;
+            ctx.clearRect(0, 0, w, h);
+            
+            document.getElementById('valCount').textContent = lines.length;
+
+            ctx.strokeStyle = '#ccc';
+            ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.moveTo(ox, 0); ctx.lineTo(ox, h); ctx.stroke();
+            
+            ctx.strokeStyle = '#333'; ctx.lineWidth = 3;
+            ctx.beginPath();
+            for(let i = 0; i < w; i++) {
+                const x = (i - ox) / scaleX;
+                const y = -f(x) * scaleX + oy;
+                i === 0 ? ctx.moveTo(i, y) : ctx.lineTo(i, y);
+            }
+            ctx.stroke();
+
+            ctx.fillStyle = '#dc2626';
+            ctx.beginPath(); ctx.arc(0*scaleX + ox, -f(0)*scaleX + oy, 8, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(3*scaleX + ox, -f(3)*scaleX + oy, 8, 0, Math.PI*2); ctx.fill();
+
+            lines.forEach(line => {
+                const slope = (f(line.rx2) - f(line.rx1)) / (line.rx2 - line.rx1);
+                if (showSecant) {
+                    ctx.strokeStyle = '#2563eb';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([5, 5]);
+                    ctx.beginPath();
+                    ctx.moveTo(line.rx1*scaleX + ox, -f(line.rx1)*scaleX + oy);
+                    ctx.lineTo(line.rx2*scaleX + ox, -f(line.rx2)*scaleX + oy);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+                if (showTangent) {
+                    const A = 1, B = -4, C = 3 - slope;
+                    const disc = B*B - 4*A*C;
+                    if (disc >= 0) {
+                        const candidates = [(-B + Math.sqrt(disc))/(2*A), (-B - Math.sqrt(disc))/(2*A)];
+                        candidates.forEach(c => {
+                            if (c > Math.min(line.rx1, line.rx2) && c < Math.max(line.rx1, line.rx2)) {
+                                ctx.strokeStyle = '#9333ea';
+                                ctx.lineWidth = 3;
+                                ctx.beginPath();
+                                const cx = c * scaleX + ox;
+                                const cy = -f(c) * scaleX + oy;
+                                ctx.moveTo(cx - 30, cy + slope * 30);
+                                ctx.lineTo(cx + 30, cy - slope * 30);
+                                ctx.stroke();
+                            }
+                        });
+                    }
+                }
+            });
+        }
+
+        canvas.onmousedown = (e) => { isDragging = true; lastMouse = { x: e.clientX, y: e.clientY }; };
+        window.onmouseup = () => isDragging = false;
+        window.onmousemove = (e) => {
+            if (!isDragging) return;
+            ox += e.clientX - lastMouse.x;
+            oy += e.clientY - lastMouse.y;
+            lastMouse = { x: e.clientX, y: e.clientY };
+            draw();
+        };
+        canvas.onwheel = (e) => {
+            e.preventDefault();
+            const zoom = e.deltaY > 0 ? 0.9 : 1.1;
+            scaleX *= zoom;
+            draw();
+        };
+
+        btnSecant.onclick = () => { showSecant = !showSecant; draw(); };
+        btnTangent.onclick = () => { showTangent = !showTangent; draw(); };
+        sliderCount.oninput = () => { generateLines(); draw(); };
+        
+        generateLines();
+        draw();
+    </script>
+</body>
+</html>
