@@ -5,9 +5,7 @@ st.set_page_config(layout="wide")
 
 # =========================
 # 슬라이드 1~7
-# =========================
-
-for i in range(1, 8):
+for i in range(1, 4):
     st.image(
         f"assets/4 도함수활용(1)/images/슬라이드{i}.PNG",
         use_container_width=True
@@ -16,24 +14,21 @@ for i in range(1, 8):
 
 
 # =========================
-# 2종 예시 HTML
-# =========================
+# HTML
 
 show_html(
-    "assets/미분계수와도함수/html/2종예시.html",
-    title="f'(x) 불연속 예시🔍",
+    "assets/4 도함수활용(1)/html/mvt.html",
+    title="MVT",
     height=600
 )
 
-left, right = st.columns([1, 1])
-
-with left:
+# =========================
+# 슬라이드 4~7
+for i in range(4, 8):
     st.image(
-        "assets/미분계수와도함수/images/슬라이드6.PNG",
-         use_container_width=True
+        f"assets/4 도함수활용(1)/images/슬라이드{i}.PNG",
+        use_container_width=True
     )
-with right:
-    show_html(
-        "assets/미분계수와도함수/html/2종불연속3D.html",
+
          height=900
     )
