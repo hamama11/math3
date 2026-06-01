@@ -27,13 +27,12 @@ for i in range(1, 4):
 
 # =========================
 # HTML
-show_html(
-    "assets/4 도함수활용(1)/html/mvt.html",
-    title="MVT",
-    height=600
-)
-
-st.markdown("---")
+# MVT HTML
+with st.expander("평균값정리 MVT 확인하기", expanded=False):
+    show_html(
+        "assets/4 도함수활용(1)/html/mvt.html",
+        height=600
+    )
 # =========================
 # 중간 문구
 
@@ -47,6 +46,7 @@ st.markdown("""
 </p>
 """, unsafe_allow_html=True)
 
+st.markdown("---")
 
 
 # =========================
