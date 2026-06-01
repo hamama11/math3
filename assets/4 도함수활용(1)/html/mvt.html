@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>삼차함수 평균값 정리 탐구</title>
-    <!-- 외부 CDN 대신 단일 파일로 동작하도록 구성 -->
+    <title>평균변화율 vs 순간변화율</title>
     <style>
         body { font-family: sans-serif; background-color: #f3f4f6; padding: 20px; }
         .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         h1 { font-size: 1.5rem; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         button { padding: 10px; cursor: pointer; border: none; border-radius: 6px; font-weight: bold; color: white; }
         canvas { width: 100%; height: 400px; background: #fafafa; border: 1px solid #ddd; cursor: move; border-radius: 8px; }
     </style>
@@ -21,6 +20,7 @@
         <div class="controls">
             <button id="btnSecant" style="background-color: #2563eb;">할선 ON/OFF</button>
             <button id="btnTangent" style="background-color: #9333ea;">접선 ON/OFF</button>
+            <button id="btnPlay" style="background-color: #059669;">재생/정지</button>
         </div>
 
         <div>
@@ -37,10 +37,12 @@
         const ctx = canvas.getContext('2d');
         const btnSecant = document.getElementById('btnSecant');
         const btnTangent = document.getElementById('btnTangent');
+        const btnPlay = document.getElementById('btnPlay');
         const sliderCount = document.getElementById('sliderCount');
         
         let showSecant = false;
         let showTangent = false;
+        let isPlaying = false;
         let lines = [];
         
         let scaleX = 100;
@@ -116,6 +118,17 @@
             });
         }
 
+        // 재생 기능: 할선 개수를 자동으로 증가/감소시킴
+        function animateCount() {
+            if (!isPlaying) return;
+            let val = parseInt(sliderCount.value);
+            val = (val % 20) + 1;
+            sliderCount.value = val;
+            generateLines();
+            draw();
+            setTimeout(animateCount, 500);
+        }
+
         canvas.onmousedown = (e) => { isDragging = true; lastMouse = { x: e.clientX, y: e.clientY }; };
         window.onmouseup = () => isDragging = false;
         window.onmousemove = (e) => {
@@ -127,13 +140,13 @@
         };
         canvas.onwheel = (e) => {
             e.preventDefault();
-            const zoom = e.deltaY > 0 ? 0.9 : 1.1;
-            scaleX *= zoom;
+            scaleX *= (e.deltaY > 0 ? 0.9 : 1.1);
             draw();
         };
 
         btnSecant.onclick = () => { showSecant = !showSecant; draw(); };
         btnTangent.onclick = () => { showTangent = !showTangent; draw(); };
+        btnPlay.onclick = () => { isPlaying = !isPlaying; if(isPlaying) animateCount(); };
         sliderCount.oninput = () => { generateLines(); draw(); };
         
         generateLines();
