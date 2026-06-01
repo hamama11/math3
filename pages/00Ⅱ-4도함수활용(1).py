@@ -23,9 +23,18 @@ for i in range(1, 3):
         f"assets/4 도함수활용(1)/images/슬라이드{i}.PNG",
         use_container_width=True
     )
-
 # =========================
+# 왼쪽, 오른쪽
 
+left, right = st.columns([1, 1])
+
+with left:
+    st.image(
+        "assets/4 도함수활용(1)/images/슬라이드3.PNG",
+        use_container_width=True
+    )
+
+with right:
     with st.expander("🔍 MVT 확인하기", expanded=False):
         show_html(
         "assets/4 도함수활용(1)/html/mvt.html",
@@ -33,14 +42,6 @@ for i in range(1, 3):
     )
 
 
-
-
-    st.image(
-        "assets/4 도함수활용(1)/images/슬라이드3.PNG",
-        use_container_width=True
-    )
-
-    
 # =========================
 # 중간 문구
 
