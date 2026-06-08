@@ -26,21 +26,15 @@ st.image(
 
 # =========================
 # 슬라이드 2 + HTML
-left, right = st.columns([1, 1])
-
-with left:
-    st.image(
+st.image(
         "assets/5 도함수활용(2)/images/슬라이드2.PNG",
         use_container_width=True
     )
-
-with right:
-    with st.expander("🔍 합성함수그래프", expanded=False):
+with st.expander("🔍 합성함수그래프", expanded=False):
         show_html(
             "assets/5 도함수활용(2)/html/합성함수그래프개형.html",
             height=600
         )
-
 
 # =========================
 # 슬라이드 3~6
@@ -49,7 +43,6 @@ for i in range(3, 7):
         f"assets/5 도함수활용(2)/images/슬라이드{i}.PNG",
         use_container_width=True
     )
-
 
 # =========================
 # 중간 문구
@@ -68,16 +61,14 @@ st.markdown("---")
 
 # =========================
 # 슬라이드 7 + 지오지브라
-left, right = st.columns([1, 1])
 
-with left:
-    st.image(
+st.image(
         "assets/5 도함수활용(2)/images/슬라이드7.PNG",
         use_container_width=True
     )
 
-with right:
-    with st.expander("📌 지오지브라 열기", expanded=False):
+
+with st.expander("📌 지오지브라 열기", expanded=False):
         components.iframe(
             src="https://www.geogebra.org/calculator/vmv32qkk",
             height=650,
