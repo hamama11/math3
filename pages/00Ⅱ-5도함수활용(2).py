@@ -75,10 +75,9 @@ with left:
     )
 
 with right:
-   url = "https://www.geogebra.org/calculator/vmv32qkk"
     with st.expander("📌 지오지브라 열기"):
         components.iframe(
-            url,
+            https://www.geogebra.org/calculator/vmv32qkk,
             height=650,
             scrolling=True
         )
