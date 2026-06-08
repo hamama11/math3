@@ -30,7 +30,8 @@ with st.expander("🔍 합성함수그래프", expanded=False):
             "assets/5 도함수활용(2)/html/합성함수그래프개형.html",
             height=650
         )
-     st.markdown(
+     
+        st.markdown(
             "[새 창에서 열기](https://gemini.google.com/share/d7b63f6e840e)"
         )
     
