@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>합성함수 그래프 개형 탐구 도구</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght=300;400;500;700;900&display=swap');
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            background-color: #f8fafc;
+            border-radius: 0.75rem;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 py-4 px-6 sticky top-0 z-10 shadow-sm">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-600 text-white p-2 rounded-lg">
+                    <i data-lucide="git-merge" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-slate-900">합성함수 그래프 개형 탐구 도구</h1>
+                    <p class="text-xs text-slate-500">Composite Function Explorer: y = f(g(x))</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button id="btn-reset" class="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg border border-slate-200 transition-all duration-200">
+                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    초기화
+                </button>
+                <button id="btn-random" class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-sm transition-all duration-200">
+                    <i data-lucide="shuffle" class="w-4 h-4"></i>
+                    f, g 랜덤 선택
+                </button>
+                <button id="btn-swap" class="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg border border-slate-200 transition-all duration-200">
+                    <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
+                    f ↔ g 바꾸기
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="max-w-7xl mx-auto p-4 md:p-6 flex-grow grid grid-cols-1 lg:grid-cols-4 gap-6 w-full">
+        
+        <!-- Control Panel (Left Side) -->
+        <div class="lg:col-span-1 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm h-fit flex flex-col gap-5">
+            <div>
+                <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <i data-lucide="sliders" class="w-5 h-5 text-indigo-600"></i>
+                    설정 및 제어
+                </h2>
+                
+                <!-- Function g(x) Selection -->
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5 flex items-center justify-between">
+                        <span>안쪽 함수 y = g(x)</span>
+                        <span class="text-xs font-normal text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full" id="label-g-formula"></span>
+                    </label>
+                    <select id="select-g" class="w-full bg-slate-50 border border-slate-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium">
+                        <option value="init-g" selected>y = -x² + 4x - 1</option>
+                        <option value="linear">y = 0.5x</option>
+                        <option value="quadratic">y = x² / 3</option>
+                        <option value="cubic">y = x³ / 9</option>
+                        <option value="sin">y = 2·sin(x)</option>
+                        <option value="cos">y = 2·cos(x)</option>
+                        <option value="abs">y = |x|</option>
+                        <option value="step">y = x + sin(2x)</option>
+                        <option value="v-shape">y = 2 - |x-1|</option>
+                    </select>
+                </div>
+
+                <!-- Function f(x) Selection -->
+                <div class="mb-5">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5 flex items-center justify-between">
+                        <span>바깥쪽 함수 y = f(x)</span>
+                        <span class="text-xs font-normal text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full" id="label-f-formula"></span>
+                    </label>
+                    <select id="select-f" class="w-full bg-slate-50 border border-slate-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-medium">
+                        <option value="init-f" selected>y = (x³ + x²) / 3</option>
+                        <option value="linear">y = 0.5x</option>
+                        <option value="quadratic">y = x² / 3</option>
+                        <option value="cubic">y = x³ / 9</option>
+                        <option value="sin">y = 2·sin(x)</option>
+                        <option value="cos">y = 2·cos(x)</option>
+                        <option value="abs">y = |x|</option>
+                        <option value="step">y = x + sin(2x)</option>
+                        <option value="v-shape">y = 2 - |x-1|</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- X Value Slider -->
+            <div class="border-t border-slate-100 pt-4">
+                <div class="flex justify-between items-center mb-1">
+                    <label class="text-sm font-bold text-slate-700 flex items-center gap-1">
+                        입력값 <span class="text-blue-600 font-mono text-base ml-1">x = <span id="val-x">1.00</span></span>
+                    </label>
+                    <button id="btn-play" class="p-1.5 bg-slate-100 hover:bg-blue-100 hover:text-blue-600 text-slate-600 rounded-lg transition-all duration-150" title="자동 재생/정지">
+                        <i data-lucide="play" class="w-4 h-4" id="play-icon"></i>
+                    </button>
+                </div>
+                <input type="range" id="slider-x" min="-4.5" max="4.5" step="0.05" value="1.0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                <div class="flex justify-between text-[10px] text-slate-400 font-mono mt-1">
+                    <span>-4.5</span>
+                    <span>0.0</span>
+                    <span>4.5</span>
+                </div>
+            </div>
+
+            <!-- Graph Visibility Toggles -->
+            <div class="border-t border-slate-100 pt-4 flex flex-col gap-3">
+                <label class="flex items-center justify-between cursor-pointer group">
+                    <span class="text-sm font-semibold text-slate-700">합성함수 그래프 보이기</span>
+                    <div class="relative">
+                        <input type="checkbox" id="toggle-composite" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                    </div>
+                </label>
+                
+                <label class="flex items-center justify-between cursor-pointer group">
+                    <span class="text-sm font-semibold text-slate-700">이동 궤적 추적선 보이기</span>
+                    <div class="relative">
+                        <input type="checkbox" id="toggle-guides" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                    </div>
+                </label>
+            </div>
+
+            <!-- Color Palette Guide (Legend) -->
+            <div class="border-t border-slate-100 pt-4">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">변수별 색상 가이드</span>
+                <div class="grid grid-cols-3 gap-1.5 text-center text-[11px] font-bold">
+                    <div class="bg-blue-50 text-blue-700 py-1.5 rounded-lg border border-blue-100">
+                        입력 x
+                    </div>
+                    <div class="bg-emerald-50 text-emerald-700 py-1.5 rounded-lg border border-emerald-100">
+                        치역 g(x)<br>정의역 g(x)
+                    </div>
+                    <div class="bg-purple-50 text-purple-700 py-1.5 rounded-lg border border-purple-100">
+                        최종 f(g(x))
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mathematical Process Display Card -->
+            <div class="border-t border-slate-100 pt-4 flex flex-col gap-3">
+                <div class="bg-slate-50 rounded-xl p-3 border border-slate-200">
+                    <span class="text-xs font-bold text-slate-800 uppercase tracking-wider block mb-2">실시간 연산 과정</span>
+                    <div class="space-y-1.5 font-mono text-xs text-slate-700">
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-500">① 입력:</span>
+                            <span class="font-bold text-blue-600">x = <span id="math-x">1.00</span></span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-500">② 안쪽 함수 대입:</span>
+                            <span class="font-bold text-emerald-600">g(x) = <span id="math-gx">2.00</span></span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-500">③ 바깥쪽 함수 대입:</span>
+                            <span class="font-bold text-purple-600">f(g(x)) = <span id="math-fgx">4.00</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Max/Min Value Card -->
+                <div class="bg-slate-50 rounded-xl p-3 border border-slate-200" id="card-extremum-info">
+                    <span class="text-xs font-bold text-slate-800 uppercase tracking-wider block mb-2">합성함수 극값 분석 ([-5, 5])</span>
+                    <div class="space-y-1.5 font-mono text-xs text-slate-700">
+                        <div class="flex items-center justify-between">
+                            <span class="text-red-500 font-bold flex items-center gap-1">
+                                <span class="w-2 h-2 rounded-full bg-red-500"></span> 최댓값:
+                            </span>
+                            <span class="font-bold text-slate-900" id="math-max-val">0.00</span>
+                        </div>
+                        <div class="text-[10px] text-slate-400 text-right mt-[-4px]">
+                            (x = <span id="math-max-x">0.00</span> 일 때)
+                        </div>
+                        <div class="flex items-center justify-between border-t border-slate-200/60 pt-1.5">
+                            <span class="text-blue-500 font-bold flex items-center gap-1">
+                                <span class="w-2 h-2 rounded-full bg-blue-500"></span> 최솟값:
+                            </span>
+                            <span class="font-bold text-slate-900" id="math-min-val">0.00</span>
+                        </div>
+                        <div class="text-[10px] text-slate-400 text-right mt-[-4px]">
+                            (x = <span id="math-min-x">0.00</span> 일 때)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Graphs Visualization Area (Right Side) -->
+        <div class="lg:col-span-3 flex flex-col gap-6">
+            
+            <!-- Top Row: g(x) and f(x) side-by-side -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-5xl mx-auto">
+                
+                <!-- Panel 1: g(x) Graph -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                            안쪽 함수 <span class="font-mono text-emerald-600">y = g(x)</span>
+                        </h3>
+                        <span class="text-xs font-mono px-2 py-0.5 bg-slate-100 rounded text-slate-600" id="badge-g">g(x)</span>
+                    </div>
+                    <div class="canvas-container aspect-video">
+                        <canvas id="canvas-g"></canvas>
+                        <!-- Dynamic Equation Overlay Badge -->
+                        <div class="absolute top-3 left-3 bg-white/95 backdrop-blur-xs px-2.5 py-1.5 rounded-lg border border-emerald-200/50 shadow-xs pointer-events-none">
+                            <span class="text-xs font-extrabold text-emerald-700 font-mono" id="overlay-g-formula">g(x) = -x² + 4x - 1</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2.5">
+                        입력 <span class="font-mono font-bold text-blue-600">x(가로축)</span>에 따른 중간 결과 <span class="font-mono font-bold text-emerald-600">g(x)(세로축)</span>의 변화입니다.
+                    </p>
+                </div>
+
+                <!-- Panel 2: f(x) Graph -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-indigo-500"></span>
+                            바깥쪽 함수 <span class="font-mono text-indigo-600">y = f(x)</span>
+                        </h3>
+                        <span class="text-xs font-mono px-2 py-0.5 bg-slate-100 rounded text-slate-600" id="badge-f">f(x)</span>
+                    </div>
+                    <div class="canvas-container aspect-video">
+                        <canvas id="canvas-f"></canvas>
+                        <!-- Dynamic Equation Overlay Badge -->
+                        <div class="absolute top-3 left-3 bg-white/95 backdrop-blur-xs px-2.5 py-1.5 rounded-lg border border-indigo-200/50 shadow-xs pointer-events-none">
+                            <span class="text-xs font-extrabold text-indigo-700 font-mono" id="overlay-f-formula">f(x) = (x³ + x²) / 3</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2.5">
+                        <span class="text-emerald-600 font-bold">g(x)의 함숫값(초록)</span>이 이 그래프의 <span class="font-bold text-emerald-600">가로축(정의역)</span>으로 대입됩니다.
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- Bottom Row: f(g(x)) wide display -->
+            <div class="w-full max-w-5xl mx-auto">
+                
+                <!-- Panel 3: f(g(x)) Composite Graph -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-2 border-purple-500/25 relative flex flex-col">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-purple-500"></span>
+                            합성함수 <span class="font-mono text-purple-600">y = f(g(x))</span>
+                            <span class="text-[10px] font-normal text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full" id="y-scale-badge">y축 스케일: 자동</span>
+                        </h3>
+                        <span class="text-xs font-mono px-2.5 py-1 bg-purple-100 text-purple-700 rounded font-semibold">f(g(x))</span>
+                    </div>
+                    <div class="canvas-container aspect-[21/9] sm:aspect-[16/7]">
+                        <canvas id="canvas-fg"></canvas>
+                        <!-- Dynamic Equation Overlay Badge -->
+                        <div class="absolute top-3 left-3 bg-white/95 backdrop-blur-xs px-3 py-2 rounded-lg border border-purple-200 shadow-sm pointer-events-none z-10" id="overlay-fg-container">
+                            <span class="text-sm font-extrabold text-purple-700 font-mono" id="overlay-fg-formula">f(g(x)) = ((-x² + 4x - 1)³ + (-x² + 4x - 1)²) / 3</span>
+                        </div>
+                        <!-- Overlay Message when hidden -->
+                        <div id="hidden-overlay" class="absolute inset-0 bg-slate-900/95 backdrop-blur-sm flex flex-col justify-center items-center text-center p-4 rounded-xl transition-all duration-300 hidden">
+                            <div class="p-3 bg-slate-800 rounded-full mb-3 text-amber-400">
+                                <i data-lucide="eye-off" class="w-8 h-8"></i>
+                            </div>
+                            <h4 class="text-white font-bold text-base mb-1">합성함수 그래프가 숨겨져 있습니다</h4>
+                            <p class="text-xs text-slate-400 max-w-[320px] mb-3">위의 두 그래프를 관찰해 보며 합성함수의 최종 개형을 추론해 보세요.</p>
+                            <button id="btn-show-overlay" class="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-500 transition-colors shadow-md">
+                                그래프 공개하기
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2.5">
+                        처음의 <span class="font-bold text-blue-600">x(가로축)</span>와 최종 함숫값 <span class="font-bold text-purple-600">f(g(x))(세로축)</span>를 연결한 최종 합성함수 그래프입니다.
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- Detailed Explanation Guide / Flow Diagram -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <h3 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <i data-lucide="info" class="text-indigo-600 w-5 h-5"></i>
+                    합성함수 그래프 이동 원리 이해하기
+                </h3>
+                <div class="flex flex-col md:flex-row items-center justify-between gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                    <div class="flex-1 text-center p-3 bg-white rounded-lg shadow-xs border border-blue-100">
+                        <span class="text-xs font-bold text-blue-600 block mb-1">1단계: 안쪽 대응</span>
+                        <p class="text-sm font-semibold text-slate-800"><span class="text-blue-600">x</span> ⟶ <span class="text-emerald-600">g(x)</span></p>
+                        <p class="text-[11px] text-slate-500 mt-1">파란색 입력 x가 변함에 따라 초록색 치역 g(x)가 어떻게 변하는지 확인합니다.</p>
+                    </div>
+                    <div class="text-slate-300 font-bold text-lg hidden md:block">➔</div>
+                    <div class="flex-1 text-center p-3 bg-white rounded-lg shadow-xs border border-emerald-100">
+                        <span class="text-xs font-bold text-emerald-600 block mb-1">2단계: 중간 연결 (동일 색상)</span>
+                        <p class="text-sm font-semibold text-slate-800"><span class="text-emerald-600">g(x)의 치역</span> ⟶ <span class="text-emerald-600">f(x)의 정의역</span></p>
+                        <p class="text-[11px] text-slate-500 mt-1">g(x)의 세로축 함숫값이 f(x)의 가로축 입력값과 일대일로 일치하여 매핑됩니다.</p>
+                    </div>
+                    <div class="text-slate-300 font-bold text-lg hidden md:block">➔</div>
+                    <div class="flex-1 text-center p-3 bg-white rounded-lg shadow-xs border border-purple-100">
+                        <span class="text-xs font-bold text-purple-600 block mb-1">3단계: 최종 매핑</span>
+                        <p class="text-sm font-semibold text-slate-800"><span class="text-blue-600">x</span> ⟶ <span class="text-purple-600">f(g(x))</span></p>
+                        <p class="text-[11px] text-slate-500 mt-1">처음의 파란색 x 좌표 위에 최종적인 보라색 높이 f(g(x))를 찍어 합성함수를 그립니다.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 px-6 mt-auto">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-xs text-slate-500 gap-4">
+            <p>© 2026 합성함수 그래프 개형 탐구 도구. 수학교육 및 탐구용 인터랙티브 웹 앱.</p>
+            <div class="flex gap-4">
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span> 입력 x</span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> 합성 타깃 g(x)</span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-purple-500"></span> 합성결과 f(g(x))</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- App Logic Script -->
+    <script>
+        // Setup state variables
+        let selectedF = 'init-f';
+        let selectedG = 'init-g';
+        let currentX = 1.0;
+        let showComposite = true;
+        let showGuides = true;
+        let isPlaying = false;
+        let playInterval = null;
+
+        // Extremum state cache
+        let cachedMax = { x: 0, y: 0 };
+        let cachedMin = { x: 0, y: 0 };
+        let compositeYRange = 5; // Default y-axis grid limit for f(g(x))
+
+        // Mathematical definitions for predefined functions
+        const functions = {
+            'init-f': {
+                name: 'y = (x³ + x²) / 3',
+                formula: '(x³ + x²) / 3',
+                compositeTemplate: (inner) => `((${inner})³ + (${inner})²) / 3`,
+                eval: (x) => (Math.pow(x, 3) + Math.pow(x, 2)) / 3
+            },
+            'init-g': {
+                name: 'y = -x² + 4x - 1',
+                formula: '-x² + 4x - 1',
+                compositeTemplate: (inner) => `-(${inner})² + 4·(${inner}) - 1`,
+                eval: (x) => -Math.pow(x, 2) + 4 * x - 1
+            },
+            linear: {
+                name: 'y = 0.5x',
+                formula: '0.5x',
+                compositeTemplate: (inner) => `0.5·(${inner})`,
+                eval: (x) => 0.5 * x
+            },
+            quadratic: {
+                name: 'y = x² / 3',
+                formula: 'x² / 3',
+                compositeTemplate: (inner) => `(${inner})² / 3`,
+                eval: (x) => (x * x) / 3
+            },
+            cubic: {
+                name: 'y = x³ / 9',
+                formula: 'x³ / 9',
+                compositeTemplate: (inner) => `(${inner})³ / 9`,
+                eval: (x) => (x * x * x) / 9
+            },
+            sin: {
+                name: 'y = 2·sin(x)',
+                formula: '2·sin(x)',
+                compositeTemplate: (inner) => `2·sin(${inner})`,
+                eval: (x) => 2 * Math.sin(x)
+            },
+            cos: {
+                name: 'y = 2·cos(x)',
+                formula: '2·cos(x)',
+                compositeTemplate: (inner) => `2·cos(${inner})`,
+                eval: (x) => 2 * Math.cos(x)
+            },
+            abs: {
+                name: 'y = |x|',
+                formula: '|x|',
+                compositeTemplate: (inner) => `|${inner}|`,
+                eval: (x) => Math.abs(x)
+            },
+            step: {
+                name: 'y = x + sin(2x)',
+                formula: 'x + sin(2x)',
+                compositeTemplate: (inner) => `(${inner}) + sin(2·(${inner}))`,
+                eval: (x) => x + Math.sin(2 * x)
+            },
+            'v-shape': {
+                name: 'y = 2 - |x-1|',
+                formula: '2 - |x-1|',
+                compositeTemplate: (inner) => `2 - |(${inner}) - 1|`,
+                eval: (x) => 2 - Math.abs(x - 1)
+            }
+        };
+
+        // DOM elements
+        const selectF = document.getElementById('select-f');
+        const selectG = document.getElementById('select-g');
+        const labelFFormula = document.getElementById('label-f-formula');
+        const labelGFormula = document.getElementById('label-g-formula');
+        const sliderX = document.getElementById('slider-x');
+        const valX = document.getElementById('val-x');
+        const toggleComposite = document.getElementById('toggle-composite');
+        const toggleGuides = document.getElementById('toggle-guides');
+        const btnReset = document.getElementById('btn-reset');
+        const btnRandom = document.getElementById('btn-random');
+        const btnSwap = document.getElementById('btn-swap');
+        const btnPlay = document.getElementById('btn-play');
+        const playIcon = document.getElementById('play-icon');
+        const hiddenOverlay = document.getElementById('hidden-overlay');
+        const btnShowOverlay = document.getElementById('btn-show-overlay');
+
+        const mathX = document.getElementById('math-x');
+        const mathGx = document.getElementById('math-gx');
+        const mathFgx = document.getElementById('math-fgx');
+
+        // 극값 표시 텍스트 엘리먼트
+        const mathMaxVal = document.getElementById('math-max-val');
+        const mathMaxX = document.getElementById('math-max-x');
+        const mathMinVal = document.getElementById('math-min-val');
+        const mathMinX = document.getElementById('math-min-x');
+        const cardExtremumInfo = document.getElementById('card-extremum-info');
+        const yScaleBadge = document.getElementById('y-scale-badge');
+
+        // Overlay elements for Canvas
+        const overlayG = document.getElementById('overlay-g-formula');
+        const overlayF = document.getElementById('overlay-f-formula');
+        const overlayFG = document.getElementById('overlay-fg-formula');
+        const overlayFGContainer = document.getElementById('overlay-fg-container');
+
+        // Canvas setups
+        const canvases = {
+            g: { el: document.getElementById('canvas-g'), ctx: document.getElementById('canvas-g').getContext('2d') },
+            f: { el: document.getElementById('canvas-f'), ctx: document.getElementById('canvas-f').getContext('2d') },
+            fg: { el: document.getElementById('canvas-fg'), ctx: document.getElementById('canvas-fg').getContext('2d') }
+        };
+
+        // Graph configuration
+        const gridRange = 5; // Graph ranges from -5 to +5 on X-axis and standard Y-axis
+
+        // Colors based on unified domain/range design
+        const COLOR_X = '#3b82f6';      // Blue for initial domain x
+        const COLOR_GX = '#10b981';     // Emerald for composed g(x) (range of g = domain of f)
+        const COLOR_FGX = '#8b5cf6';    // Purple for final range f(g(x))
+
+        // Get function values
+        function g(x) { return functions[selectedG].eval(x); }
+        function f(x) { return functions[selectedF].eval(x); }
+        function fg(x) { return f(g(x)); }
+
+        // Find Maximum and Minimum within the visible domain [-5, 5] and set dynamic Y scaling
+        function calculateExtrema() {
+            let maxVal = -Infinity;
+            let minVal = Infinity;
+            let maxX = 0;
+            let minX = 0;
+
+            const steps = 400; // 정밀 스캔
+            for (let i = 0; i <= steps; i++) {
+                const x = -gridRange + (gridRange * 2 * i) / steps;
+                const gx = g(x);
+
+                // 바깥쪽 함수 f(x)의 시각적 정의역인 [-5, 5] 범위 안에 g(x)가 들어올 때의 값만 트래킹
+                // 이것이 경계 지역의 불필요한 극단값에 의해 전체 그래프가 평탄화(Flat)되는 것을 차단합니다.
+                if (gx < -gridRange || gx > gridRange) continue;
+
+                const y = fg(x);
+
+                if (isNaN(y) || !isFinite(y)) continue;
+
+                if (y > maxVal) {
+                    maxVal = y;
+                    maxX = x;
+                }
+                if (y < minVal) {
+                    minVal = y;
+                    minX = x;
+                }
+            }
+
+            // 만약 유효한 스캔 값이 하나도 걸러지지 않았다면 전체 탐색으로 복구
+            if (maxVal === -Infinity || minVal === Infinity) {
+                for (let i = 0; i <= steps; i++) {
+                    const x = -gridRange + (gridRange * 2 * i) / steps;
+                    const y = fg(x);
+                    if (isNaN(y) || !isFinite(y)) continue;
+                    if (y > maxVal) { maxVal = y; maxX = x; }
+                    if (y < minVal) { minVal = y; minX = x; }
+                }
+            }
+
+            cachedMax = { x: maxX, y: maxVal };
+            cachedMin = { x: minX, y: minVal };
+
+            // Update Left Sidebar Texts
+            if (isFinite(maxVal)) {
+                mathMaxVal.textContent = maxVal.toFixed(2);
+                mathMaxX.textContent = maxX.toFixed(2);
+            } else {
+                mathMaxVal.textContent = "N/A";
+                mathMaxX.textContent = "N/A";
+            }
+
+            if (isFinite(minVal)) {
+                mathMinVal.textContent = minVal.toFixed(2);
+                mathMinX.textContent = minX.toFixed(2);
+            } else {
+                mathMinVal.textContent = "N/A";
+                mathMinX.textContent = "N/A";
+            }
+
+            // Determine dynamic vertical range for the composite graph to avoid clipping
+            const absoluteMax = Math.max(Math.abs(maxVal), Math.abs(minVal));
+            if (absoluteMax > 4.5 && isFinite(absoluteMax)) {
+                // Round up to nearest multiple of 5 for visually clean grid lines
+                compositeYRange = Math.ceil((absoluteMax + 1.5) / 5) * 5;
+                yScaleBadge.textContent = `y축 스케일: ±${compositeYRange}`;
+                yScaleBadge.classList.add('bg-purple-100', 'text-purple-700');
+                yScaleBadge.classList.remove('bg-slate-100', 'text-slate-400');
+            } else {
+                compositeYRange = 5; // Reset to default standard
+                yScaleBadge.textContent = 'y축 스케일: 자동';
+                yScaleBadge.classList.remove('bg-purple-100', 'text-purple-700');
+                yScaleBadge.classList.add('bg-slate-100', 'text-slate-400');
+            }
+        }
+
+        // Standard coordinate transformation helpers (Canvas to Math Space)
+        function getCanvasCoords(x, y, width, height, yRange = gridRange) {
+            const scaleX = width / (gridRange * 2);
+            const scaleY = height / (yRange * 2); // Use individual graph's yRange
+            
+            const px = width / 2 + x * scaleX;
+            const py = height / 2 - y * scaleY; // Invert Y-axis for standard math representation
+            
+            return { x: px, y: py };
+        }
+
+        // Window resize responsive handler with initial check safeguards
+        function resizeCanvases() {
+            Object.values(canvases).forEach(canvasObj => {
+                const container = canvasObj.el.parentElement;
+                const width = container.clientWidth || 300; // Fallback width
+                const height = container.clientHeight || 170; // Fallback height
+                canvasObj.el.width = width * window.devicePixelRatio;
+                canvasObj.el.height = height * window.devicePixelRatio;
+                canvasObj.ctx.resetTransform();
+                canvasObj.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            });
+            drawAllGraphs();
+        }
+
+        // Drawing Grid Axes & Labels with dynamic y range Support
+        function drawGrid(ctx, w, h, yRange = gridRange) {
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1;
+            ctx.font = '10px monospace';
+            ctx.fillStyle = '#94a3b8';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // Draw grid lines
+            // X-axis divisions remain constant (-5 to 5)
+            for (let i = -gridRange; i <= gridRange; i++) {
+                if (i === 0) continue;
+                
+                // Vertical lines
+                let p1 = getCanvasCoords(i, -yRange, w, h, yRange);
+                let p2 = getCanvasCoords(i, yRange, w, h, yRange);
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.stroke();
+
+                // Vertical Labels on X axis
+                let labelPosVer = getCanvasCoords(i, -yRange * 0.06, w, h, yRange);
+                ctx.fillText(i, labelPosVer.x, labelPosVer.y);
+            }
+
+            // Y-axis divisions adapt to yRange
+            // For larger ranges, step size is dynamically calculated
+            const yStep = yRange <= 5 ? 1 : Math.ceil(yRange / 5);
+            for (let i = -yRange; i <= yRange; i += yStep) {
+                if (i === 0) continue;
+
+                // Horizontal lines
+                let p3 = getCanvasCoords(-gridRange, i, w, h, yRange);
+                let p4 = getCanvasCoords(gridRange, i, w, h, yRange);
+                ctx.beginPath();
+                ctx.moveTo(p3.x, p3.y);
+                ctx.lineTo(p4.x, p4.y);
+                ctx.stroke();
+
+                // Horizontal Labels on Y axis
+                let labelPosHor = getCanvasCoords(-0.3, i, w, h, yRange);
+                ctx.fillText(i, labelPosHor.x, labelPosHor.y);
+            }
+
+            // Central X-Y Axes
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 1.5;
+            
+            // X-Axis
+            let originLeft = getCanvasCoords(-gridRange, 0, w, h, yRange);
+            let originRight = getCanvasCoords(gridRange, 0, w, h, yRange);
+            ctx.beginPath();
+            ctx.moveTo(originLeft.x, originLeft.y);
+            ctx.lineTo(originRight.x, originRight.y);
+            ctx.stroke();
+
+            // Y-Axis
+            let originBottom = getCanvasCoords(0, -yRange, w, h, yRange);
+            let originTop = getCanvasCoords(0, yRange, w, h, yRange);
+            ctx.beginPath();
+            ctx.moveTo(originBottom.x, originBottom.y);
+            ctx.lineTo(originTop.x, originTop.y);
+            ctx.stroke();
+
+            // Draw Arrow Heads & Labels for Axes
+            ctx.fillStyle = '#475569';
+            ctx.font = 'bold 10px sans-serif';
+            ctx.fillText('x', originRight.x - 10, originRight.y + 10);
+            ctx.fillText('y', originTop.x + 10, originTop.y + 10);
+        }
+
+        // Draw individual function curves
+        function drawCurve(ctx, w, h, fnEval, color, strokeWidth = 2.5, yRange = gridRange) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = strokeWidth;
+            ctx.beginPath();
+
+            const steps = 300;
+            let first = true;
+
+            for (let i = 0; i <= steps; i++) {
+                const x = -gridRange + (gridRange * 2 * i) / steps;
+                const y = fnEval(x);
+
+                if (isNaN(y) || !isFinite(y)) continue;
+
+                const coords = getCanvasCoords(x, y, w, h, yRange);
+                if (first) {
+                    ctx.moveTo(coords.x, coords.y);
+                    first = false;
+                } else {
+                    ctx.lineTo(coords.x, coords.y);
+                }
+            }
+            ctx.stroke();
+        }
+
+        // Draw Extremum markers and guidelines on Composite Canvas (Adjusted with compositeYRange)
+        function drawExtremumMarkers(ctx, w, h) {
+            if (!showComposite) return;
+
+            ctx.save();
+            ctx.lineWidth = 1;
+
+            // 1. Draw Maximum Marker (Red)
+            if (isFinite(cachedMax.y) && cachedMax.y >= -compositeYRange && cachedMax.y <= compositeYRange) {
+                const ptMax = getCanvasCoords(cachedMax.x, cachedMax.y, w, h, compositeYRange);
+                const ptMaxYAxis = getCanvasCoords(0, cachedMax.y, w, h, compositeYRange);
+                const ptMaxXAxis = getCanvasCoords(cachedMax.x, 0, w, h, compositeYRange);
+
+                // Dotted projection lines
+                ctx.strokeStyle = '#ef4444'; // Red
+                ctx.setLineDash([2, 4]);
+                ctx.beginPath();
+                ctx.moveTo(ptMaxXAxis.x, ptMaxXAxis.y);
+                ctx.lineTo(ptMax.x, ptMax.y);
+                ctx.lineTo(ptMaxYAxis.x, ptMaxYAxis.y);
+                ctx.stroke();
+
+                // Solid Point
+                ctx.setLineDash([]);
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.arc(ptMax.x, ptMax.y, 4.5, 0, 2 * Math.PI);
+                ctx.fill();
+
+                // white border
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                // Label Max
+                ctx.fillStyle = '#b91c1c';
+                ctx.font = 'bold 9px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(`MAX (${cachedMax.y.toFixed(1)})`, ptMax.x, ptMax.y - 8);
+            }
+
+            // 2. Draw Minimum Marker (Blue)
+            if (isFinite(cachedMin.y) && cachedMin.y >= -compositeYRange && cachedMin.y <= compositeYRange) {
+                const ptMin = getCanvasCoords(cachedMin.x, cachedMin.y, w, h, compositeYRange);
+                const ptMinYAxis = getCanvasCoords(0, cachedMin.y, w, h, compositeYRange);
+                const ptMinXAxis = getCanvasCoords(cachedMin.x, 0, w, h, compositeYRange);
+
+                // Dotted projection lines
+                ctx.strokeStyle = '#3b82f6'; // Blue
+                ctx.setLineDash([2, 4]);
+                ctx.beginPath();
+                ctx.moveTo(ptMinXAxis.x, ptMinXAxis.y);
+                ctx.lineTo(ptMin.x, ptMin.y);
+                ctx.lineTo(ptMinYAxis.x, ptMinYAxis.y);
+                ctx.stroke();
+
+                // Solid Point
+                ctx.setLineDash([]);
+                ctx.fillStyle = '#3b82f6';
+                ctx.beginPath();
+                ctx.arc(ptMin.x, ptMin.y, 4.5, 0, 2 * Math.PI);
+                ctx.fill();
+
+                // white border
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                // Label Min
+                ctx.fillStyle = '#1d4ed8';
+                ctx.font = 'bold 9px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(`MIN (${cachedMin.y.toFixed(1)})`, ptMin.x, ptMin.y + 13);
+            }
+
+            ctx.restore();
+        }
+
+        // Main Draw Loop
+        function drawAllGraphs() {
+            // Get standard sizing ignoring high DPI scale since we scaled the context
+            const wG = canvases.g.el.width / window.devicePixelRatio;
+            const hG = canvases.g.el.height / window.devicePixelRatio;
+            const wF = canvases.f.el.width / window.devicePixelRatio;
+            const hF = canvases.f.el.height / window.devicePixelRatio;
+            const wFG = canvases.fg.el.width / window.devicePixelRatio;
+            const hFG = canvases.fg.el.height / window.devicePixelRatio;
+
+            // Prevent drawing on uninitialized/zero-sized canvases (common in fresh GitHub Pages loads)
+            if (wG <= 0 || hG <= 0 || wF <= 0 || hF <= 0 || wFG <= 0 || hFG <= 0) return;
+
+            // Clear canvases
+            canvases.g.ctx.clearRect(0, 0, wG, hG);
+            canvases.f.ctx.clearRect(0, 0, wF, hF);
+            canvases.fg.ctx.clearRect(0, 0, wFG, hFG);
+
+            // 1. Draw Background Grids (Composite has dynamic compositeYRange)
+            drawGrid(canvases.g.ctx, wG, hG, gridRange);
+            drawGrid(canvases.f.ctx, wF, hF, gridRange);
+            drawGrid(canvases.fg.ctx, wFG, hFG, compositeYRange);
+
+            // Calculate state evaluations
+            const valGX = g(currentX);
+            const valFGX = f(valGX);
+
+            // 2. Draw Mathematical Curves
+            drawCurve(canvases.g.ctx, wG, hG, g, COLOR_GX, 2.5, gridRange); // Emerald for g(x)
+            drawCurve(canvases.f.ctx, wF, hF, f, '#4f46e5', 2.5, gridRange); // Royal Blue/Indigo for f(x)
+            
+            if (showComposite) {
+                drawCurve(canvases.fg.ctx, wFG, hFG, fg, COLOR_FGX, 3.5, compositeYRange); // Purple for f(g(x))
+                hiddenOverlay.classList.add('hidden');
+                overlayFGContainer.classList.remove('hidden');
+                cardExtremumInfo.classList.remove('opacity-20', 'pointer-events-none'); // Enable info card
+            } else {
+                hiddenOverlay.classList.remove('hidden');
+                overlayFGContainer.classList.add('hidden'); // Hide the formula badge too for prediction
+                cardExtremumInfo.classList.add('opacity-20', 'pointer-events-none'); // Mute info card
+            }
+
+            // 3. Draw Guiding Tracer Lines (visual flow across panels)
+            if (showGuides) {
+                drawGuidesAcrossCanvases(wG, hG, wF, hF, wFG, hFG, valGX, valFGX);
+            }
+
+            // 4. Draw Extrema markers on composite graph
+            drawExtremumMarkers(canvases.fg.ctx, wFG, hFG);
+
+            // 5. Draw Active Dynamic Coordinate Points
+            drawDynamicPoint(canvases.g.ctx, wG, hG, currentX, valGX, COLOR_GX, gridRange);
+            drawDynamicPoint(canvases.f.ctx, wF, hF, valGX, valFGX, COLOR_FGX, gridRange);
+            drawDynamicPoint(canvases.fg.ctx, wFG, hFG, currentX, valFGX, COLOR_FGX, compositeYRange);
+        }
+
+        // Draw tracer lines helping students follow the x -> g(x) -> f(x) routing logic
+        function drawGuidesAcrossCanvases(wG, hG, wF, hF, wFG, hFG, valGX, valFGX) {
+            // --- g(x) graph guide ---
+            const ctxG = canvases.g.ctx;
+            const ptG = getCanvasCoords(currentX, valGX, wG, hG, gridRange);
+            const ptGXAxis = getCanvasCoords(currentX, 0, wG, hG, gridRange);
+            const ptGYAxis = getCanvasCoords(0, valGX, wG, hG, gridRange);
+
+            ctxG.setLineDash([3, 3]);
+            ctxG.lineWidth = 1.5;
+
+            // X-axis (input x) -> point (Blue)
+            ctxG.strokeStyle = COLOR_X;
+            ctxG.beginPath();
+            ctxG.moveTo(ptGXAxis.x, ptGXAxis.y);
+            ctxG.lineTo(ptG.x, ptG.y);
+            ctxG.stroke();
+
+            // Point -> Y-axis (output g(x)) (Emerald)
+            ctxG.strokeStyle = COLOR_GX;
+            ctxG.beginPath();
+            ctxG.moveTo(ptG.x, ptG.y);
+            ctxG.lineTo(ptGYAxis.x, ptGYAxis.y);
+            ctxG.stroke();
+
+            // Draw projected dots on axes
+            drawAxisDot(ctxG, ptGXAxis, COLOR_X);  // Domain dot (Blue)
+            drawAxisDot(ctxG, ptGYAxis, COLOR_GX); // Range dot (Emerald)
+
+
+            // --- f(x) graph guide ---
+            const ctxF = canvases.f.ctx;
+            const ptF = getCanvasCoords(valGX, valFGX, wF, hF, gridRange);
+            const ptFXAxis = getCanvasCoords(valGX, 0, wF, hF, gridRange);
+            const ptFYAxis = getCanvasCoords(0, valFGX, wF, hF, gridRange);
+
+            ctxF.setLineDash([3, 3]);
+            ctxF.lineWidth = 1.5;
+
+            // X-axis (input g(x)) -> point (Emerald - MATCHES previous output!)
+            ctxF.strokeStyle = COLOR_GX;
+            ctxF.beginPath();
+            ctxF.moveTo(ptFXAxis.x, ptFXAxis.y);
+            ctxF.lineTo(ptF.x, ptF.y);
+            ctxF.stroke();
+
+            // Point -> Y-axis (output f(g(x))) (Purple)
+            ctxF.strokeStyle = COLOR_FGX;
+            ctxF.beginPath();
+            ctxF.moveTo(ptF.x, ptF.y);
+            ctxF.lineTo(ptFYAxis.x, ptFYAxis.y);
+            ctxF.stroke();
+
+            // Draw projected dots on axes
+            drawAxisDot(ctxF, ptFXAxis, COLOR_GX);  // Composed Domain dot (Emerald - Matches g(x) range!)
+            drawAxisDot(ctxF, ptFYAxis, COLOR_FGX); // Composed Range dot (Purple)
+
+
+            // --- Composite graph tracer ---
+            const ctxFG = canvases.fg.ctx;
+            const ptFG = getCanvasCoords(currentX, valFGX, wFG, hFG, compositeYRange);
+            const ptFGXAxis = getCanvasCoords(currentX, 0, wFG, hFG, compositeYRange);
+            const ptFGYAxis = getCanvasCoords(0, valFGX, wFG, hFG, compositeYRange);
+
+            ctxFG.setLineDash([3, 3]);
+            ctxFG.lineWidth = 1.5;
+
+            // X-axis (input x) -> point (Blue)
+            ctxFG.strokeStyle = COLOR_X;
+            ctxFG.beginPath();
+            ctxFG.moveTo(ptFGXAxis.x, ptFGXAxis.y);
+            ctxFG.lineTo(ptFG.x, ptFG.y);
+            ctxFG.stroke();
+
+            // Point -> Y-axis (output f(g(x))) (Purple)
+            ctxFG.strokeStyle = COLOR_FGX;
+            ctxFG.beginPath();
+            ctxFG.moveTo(ptFG.x, ptFG.y);
+            ctxFG.lineTo(ptFGYAxis.x, ptFGYAxis.y);
+            ctxFG.stroke();
+
+            // Draw projected dots on axes
+            drawAxisDot(ctxFG, ptFGXAxis, COLOR_X);   // Domain dot (Blue)
+            drawAxisDot(ctxFG, ptFGYAxis, COLOR_FGX);  // Final Output dot (Purple)
+
+            ctxFG.setLineDash([]);
+        }
+
+        // Draw a small solid colored dot on the grid axes to highlight inputs/outputs
+        function drawAxisDot(ctx, pt, color) {
+            ctx.save();
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 4.5, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // Standard dynamic point drawing function
+        function drawDynamicPoint(ctx, w, h, x, y, color, yRange = gridRange) {
+            const pt = getCanvasCoords(x, y, w, h, yRange);
+
+            // Glowing outer circle
+            ctx.fillStyle = color;
+            ctx.globalAlpha = 0.25;
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 9, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.globalAlpha = 1.0;
+
+            // Inner solid core
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 4.5, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Label coordinates on screen
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'bold 9px monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText(` (${x.toFixed(2)}, ${y.toFixed(2)})`, pt.x + 8, pt.y - 4);
+        }
+
+        // Sync inputs and state
+        function updateState() {
+            selectedF = selectF.value;
+            selectedG = selectG.value;
+
+            // Update formula textual indicators
+            const formulaG = functions[selectedG].formula;
+            const formulaF = functions[selectedF].formula;
+            const formulaFG = functions[selectedF].compositeTemplate(formulaG);
+
+            labelFFormula.textContent = functions[selectedF].name;
+            labelGFormula.textContent = functions[selectedG].name;
+
+            // Update on-canvas overlay formulas
+            overlayG.textContent = `g(x) = ${formulaG}`;
+            overlayF.textContent = `f(x) = ${formulaF}`;
+            
+            if (showComposite) {
+                overlayFG.textContent = `f(g(x)) = ${formulaFG}`;
+            } else {
+                overlayFG.textContent = `f(g(x)) = ?`;
+            }
+
+            // Calculate Extrema first to update compositeYRange
+            calculateExtrema();
+
+            // Adjust numerical outputs
+            const gxVal = g(currentX);
+            const fgxVal = f(gxVal);
+
+            valX.textContent = currentX.toFixed(2);
+            mathX.textContent = currentX.toFixed(2);
+            mathGx.textContent = gxVal.toFixed(2);
+            mathFgx.textContent = fgxVal.toFixed(2);
+
+            // Redraw everything with corrected boundaries
+            drawAllGraphs();
+        }
+
+        // Controls action handlers
+        selectF.addEventListener('change', updateState);
+        selectG.addEventListener('change', updateState);
+        
+        sliderX.addEventListener('input', (e) => {
+            currentX = parseFloat(e.target.value);
+            updateState();
+        });
+
+        // Swap g(x) and f(x) options
+        btnSwap.addEventListener('click', () => {
+            const temp = selectF.value;
+            selectF.value = selectG.value;
+            selectG.value = temp;
+            updateState();
+        });
+
+        // Toggle Composite visibility
+        toggleComposite.addEventListener('change', (e) => {
+            showComposite = e.target.checked;
+            updateState();
+        });
+
+        btnShowOverlay.addEventListener('click', () => {
+            toggleComposite.checked = true;
+            showComposite = true;
+            updateState();
+        });
+
+        // Toggle tracer guides visibility
+        toggleGuides.addEventListener('change', (e) => {
+            showGuides = e.target.checked;
+            drawAllGraphs();
+        });
+
+        // Action when clicking Reset Button
+        btnReset.addEventListener('click', () => {
+            selectF.value = 'init-f';
+            selectG.value = 'init-g';
+            currentX = 1.0;
+            sliderX.value = currentX;
+
+            // Show composite graph again
+            toggleComposite.checked = true;
+            showComposite = true;
+
+            updateState();
+        });
+
+        // Choose random f(x) and g(x) functions
+        btnRandom.addEventListener('click', () => {
+            const keys = Object.keys(functions);
+            
+            // Grab random keys ensuring diversity if possible
+            const randF = keys[Math.floor(Math.random() * keys.length)];
+            let randG = keys[Math.floor(Math.random() * keys.length)];
+            
+            // Attempt to make g different from f for visual variety
+            if (randG === randF) {
+                randG = keys[(keys.indexOf(randG) + 1) % keys.length];
+            }
+
+            selectF.value = randF;
+            selectG.value = randG;
+            
+            // Randomize starting x, but keep close to middle
+            currentX = (Math.random() * 4 - 2); 
+            sliderX.value = currentX;
+
+            // Hide the composite graph initially to encourage manual sketch predictions!
+            toggleComposite.checked = false;
+            showComposite = false;
+
+            updateState();
+        });
+
+        // Play/Pause Auto Demonstration Loop
+        function playStep() {
+            // 항상 증가하는 방향으로 세팅
+            let nextX = currentX + 0.025; 
+            if (nextX > 4.5) {
+                // 우측 끝에 도달하면 다시 좌측 끝에서 시작 (wrap-around)
+                nextX = -4.5; 
+            }
+            currentX = nextX;
+            sliderX.value = currentX;
+            updateState();
+            
+            if (isPlaying) {
+                requestAnimationFrame(playStep);
+            }
+        }
+
+        btnPlay.addEventListener('click', () => {
+            isPlaying = !isPlaying;
+            if (isPlaying) {
+                playIcon.setAttribute('data-lucide', 'pause');
+                btnPlay.classList.add('bg-blue-100', 'text-blue-600');
+                requestAnimationFrame(playStep);
+            } else {
+                playIcon.setAttribute('data-lucide', 'play');
+                btnPlay.classList.remove('bg-blue-100', 'text-blue-600');
+            }
+            lucide.createIcons(); // Update visual icons
+        });
+
+        // Global Event Hooks
+        window.addEventListener('resize', resizeCanvases);
+        
+        // Initial setup execution
+        window.onload = () => {
+            lucide.createIcons();
+            resizeCanvases();
+            updateState();
+        };
+    </script>
+</body>
+</html>
