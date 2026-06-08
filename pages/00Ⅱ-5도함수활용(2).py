@@ -33,7 +33,7 @@ st.image(
 with st.expander("🔍 합성함수그래프", expanded=False):
         show_html(
             "assets/5 도함수활용(2)/html/합성함수그래프개형.html",
-            height=600
+            height=650
         )
 
 # =========================
