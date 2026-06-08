@@ -5,6 +5,13 @@ st.set_page_config(layout="wide")
 
 
 # =========================
+# 슬라이드 1
+st.image(
+    "assets/5 도함수활용(2)/images/슬라이드1.PNG",
+    use_container_width=True
+)
+
+# =========================
 # HTML 출력 함수
 def show_html(path, title=None, height=600):
     if title:
@@ -16,12 +23,6 @@ def show_html(path, title=None, height=600):
     components.html(html, height=height, scrolling=True)
 
 
-# =========================
-# 슬라이드 1
-    st.image(
-        "assets/5 도함수활용(2)/images/슬라이드1.PNG",
-        use_container_width=True
-    )
 # =========================
 # 왼쪽, 오른쪽
 
@@ -79,9 +80,10 @@ with right:
         "assets/5 도함수활용(2)/html/합성함수그래프개형.html",
         height=600
     )
+
 # =========================      
 # 슬라이드 
-    st.image(
-        "assets/5 도함수활용(2)/images/슬라이드8.PNG",
-        use_container_width=True
-    )
+st.image(
+    "assets/5 도함수활용(2)/images/슬라이드8.PNG",
+    use_container_width=True
+)
