@@ -23,12 +23,6 @@ st.image(
     use_container_width=True
 )
 
-with st.expander("🔍 합성함수그래프", expanded=False):
-        show_html(
-            "assets/5 도함수활용(2)/html/합성함수그래프개형2.html",
-            height=650
-        )
-    
 # =========================
 # 슬라이드 2 + HTML
 with st.expander("🔍 합성함수그래프", expanded=False):
@@ -41,7 +35,6 @@ st.image(
         "assets/5 도함수활용(2)/images/슬라이드2.PNG",
         use_container_width=True
     )
-
 
 # =========================
 # 슬라이드 3~6
