@@ -75,12 +75,13 @@ with left:
     )
 
 with right:
-    with st.expander("🔍 그래프", expanded=False):
-        show_html(
-        "assets/5 도함수활용(2)/html/합성함수그래프개형.html",
-        height=600
-    )
-
+   url = "https://www.geogebra.org/calculator/vmv32qkk"
+    with st.expander("📌 지오지브라 열기"):
+        components.iframe(
+            url,
+            height=650,
+            scrolling=True
+        )
 # =========================      
 # 슬라이드 
 st.image(
