@@ -26,8 +26,7 @@ with st.sidebar:
 
     components.html(timer_html, height=220)
 
-============================
-# ✅ 버튼(페이지 링크) 텍스트 중앙 정렬 CSS
+# ✅ 버튼(페이지 링크) 텍스트 중앙 정렬 CSS==============
 st.markdown("""
 <style>
 /* page_link가 버튼으로 렌더될 때 텍스트 중앙 정렬 */
