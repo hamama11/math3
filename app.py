@@ -17,6 +17,17 @@ with open("home.html", "r", encoding="utf-8") as f:
 # ✅ 홈 화면 (D-day 아래에 spacer가 있으니 높이 충분히)
 components.html(html, height=600, scrolling=False)
 
+#=====================
+사이드바 타이머
+with st.sidebar:
+    st.subheader("사이드바 타이머")
+
+    with open("timer.html", "r", encoding="utf-8") as f:
+        timer_html = f.read()
+
+    components.html(timer_html, height=220)
+
+============================
 # ✅ 버튼(페이지 링크) 텍스트 중앙 정렬 CSS
 st.markdown("""
 <style>
