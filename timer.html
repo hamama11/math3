@@ -1,21 +1,123 @@
-<div id="timer" style="font-size:32px; font-weight:bold; text-align:center;">
-  05:00
-</div>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>타이머</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: transparent;
+      color: white;
+    }
 
-<script>
-let totalSeconds = 5 * 60;
-const timerEl = document.getElementById("timer");
+    .wrap {
+      padding: 12px;
+      border-radius: 12px;
+      background: #222;
+      text-align: center;
+    }
 
-const interval = setInterval(() => {
-  const mins = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
-  const secs = String(totalSeconds % 60).padStart(2, '0');
-  timerEl.innerText = `${mins}:${secs}`;
+    .title {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
 
-  if (totalSeconds <= 0) {
-    clearInterval(interval);
-    timerEl.innerText = "종료!";
-  }
+    .time {
+      font-size: 40px;
+      font-weight: bold;
+      margin: 12px 0;
+    }
 
-  totalSeconds -= 1;
-}, 1000);
-</script>
+    .controls, .adjust {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin: 8px 0;
+    }
+
+    button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .small {
+      font-size: 13px;
+      padding: 6px 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">⏱ 타이머</div>
+
+    <div class="adjust">
+      <button class="small" onclick="adjustTime(-60)">-1분</button>
+      <button class="small" onclick="adjustTime(60)">+1분</button>
+    </div>
+
+    <div class="time" id="display">05:00</div>
+
+    <div class="controls">
+      <button onclick="startTimer()">시작</button>
+      <button onclick="pauseTimer()">일시정지</button>
+      <button onclick="resetTimer()">리셋</button>
+    </div>
+  </div>
+
+  <script>
+    let initialSeconds = 300;   // 기본 5분
+    let totalSeconds = initialSeconds;
+    let timer = null;
+
+    function formatTime(seconds) {
+      const sign = seconds < 0 ? "-" : "";
+      const abs = Math.abs(seconds);
+      const m = String(Math.floor(abs / 60)).padStart(2, "0");
+      const s = String(abs % 60).padStart(2, "0");
+      return `${sign}${m}:${s}`;
+    }
+
+    function updateDisplay() {
+      document.getElementById("display").textContent = formatTime(totalSeconds);
+    }
+
+    function startTimer() {
+      if (timer !== null) return;
+
+      timer = setInterval(() => {
+        totalSeconds--;
+        updateDisplay();
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      clearInterval(timer);
+      timer = null;
+    }
+
+    function resetTimer() {
+      clearInterval(timer);
+      timer = null;
+      totalSeconds = initialSeconds;
+      updateDisplay();
+    }
+
+    function adjustTime(delta) {
+      totalSeconds += delta;
+      initialSeconds += delta;
+
+      if (initialSeconds < 0) initialSeconds = 0;
+      if (totalSeconds < -359999) totalSeconds = -359999;
+
+      updateDisplay();
+    }
+
+    updateDisplay();
+  </script>
+</body>
+</html>
