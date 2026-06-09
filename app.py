@@ -17,8 +17,7 @@ with open("home.html", "r", encoding="utf-8") as f:
 # ✅ 홈 화면 (D-day 아래에 spacer가 있으니 높이 충분히)
 components.html(html, height=600, scrolling=False)
 
-#=====================
-사이드바 타이머
+#사이드바 타이머========
 with st.sidebar:
     st.subheader("사이드바 타이머")
 
