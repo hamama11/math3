@@ -4,8 +4,6 @@ import streamlit.components.v1 as components
 st.set_page_config(layout="wide")
 #사이드바 타이머========
 with st.sidebar:
-    st.subheader("타이머")
-
     with open("timer.html", "r", encoding="utf-8") as f:
         timer_html = f.read()
 
