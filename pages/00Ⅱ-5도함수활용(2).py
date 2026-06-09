@@ -47,7 +47,11 @@ for i in range(3, 7):
         f"assets/5 도함수활용(2)/images/슬라이드{i}.PNG",
         use_container_width=True
     )
-
+with st.expander("🔍 f(x)=p(x) vs f(x)-p(x)=0", expanded=False):
+        show_html(
+            "assets/5 도함수활용(2)/images/슬라이드6-1.PNG",
+            height=650
+        )
 # =========================
 # 중간 문구
 st.markdown("""
