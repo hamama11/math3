@@ -1,0 +1,21 @@
+<div id="timer" style="font-size:32px; font-weight:bold; text-align:center;">
+  05:00
+</div>
+
+<script>
+let totalSeconds = 5 * 60;
+const timerEl = document.getElementById("timer");
+
+const interval = setInterval(() => {
+  const mins = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+  const secs = String(totalSeconds % 60).padStart(2, '0');
+  timerEl.innerText = `${mins}:${secs}`;
+
+  if (totalSeconds <= 0) {
+    clearInterval(interval);
+    timerEl.innerText = "종료!";
+  }
+
+  totalSeconds -= 1;
+}, 1000);
+</script>
